@@ -23,6 +23,12 @@
   pointer-events: none;
 }
 
+/* Cuando las votaciones están cerradas, mantener la tarjeta interactiva pero solo deshabilitar el botón de votar */
+.app-card:not(.disabled) .vote-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .favorite-button {
   position: absolute;
   top: 0.75rem;
@@ -134,7 +140,7 @@
 
 .members-list {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.5rem;
 }
 

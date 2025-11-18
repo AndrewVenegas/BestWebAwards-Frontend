@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import api from '../services/api';
+import { capitalizeName } from '../utils/format';
 import './StudentProfile.css';
 
 const StudentProfile = () => {
@@ -91,7 +92,7 @@ const StudentProfile = () => {
         <div className="profile-section">
           <div className="profile-avatar-section">
             {student.avatarUrl ? (
-              <img src={student.avatarUrl} alt={student.name} className="profile-avatar" />
+              <img src={student.avatarUrl} alt={capitalizeName(student.name)} className="profile-avatar" />
             ) : (
               <div className="profile-avatar placeholder">
                 {student.name.charAt(0).toUpperCase()}
@@ -136,7 +137,7 @@ const StudentProfile = () => {
                 <label>Equipo</label>
                 <input
                   type="text"
-                  value={student.team.groupName}
+                  value={capitalizeName(student.team.groupName)}
                   disabled
                   className="disabled"
                 />
@@ -148,7 +149,7 @@ const StudentProfile = () => {
                 <label>Nombre de la Aplicación</label>
                 <input
                   type="text"
-                  value={student.team.appName || 'No definido'}
+                  value={student.team.appName ? capitalizeName(student.team.appName) : 'No definido'}
                   disabled
                   className="disabled"
                 />

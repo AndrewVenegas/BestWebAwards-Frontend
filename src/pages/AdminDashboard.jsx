@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useNotification } from '../contexts/NotificationContext';
+import { capitalizeName } from '../utils/format';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -171,8 +172,8 @@ const AdminDashboard = () => {
                   <tbody>
                     {votesSummary.map(item => (
                       <tr key={item.teamId}>
-                        <td>{item.displayName || item.groupName}</td>
-                        <td>{item.appName || '-'}</td>
+                        <td>{capitalizeName(item.displayName || item.groupName)}</td>
+                        <td>{item.appName ? capitalizeName(item.appName) : '-'}</td>
                         <td>{item.voteCount}</td>
                       </tr>
                     ))}
@@ -194,14 +195,14 @@ const AdminDashboard = () => {
                   <tbody>
                     {votesByStudent.map(student => (
                       <tr key={student.studentId}>
-                        <td>{student.studentName}</td>
+                        <td>{capitalizeName(student.studentName)}</td>
                         <td>{student.studentEmail}</td>
                         <td>
                           {student.votes.length > 0 ? (
                             <ul>
                               {student.votes.map(vote => (
                                 <li key={vote.voteId}>
-                                  {vote.displayName || vote.teamName}
+                                  {capitalizeName(vote.displayName || vote.teamName)}
                                   <button
                                     onClick={() => handleDeleteVote(vote.voteId)}
                                     className="delete-vote-button"
@@ -261,9 +262,9 @@ const AdminDashboard = () => {
                 <tbody>
                   {students.map(student => (
                     <tr key={student.id}>
-                      <td>{student.name}</td>
+                      <td>{capitalizeName(student.name)}</td>
                       <td>{student.email}</td>
-                      <td>{student.team?.groupName || '-'}</td>
+                      <td>{student.team?.groupName ? capitalizeName(student.team.groupName) : '-'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -284,7 +285,7 @@ const AdminDashboard = () => {
                 <tbody>
                   {helpers.map(helper => (
                     <tr key={helper.id}>
-                      <td>{helper.name}</td>
+                      <td>{capitalizeName(helper.name)}</td>
                       <td>{helper.email}</td>
                     </tr>
                   ))}
@@ -306,7 +307,7 @@ const AdminDashboard = () => {
                 <tbody>
                   {admins.map(admin => (
                     <tr key={admin.id}>
-                      <td>{admin.name}</td>
+                      <td>{capitalizeName(admin.name)}</td>
                       <td>{admin.email}</td>
                     </tr>
                   ))}
@@ -331,11 +332,11 @@ const AdminDashboard = () => {
                 <tbody>
                   {teams.map(team => (
                     <tr key={team.id}>
-                      <td>{team.groupName}</td>
-                      <td>{team.displayName || '-'}</td>
-                      <td>{team.appName || '-'}</td>
+                      <td>{capitalizeName(team.groupName)}</td>
+                      <td>{team.displayName ? capitalizeName(team.displayName) : '-'}</td>
+                      <td>{team.appName ? capitalizeName(team.appName) : '-'}</td>
                       <td>{team.participates ? 'Sí' : 'No'}</td>
-                      <td>{team.helper?.name || '-'}</td>
+                      <td>{team.helper?.name ? capitalizeName(team.helper.name) : '-'}</td>
                     </tr>
                   ))}
                 </tbody>

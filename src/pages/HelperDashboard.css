@@ -191,6 +191,26 @@
   border-color: #667eea;
 }
 
+.disabled-input {
+  background: #f5f5f5;
+  color: #666;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.required {
+  color: #e74c3c;
+  font-weight: bold;
+  margin-left: 0.25rem;
+}
+
+.field-help {
+  color: #999;
+  font-size: 0.85rem;
+  margin: 0.25rem 0 0 0;
+  font-style: italic;
+}
+
 .form-group input[type="checkbox"] {
   margin-right: 0.5rem;
 }

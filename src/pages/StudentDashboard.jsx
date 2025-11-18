@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import api from '../services/api';
+import { capitalizeName } from '../utils/format';
 import Countdown from '../components/Countdown';
 import AppCard from '../components/AppCard';
 import Podium from '../components/Podium';
@@ -28,7 +29,7 @@ const StudentDashboard = () => {
   const [passwordError, setPasswordError] = useState('');
   const [favorites, setFavorites] = useState([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
-  const [showAllTeams, setShowAllTeams] = useState(false);
+  const [showAllTeams, setShowAllTeams] = useState(false); // false = podio, true = todos los grupos
   const [allTeamsWithVotes, setAllTeamsWithVotes] = useState([]);
 
   useEffect(() => {
@@ -64,14 +65,14 @@ const StudentDashboard = () => {
       const allFavorites = [...new Set([...favoriteTeamIds, ...favoritesFromTeams])];
       setFavorites(allFavorites);
 
-      // Obtener conteos (siempre si las votaciones están cerradas, o si el estudiante ya votó)
-      const countsRes = await api.get('/votes/visible-counts');
-      if (countsRes.data.showCounts) {
-        setShowCounts(true);
-        setVoteCounts(countsRes.data.counts);
-        
-        // Si las votaciones están cerradas, preparar todos los equipos con votos
-        if (!configRes.data.isOpen) {
+      // Solo obtener conteos si las votaciones están cerradas
+      if (!configRes.data.isOpen) {
+        const countsRes = await api.get('/votes/visible-counts');
+        if (countsRes.data.showCounts) {
+          setShowCounts(true);
+          setVoteCounts(countsRes.data.counts);
+          
+          // Preparar todos los equipos con votos para la vista de "Todos los Grupos"
           const teamsWithVotes = teamsRes.data.map(team => {
             const voteData = countsRes.data.counts.find(c => c.teamId === team.id);
             return {
@@ -82,6 +83,10 @@ const StudentDashboard = () => {
           
           setAllTeamsWithVotes(teamsWithVotes);
         }
+      } else {
+        // Si las votaciones están abiertas, no mostrar conteos
+        setShowCounts(false);
+        setVoteCounts([]);
       }
     } catch (error) {
       console.error('Error al cargar datos:', error);
@@ -191,11 +196,61 @@ const StudentDashboard = () => {
     return matchesSearch && matchesStudent && matchesHelper;
   });
 
+  // Filtrar equipos en la vista de "Todos los Grupos" cuando las votaciones están cerradas
+  const filteredAllTeams = allTeamsWithVotes.filter(team => {
+    // Filtro de favoritos
+    if (showFavoritesOnly && !favorites.includes(team.id)) {
+      return false;
+    }
+
+    // Filtro de búsqueda
+    const matchesSearch = 
+      team.groupName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (team.appName && team.appName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (team.displayName && team.displayName.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    if (!matchesSearch) {
+      return false;
+    }
+
+    // Filtro por estudiante
+    const matchesStudent = !filterStudent || 
+      (team.students && team.students.some(s => s.id.toString() === filterStudent));
+    
+    if (!matchesStudent) {
+      return false;
+    }
+
+    // Filtro por ayudante
+    const matchesHelper = !filterHelper || 
+      (team.helper && team.helper.id.toString() === filterHelper);
+
+    return matchesHelper;
+  });
+
   const allStudents = teams.flatMap(t => t.students || []).filter((s, i, arr) => 
     arr.findIndex(st => st.id === s.id) === i
   );
 
   const allHelpers = teams.map(t => t.helper).filter((h, i, arr) => 
+    h && arr.findIndex(hl => hl && hl.id === h.id) === i
+  );
+
+  // Para la vista de todos los grupos, también necesitamos estudiantes y ayudantes de allTeamsWithVotes
+  const allStudentsFromAllTeams = allTeamsWithVotes.flatMap(t => t.students || []).filter((s, i, arr) => 
+    arr.findIndex(st => st.id === s.id) === i
+  );
+
+  const allHelpersFromAllTeams = allTeamsWithVotes.map(t => t.helper).filter((h, i, arr) => 
+    h && arr.findIndex(hl => hl && hl.id === h.id) === i
+  );
+
+  // Combinar ambas listas para tener todos los estudiantes y ayudantes disponibles
+  const combinedStudents = [...allStudents, ...allStudentsFromAllTeams].filter((s, i, arr) => 
+    arr.findIndex(st => st.id === s.id) === i
+  );
+
+  const combinedHelpers = [...allHelpers, ...allHelpersFromAllTeams].filter((h, i, arr) => 
     h && arr.findIndex(hl => hl && hl.id === h.id) === i
   );
 
@@ -206,25 +261,39 @@ const StudentDashboard = () => {
   return (
     <div className="student-dashboard">
       <div className="dashboard-container">
-        <h1 className="dashboard-title">Aplicaciones Participantes</h1>
+        <div className="dashboard-header">
+          <h1 className="dashboard-title">Aplicaciones Participantes</h1>
+          {!votingOpen && (
+            <div className="voting-status-badge">
+              Estado votaciones: cerradas
+            </div>
+          )}
+        </div>
         
-        {/* Podium siempre visible al inicio cuando las votaciones están cerradas */}
-        {!votingOpen && <Podium />}
-
         <Countdown />
 
-        {/* Mensaje de votaciones cerradas solo si están cerradas */}
+        {/* Switch para alternar entre podio y todos los grupos cuando las votaciones están cerradas */}
         {!votingOpen && (
-          <div className="voting-closed-message">
-            <h2>Votaciones Cerradas</h2>
-            <button
-              className="view-all-teams-button"
-              onClick={() => setShowAllTeams(!showAllTeams)}
-            >
-              {showAllTeams ? 'Ocultar todos los grupos' : 'Ver todos los grupos'}
-            </button>
+          <div className="view-toggle-container">
+            <div className="view-toggle">
+              <button
+                className={`toggle-option ${!showAllTeams ? 'active' : ''}`}
+                onClick={() => setShowAllTeams(false)}
+              >
+                Podio
+              </button>
+              <button
+                className={`toggle-option ${showAllTeams ? 'active' : ''}`}
+                onClick={() => setShowAllTeams(true)}
+              >
+                Todos los Grupos
+              </button>
+            </div>
           </div>
         )}
+
+        {/* Mostrar podio o todos los grupos según el toggle */}
+        {!votingOpen && !showAllTeams && <Podium />}
 
         {votingOpen && (
           <div className="votes-info">
@@ -246,7 +315,7 @@ const StudentDashboard = () => {
             
             <input
               type="text"
-              placeholder="Buscar por nombre de equipo o aplicación..."
+              placeholder="Buscar por equipo o aplicación"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
@@ -260,7 +329,7 @@ const StudentDashboard = () => {
               <option value="">Todos los estudiantes</option>
               {allStudents.map(student => (
                 <option key={student.id} value={student.id}>
-                  {student.name}
+                  {capitalizeName(student.name)}
                 </option>
               ))}
             </select>
@@ -270,12 +339,12 @@ const StudentDashboard = () => {
               onChange={(e) => setFilterHelper(e.target.value)}
               className="filter-select"
             >
-              <option value="">Todos los ayudantes</option>
-              {allHelpers.map(helper => (
-                <option key={helper.id} value={helper.id}>
-                  {helper.name}
-                </option>
-              ))}
+                  <option value="">Todos los ayudantes</option>
+                  {allHelpers.map(helper => (
+                    <option key={helper.id} value={helper.id}>
+                      {capitalizeName(helper.name)}
+                    </option>
+                  ))}
             </select>
           </div>
         )}
@@ -306,12 +375,57 @@ const StudentDashboard = () => {
           </>
         )}
 
+        {/* Filtros para la vista de todos los grupos */}
+        {!votingOpen && showAllTeams && (
+          <div className="filters">
+            <button
+              className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            >
+              {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
+            </button>
+            
+            <input
+              type="text"
+              placeholder="Buscar por nombre de equipo o aplicación..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            
+            <select
+              value={filterStudent}
+              onChange={(e) => setFilterStudent(e.target.value)}
+              className="filter-select"
+            >
+              <option value="">Todos los estudiantes</option>
+              {combinedStudents.map(student => (
+                <option key={student.id} value={student.id}>
+                  {capitalizeName(student.name)}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={filterHelper}
+              onChange={(e) => setFilterHelper(e.target.value)}
+              className="filter-select"
+            >
+              <option value="">Todos los ayudantes</option>
+              {combinedHelpers.map(helper => (
+                <option key={helper.id} value={helper.id}>
+                  {capitalizeName(helper.name)}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Vista de todos los grupos cuando las votaciones están cerradas */}
         {!votingOpen && showAllTeams && (
           <div className="all-teams-section">
-            <h2 className="all-teams-title">Todos los Grupos</h2>
             <div className="teams-grid">
-              {allTeamsWithVotes.map(team => (
+              {filteredAllTeams.map(team => (
                 <AppCard
                   key={team.id}
                   team={team}
@@ -325,6 +439,11 @@ const StudentDashboard = () => {
                 />
               ))}
             </div>
+            {filteredAllTeams.length === 0 && (
+              <div className="no-results">
+                <p>No se encontraron equipos con los filtros seleccionados</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -334,7 +453,7 @@ const StudentDashboard = () => {
         isOpen={showPasswordModal}
         onClose={handleClosePasswordModal}
         onConfirm={handlePasswordConfirm}
-        teamName={selectedTeam ? (selectedTeam.appName || selectedTeam.displayName || selectedTeam.groupName) : ''}
+        teamName={selectedTeam ? capitalizeName(selectedTeam.appName || selectedTeam.displayName || selectedTeam.groupName) : ''}
         loading={passwordLoading}
         errorMessage={passwordError}
       />

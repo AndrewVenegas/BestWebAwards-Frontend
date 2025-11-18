@@ -1,14 +1,82 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../services/api';
+import { capitalizeName } from '../utils/format';
 import './Podium.css';
 
 const Podium = () => {
   const [podium, setPodium] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showVideoModal, setShowVideoModal] = useState(null); // Almacena el teamId del video a mostrar
+  const [showPlayOverlay, setShowPlayOverlay] = useState({});
+  const hoverTimeoutRef = useRef({});
 
   useEffect(() => {
     fetchPodium();
   }, []);
+
+  // Convertir URL de YouTube a formato embed
+  const getYouTubeEmbedUrl = (url) => {
+    if (!url) return null;
+    
+    if (url.includes('youtube.com/embed')) {
+      return url;
+    }
+    
+    let videoId = null;
+    const watchMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+    if (watchMatch) {
+      videoId = watchMatch[1];
+    }
+    
+    const embedMatch = url.match(/youtube\.com\/embed\/([^&\n?#]+)/);
+    if (embedMatch) {
+      videoId = embedMatch[1];
+    }
+    
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    
+    return null;
+  };
+
+  const handleScreenshotClick = useCallback((entry) => {
+    if (!entry.videoUrl || showVideoModal === entry.teamId) return;
+    setShowPlayOverlay(prev => ({ ...prev, [entry.teamId]: false }));
+    setShowVideoModal(entry.teamId);
+  }, [showVideoModal]);
+
+  const handleCloseModal = useCallback(() => {
+    setShowVideoModal(null);
+    setShowPlayOverlay({});
+  }, []);
+
+  const handleOverlayClick = useCallback((e) => {
+    e.stopPropagation();
+    handleCloseModal();
+  }, [handleCloseModal]);
+
+  const handleMouseEnter = useCallback((teamId) => {
+    if (showVideoModal === teamId) return;
+    if (hoverTimeoutRef.current[teamId]) {
+      clearTimeout(hoverTimeoutRef.current[teamId]);
+    }
+    hoverTimeoutRef.current[teamId] = null;
+    setShowPlayOverlay(prev => ({ ...prev, [teamId]: true }));
+  }, [showVideoModal]);
+
+  const handleMouseLeave = useCallback((teamId) => {
+    if (hoverTimeoutRef.current[teamId]) {
+      clearTimeout(hoverTimeoutRef.current[teamId]);
+    }
+    hoverTimeoutRef.current[teamId] = setTimeout(() => {
+      if (showVideoModal !== teamId) {
+        setShowPlayOverlay(prev => ({ ...prev, [teamId]: false }));
+      }
+      hoverTimeoutRef.current[teamId] = null;
+    }, 200);
+  }, [showVideoModal]);
 
   const fetchPodium = async () => {
     try {
@@ -60,21 +128,34 @@ const Podium = () => {
               
               {entry.screenshotUrl && (
                 <div 
-                  className="podium-screenshot"
+                  className={`podium-screenshot ${entry.videoUrl ? 'clickable' : ''}`}
                   style={{ backgroundImage: `url(${entry.screenshotUrl})` }}
-                />
+                  onClick={() => entry.videoUrl && handleScreenshotClick(entry)}
+                  onMouseEnter={() => entry.videoUrl && handleMouseEnter(entry.teamId)}
+                  onMouseLeave={() => entry.videoUrl && handleMouseLeave(entry.teamId)}
+                >
+                  {entry.videoUrl && showPlayOverlay[entry.teamId] && !showVideoModal && (
+                    <div 
+                      className="podium-play-overlay"
+                      onMouseEnter={() => handleMouseEnter(entry.teamId)}
+                      onMouseLeave={() => handleMouseLeave(entry.teamId)}
+                    >
+                      <span className="podium-play-icon">▶</span>
+                    </div>
+                  )}
+                </div>
               )}
               
               <div className="podium-info">
-                <h3 className="podium-team-name">{entry.displayName || entry.groupName}</h3>
+                <h3 className="podium-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
                 {entry.appName && (
-                  <p className="podium-app-name">{entry.appName}</p>
+                  <p className="podium-app-name">{capitalizeName(entry.appName)}</p>
                 )}
                 
                 {entry.helper && (
                   <div className="podium-helper">
                     <span className="podium-helper-label">Ayudante:</span>
-                    <span className="podium-helper-name">{entry.helper.name}</span>
+                    <span className="podium-helper-name">{capitalizeName(entry.helper.name)}</span>
                   </div>
                 )}
                 
@@ -87,15 +168,15 @@ const Podium = () => {
                           {student.avatarUrl ? (
                             <img 
                               src={student.avatarUrl} 
-                              alt={student.name} 
+                              alt={capitalizeName(student.name)} 
                               className="podium-student-avatar" 
                             />
                           ) : (
                             <div className="podium-student-avatar placeholder">
-                              {student.name.charAt(0)}
+                              {student.name.charAt(0).toUpperCase()}
                             </div>
                           )}
-                          <span className="podium-student-name">{student.name}</span>
+                          <span className="podium-student-name">{capitalizeName(student.name)}</span>
                         </div>
                       ))}
                     </div>
@@ -105,11 +186,73 @@ const Podium = () => {
                 <div className="podium-votes">
                   <strong>{entry.voteCount}</strong> {entry.voteCount === 1 ? 'voto' : 'votos'}
                 </div>
+
+                {entry.deployUrl && (
+                  <a 
+                    href={entry.deployUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="podium-deploy-link"
+                  >
+                    Probar Aplicación
+                  </a>
+                )}
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* Modal de video */}
+      {showVideoModal && (() => {
+        const entry = podium.find(e => e.teamId === showVideoModal);
+        if (!entry || !entry.videoUrl) return null;
+        const embedUrl = getYouTubeEmbedUrl(entry.videoUrl);
+        
+        return createPortal(
+          <div 
+            className="podium-video-modal-overlay" 
+            onClick={handleOverlayClick}
+          >
+            <div 
+              className="podium-video-modal" 
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button 
+                className="podium-video-modal-close" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCloseModal();
+                }}
+                type="button"
+                aria-label="Cerrar video"
+              >
+                ×
+              </button>
+              {embedUrl ? (
+                <iframe
+                  src={embedUrl}
+                  title="Video de la aplicación"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="podium-video-iframe"
+                ></iframe>
+              ) : (
+                <div className="podium-video-error">
+                  <p>No se pudo cargar el video. URL no válida.</p>
+                  {entry.videoUrl && (
+                    <a href={entry.videoUrl} target="_blank" rel="noopener noreferrer">
+                      Abrir en YouTube
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>,
+          document.body
+        );
+      })()}
     </div>
   );
 };

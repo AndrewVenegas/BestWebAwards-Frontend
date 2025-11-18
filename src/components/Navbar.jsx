@@ -23,7 +23,7 @@ const Navbar = () => {
           <div className="navbar-menu">
             {user.type === 'student' && (
               <>
-                <Link to="/dashboard" className="navbar-link">Inicio</Link>
+                <Link to="/dashboard" className="navbar-link">Votaciones</Link>
                 <Link to="/profile" className="navbar-link">Mi Perfil</Link>
               </>
             )}

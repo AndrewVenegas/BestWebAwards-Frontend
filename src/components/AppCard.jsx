@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { capitalizeName } from '../utils/format';
 import './AppCard.css';
 
 const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFavorite, onToggleFavorite }) => {
@@ -108,8 +109,12 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
     }
   };
 
+  // Solo aplicar disabled cuando realmente no se puede votar Y estamos en modo de votación activa
+  // Cuando las votaciones están cerradas (onVote es null), no aplicar disabled para que todo siga siendo clickeable
+  const isDisabled = !canVote && onVote !== null;
+  
   return (
-    <div className={`app-card ${hasVoted ? 'voted' : ''} ${!canVote ? 'disabled' : ''} ${isFavorite ? 'favorite' : ''}`}>
+    <div className={`app-card ${hasVoted ? 'voted' : ''} ${isDisabled ? 'disabled' : ''} ${isFavorite ? 'favorite' : ''}`}>
       {onToggleFavorite && (
         <button 
           className={`favorite-button ${isFavorite ? 'active' : ''}`}
@@ -141,8 +146,8 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
       )}
       
       <div className="app-content">
-        <h3 className="app-name">{team.appName || team.displayName || team.groupName}</h3>
-        <p className="app-team">{team.displayName || team.groupName}</p>
+        <h3 className="app-name">{capitalizeName(team.appName || team.displayName || team.groupName)}</h3>
+        <p className="app-team">{capitalizeName(team.displayName || team.groupName)}</p>
         
         {team.students && team.students.length > 0 && (
           <div className="app-members">
@@ -151,11 +156,11 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
               {team.students.map((student) => (
                 <div key={student.id} className="member-item">
                   {student.avatarUrl ? (
-                    <img src={student.avatarUrl} alt={student.name} className="member-avatar" />
+                    <img src={student.avatarUrl} alt={capitalizeName(student.name)} className="member-avatar" />
                   ) : (
-                    <div className="member-avatar placeholder">{student.name.charAt(0)}</div>
+                    <div className="member-avatar placeholder">{student.name.charAt(0).toUpperCase()}</div>
                   )}
-                  <span className="member-name">{student.name}</span>
+                  <span className="member-name">{capitalizeName(student.name)}</span>
                 </div>
               ))}
             </div>
@@ -184,13 +189,17 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
             <button className="app-button voted-button" disabled>
               ✓ Ya votaste
             </button>
-          ) : (
+          ) : onVote ? (
             <button 
               className="app-button vote-button" 
               onClick={() => onVote(team.id)}
               disabled={!canVote}
             >
               Votar
+            </button>
+          ) : (
+            <button className="app-button vote-button" disabled>
+              Votaciones cerradas
             </button>
           )}
         </div>
