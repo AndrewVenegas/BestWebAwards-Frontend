@@ -28,7 +28,8 @@ const AdminDashboard = () => {
   const [teamFilters, setTeamFilters] = useState({
     participation: 'all', // 'all', 'participating', 'not-participating'
     searchTerm: '',
-    helperId: ''
+    helperId: '',
+    sortBy: 'default' // 'default', 'asc', 'desc' - ordenar por votos
   });
 
   // Filtros para Estudiantes
@@ -38,13 +39,33 @@ const AdminDashboard = () => {
     teamId: ''
   });
 
+  // Estados para modales y formularios
+  const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const [showEditTeam, setShowEditTeam] = useState(null);
+  const [showCreateHelper, setShowCreateHelper] = useState(false);
+  const [showEditHelper, setShowEditHelper] = useState(null);
+  const [showCreateStudent, setShowCreateStudent] = useState(false);
+  const [showEditStudent, setShowEditStudent] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
+  
+  // Estado para el formulario de edición de equipo (igual que HelperDashboard)
+  const [teamFormData, setTeamFormData] = useState({
+    participates: false,
+    displayName: '',
+    appName: '',
+    deployUrl: '',
+    videoUrl: '',
+    screenshotUrl: ''
+  });
+
   useEffect(() => {
     fetchDashboardData();
   }, [activeTab]);
 
-  // Cargar equipos y helpers cuando se necesiten para los filtros
+  // Cargar equipos y helpers cuando se necesiten para los filtros y modales
   useEffect(() => {
-    if (activeTab === 'teams' || activeTab === 'students') {
+    if (activeTab === 'teams' || activeTab === 'students' || showCreateTeam || showEditTeam || showCreateHelper || showCreateStudent || showEditStudent) {
       Promise.all([
         api.get('/admin/teams'),
         api.get('/admin/helpers')
@@ -55,7 +76,7 @@ const AdminDashboard = () => {
         console.error('Error al cargar datos para filtros:', err);
       });
     }
-  }, [activeTab]);
+  }, [activeTab, showCreateTeam, showEditTeam, showCreateHelper, showCreateStudent, showEditStudent]);
 
   // Cargar datos necesarios para filtros del dashboard
   useEffect(() => {
@@ -140,6 +161,323 @@ const AdminDashboard = () => {
     }
   };
 
+  // Funciones CRUD para Equipos
+  const handleCreateTeam = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const teamData = {
+      groupName: formData.get('groupName'),
+      displayName: formData.get('displayName') || null,
+      appName: formData.get('appName') || null,
+      helperId: formData.get('helperId') || null,
+      participates: formData.get('participates') === 'true'
+    };
+
+    try {
+      setSaving(true);
+      await api.post('/admin/teams', teamData);
+      success('Equipo creado exitosamente');
+      setShowCreateTeam(false);
+      fetchDashboardData();
+    } catch (err) {
+      error(err.response?.data?.error || 'Error al crear el equipo');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditTeamClick = (team) => {
+    setShowEditTeam(team);
+    // Precargar todos los datos del equipo, incluyendo valores existentes
+    setTeamFormData({
+      participates: team.participates ?? false,
+      displayName: team.displayName ?? '',
+      appName: team.appName ?? '',
+      deployUrl: team.deployUrl ?? '',
+      videoUrl: team.videoUrl ?? '',
+      screenshotUrl: team.screenshotUrl ?? ''
+    });
+  };
+
+  const validateUrl = (url) => {
+    if (!url || url.trim() === '') return false;
+    try {
+      const urlObj = new URL(url);
+      return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  };
+
+  const handleEditTeam = async (e) => {
+    e.preventDefault();
+    if (!showEditTeam) return;
+
+    // Validar campos obligatorios - siempre validar todos los campos
+    const errors = [];
+
+    // Validar displayName
+    if (!teamFormData.displayName || typeof teamFormData.displayName !== 'string' || teamFormData.displayName.trim() === '') {
+      errors.push('El nombre del grupo (para mostrar) es obligatorio');
+    }
+
+    // Validar appName
+    if (!teamFormData.appName || typeof teamFormData.appName !== 'string' || teamFormData.appName.trim() === '') {
+      errors.push('El nombre de la aplicación es obligatorio');
+    }
+
+    // Validar deployUrl
+    if (!teamFormData.deployUrl || typeof teamFormData.deployUrl !== 'string' || teamFormData.deployUrl.trim() === '') {
+      errors.push('La URL de despliegue es obligatoria');
+    } else {
+      const trimmedUrl = teamFormData.deployUrl.trim();
+      if (!validateUrl(trimmedUrl)) {
+        errors.push('La URL de despliegue no tiene un formato válido (debe comenzar con http:// o https://)');
+      }
+    }
+
+    // Validar videoUrl
+    if (!teamFormData.videoUrl || typeof teamFormData.videoUrl !== 'string' || teamFormData.videoUrl.trim() === '') {
+      errors.push('La URL del video es obligatoria');
+    } else {
+      const trimmedUrl = teamFormData.videoUrl.trim();
+      if (!validateUrl(trimmedUrl)) {
+        errors.push('La URL del video no tiene un formato válido (debe comenzar con http:// o https://)');
+      }
+    }
+
+    // Validar screenshotUrl
+    if (!teamFormData.screenshotUrl || typeof teamFormData.screenshotUrl !== 'string' || teamFormData.screenshotUrl.trim() === '') {
+      errors.push('La imagen de portada es obligatoria');
+    }
+
+    // Mostrar todos los errores
+    if (errors.length > 0) {
+      // Mostrar el primer error inmediatamente, luego los demás con un pequeño delay
+      error(errors[0]);
+      if (errors.length > 1) {
+        errors.slice(1).forEach((err, index) => {
+          setTimeout(() => error(err), (index + 1) * 500);
+        });
+      }
+      return;
+    }
+
+    try {
+      setSaving(true);
+      // Limpiar espacios en blanco de los campos antes de enviar
+      const cleanedData = {
+        displayName: teamFormData.displayName.trim(),
+        appName: teamFormData.appName.trim(),
+        deployUrl: teamFormData.deployUrl.trim(),
+        videoUrl: teamFormData.videoUrl.trim(),
+        screenshotUrl: teamFormData.screenshotUrl.trim(),
+        participates: teamFormData.participates,
+        helperId: showEditTeam.helperId || null
+      };
+      
+      await api.put(`/admin/teams/${showEditTeam.id}`, cleanedData);
+      success('Equipo actualizado exitosamente');
+      setShowEditTeam(null);
+      fetchDashboardData();
+    } catch (err) {
+      console.error('Error al actualizar equipo:', err);
+      const errorMessage = err.response?.data?.error || 'Error al actualizar el equipo';
+      error(errorMessage);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTeamImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      error('El archivo debe ser una imagen');
+      return;
+    }
+
+    // Validar tamaño (5MB máximo)
+    if (file.size > 5 * 1024 * 1024) {
+      error('La imagen es demasiado grande (máximo 5MB)');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      setImageLoading(true);
+      
+      const response = await api.post('/upload/screenshot', formData);
+
+      if (response.data.url) {
+        setTeamFormData(prev => ({ ...prev, screenshotUrl: response.data.url }));
+        success('Imagen subida exitosamente');
+      } else {
+        throw new Error('No se recibió URL de la imagen');
+      }
+    } catch (err) {
+      console.error('Error al subir imagen:', err);
+      const errorMessage = err.response?.data?.error || err.response?.data?.details || err.message || 'Error al subir la imagen';
+      error(errorMessage);
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
+  const handleDeleteTeam = async (teamId) => {
+    if (!window.confirm('¿Estás seguro de eliminar este equipo? Esta acción no se puede deshacer.')) return;
+    
+    try {
+      await api.delete(`/admin/teams/${teamId}`);
+      success('Equipo eliminado exitosamente');
+      fetchDashboardData();
+    } catch (err) {
+      error('Error al eliminar el equipo');
+    }
+  };
+
+  const handleToggleParticipation = async (team) => {
+    const newParticipationStatus = !team.participates;
+    
+    try {
+      await api.put(`/admin/teams/${team.id}`, {
+        participates: newParticipationStatus,
+        displayName: team.displayName,
+        appName: team.appName,
+        deployUrl: team.deployUrl,
+        videoUrl: team.videoUrl,
+        screenshotUrl: team.screenshotUrl,
+        helperId: team.helperId
+      });
+      success(`Equipo ${newParticipationStatus ? 'marcado como participante' : 'marcado como no participante'}`);
+      fetchDashboardData();
+    } catch (err) {
+      error('Error al actualizar el estado de participación');
+    }
+  };
+
+  // Funciones CRUD para Ayudantes
+  const handleCreateHelper = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const helperData = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      password: formData.get('password')
+    };
+
+    try {
+      setSaving(true);
+      await api.post('/admin/helpers', helperData);
+      success('Ayudante creado exitosamente');
+      setShowCreateHelper(false);
+      fetchDashboardData();
+    } catch (err) {
+      error(err.response?.data?.error || 'Error al crear el ayudante');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditHelper = async (e) => {
+    e.preventDefault();
+    if (!showEditHelper) return;
+    
+    const formData = new FormData(e.target);
+    const helperData = {
+      name: formData.get('name'),
+      email: formData.get('email')
+    };
+
+    try {
+      setSaving(true);
+      await api.put(`/admin/helpers/${showEditHelper.id}`, helperData);
+      success('Ayudante actualizado exitosamente');
+      setShowEditHelper(null);
+      fetchDashboardData();
+    } catch (err) {
+      error(err.response?.data?.error || 'Error al actualizar el ayudante');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteHelper = async (helperId) => {
+    if (!window.confirm('¿Estás seguro de eliminar este ayudante? Esta acción no se puede deshacer.')) return;
+    
+    try {
+      await api.delete(`/admin/helpers/${helperId}`);
+      success('Ayudante eliminado exitosamente');
+      fetchDashboardData();
+    } catch (err) {
+      error('Error al eliminar el ayudante');
+    }
+  };
+
+  // Funciones CRUD para Estudiantes
+  const handleCreateStudent = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const studentData = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      password: formData.get('password'),
+      teamId: formData.get('teamId') || null
+    };
+
+    try {
+      setSaving(true);
+      await api.post('/admin/students', studentData);
+      success('Estudiante creado exitosamente');
+      setShowCreateStudent(false);
+      fetchDashboardData();
+    } catch (err) {
+      error(err.response?.data?.error || 'Error al crear el estudiante');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditStudent = async (e) => {
+    e.preventDefault();
+    if (!showEditStudent) return;
+    
+    const formData = new FormData(e.target);
+    const studentData = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      teamId: formData.get('teamId') || null
+    };
+
+    try {
+      setSaving(true);
+      await api.put(`/admin/students/${showEditStudent.id}`, studentData);
+      success('Estudiante actualizado exitosamente');
+      setShowEditStudent(null);
+      fetchDashboardData();
+    } catch (err) {
+      error(err.response?.data?.error || 'Error al actualizar el estudiante');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteStudent = async (studentId) => {
+    if (!window.confirm('¿Estás seguro de eliminar este estudiante? Esta acción no se puede deshacer.')) return;
+    
+    try {
+      await api.delete(`/admin/students/${studentId}`);
+      success('Estudiante eliminado exitosamente');
+      fetchDashboardData();
+    } catch (err) {
+      error('Error al eliminar el estudiante');
+    }
+  };
+
   // Funciones de filtrado
   const getFilteredVotesSummary = () => {
     let filtered = [...votesSummary];
@@ -216,6 +554,20 @@ const AdminDashboard = () => {
         (team.appName && team.appName.toLowerCase().includes(term)) ||
         (team.helper && team.helper.name && team.helper.name.toLowerCase().includes(term))
       );
+    }
+
+    // Ordenar por votos (solo si no es 'default')
+    if (teamFilters.sortBy !== 'default') {
+      filtered.sort((a, b) => {
+        const voteCountA = votesSummary.find(v => v.teamId === a.id)?.voteCount || 0;
+        const voteCountB = votesSummary.find(v => v.teamId === b.id)?.voteCount || 0;
+        
+        if (teamFilters.sortBy === 'asc') {
+          return voteCountA - voteCountB;
+        } else {
+          return voteCountB - voteCountA;
+        }
+      });
     }
 
     return filtered;
@@ -451,30 +803,66 @@ const AdminDashboard = () => {
 
           {activeTab === 'config' && config && (
             <div className="config-content">
-              <h2>Configuración de Votaciones</h2>
-              <div className="config-info">
-                <p><strong>Estado:</strong> {config.isOpen ? 'Abierta' : 'Cerrada'}</p>
-                <p><strong>Fecha de cierre actual:</strong> {new Date(config.votingDeadline).toLocaleString()}</p>
+              <div className="config-header">
+                <h2>⚙️ Configuración de Votaciones</h2>
+                <p className="config-subtitle">Gestiona el período de votación del concurso</p>
               </div>
               
-              <form onSubmit={handleUpdateDeadline} className="config-form">
-                <div className="form-group">
-                  <label>Nueva fecha de cierre</label>
-                  <input
-                    type="datetime-local"
-                    name="deadline"
-                    required
-                    defaultValue={new Date(config.votingDeadline).toISOString().slice(0, 16)}
-                  />
+              <div className="config-card">
+                <div className="config-status-section">
+                  <h3>Estado Actual</h3>
+                  <div className="status-badges">
+                    <span className={`status-badge-large ${config.isOpen ? 'status-open' : 'status-closed'}`}>
+                      {config.isOpen ? '✓ Abierta' : '✗ Cerrada'}
+                    </span>
+                  </div>
+                  <div className="config-info-box">
+                    <div className="info-item">
+                      <span className="info-label">📅 Fecha de cierre actual:</span>
+                      <span className="info-value">{new Date(config.votingDeadline).toLocaleString('es-ES', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}</span>
+                    </div>
+                  </div>
                 </div>
-                <button type="submit" className="save-button">Actualizar Fecha</button>
-              </form>
+                
+                <div className="config-form-section">
+                  <h3>Actualizar Fecha de Cierre</h3>
+                  <form onSubmit={handleUpdateDeadline} className="config-form">
+                    <div className="form-group">
+                      <label>Nueva fecha de cierre</label>
+                      <input
+                        type="datetime-local"
+                        name="deadline"
+                        required
+                        defaultValue={new Date(config.votingDeadline).toISOString().slice(0, 16)}
+                        className="config-input"
+                      />
+                    </div>
+                    <button type="submit" className="config-submit-button">
+                      💾 Actualizar Fecha
+                    </button>
+                  </form>
+                </div>
+              </div>
             </div>
           )}
 
           {activeTab === 'students' && (
             <div className="table-content">
-              <h2>Estudiantes</h2>
+              <div className="section-header">
+                <h2>Estudiantes</h2>
+                <button 
+                  className="create-button"
+                  onClick={() => setShowCreateStudent(true)}
+                >
+                  + Crear Estudiante
+                </button>
+              </div>
               
               {/* Filtros para Estudiantes */}
               <div className="filters-section">
@@ -529,6 +917,7 @@ const AdminDashboard = () => {
                     <th>Email</th>
                     <th>Equipo</th>
                     <th>Estado Votación</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -544,6 +933,22 @@ const AdminDashboard = () => {
                             {voteCount === 3 ? '✓ Completa' : voteCount > 0 ? `⏳ ${voteCount}/3` : '○ Sin votar'}
                           </span>
                         </td>
+                        <td>
+                          <div className="action-buttons">
+                            <button 
+                              className="edit-button-small"
+                              onClick={() => setShowEditStudent(student)}
+                            >
+                              Editar
+                            </button>
+                            <button 
+                              className="delete-button-small"
+                              onClick={() => handleDeleteStudent(student.id)}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })}
@@ -557,12 +962,21 @@ const AdminDashboard = () => {
 
           {activeTab === 'helpers' && (
             <div className="table-content">
-              <h2>Ayudantes</h2>
+              <div className="section-header">
+                <h2>Ayudantes</h2>
+                <button 
+                  className="create-button"
+                  onClick={() => setShowCreateHelper(true)}
+                >
+                  + Crear Ayudante
+                </button>
+              </div>
               <table className="admin-table">
                 <thead>
                   <tr>
                     <th>Nombre</th>
                     <th>Email</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -570,6 +984,22 @@ const AdminDashboard = () => {
                     <tr key={helper.id}>
                       <td>{capitalizeName(helper.name)}</td>
                       <td>{helper.email}</td>
+                      <td>
+                        <div className="action-buttons">
+                          <button 
+                            className="edit-button-small"
+                            onClick={() => setShowEditHelper(helper)}
+                          >
+                            Editar
+                          </button>
+                          <button 
+                            className="delete-button-small"
+                            onClick={() => handleDeleteHelper(helper.id)}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -601,7 +1031,15 @@ const AdminDashboard = () => {
 
           {activeTab === 'teams' && (
             <div className="table-content">
-              <h2>Equipos</h2>
+              <div className="section-header">
+                <h2>Equipos</h2>
+                <button 
+                  className="create-button"
+                  onClick={() => setShowCreateTeam(true)}
+                >
+                  + Crear Equipo
+                </button>
+              </div>
               
               {/* Filtros para Equipos */}
               <div className="filters-section">
@@ -636,6 +1074,19 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="filter-group">
+                    <label>Ordenar por votos:</label>
+                    <select
+                      value={teamFilters.sortBy}
+                      onChange={(e) => setTeamFilters({ ...teamFilters, sortBy: e.target.value })}
+                      className="filter-select"
+                    >
+                      <option value="default">Por defecto</option>
+                      <option value="desc">Mayor a menor</option>
+                      <option value="asc">Menor a mayor</option>
+                    </select>
+                  </div>
+
+                  <div className="filter-group">
                     <label>Buscar:</label>
                     <input
                       type="text"
@@ -657,6 +1108,7 @@ const AdminDashboard = () => {
                     <th>Participa</th>
                     <th>Ayudante</th>
                     <th>Votos</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -668,12 +1120,33 @@ const AdminDashboard = () => {
                         <td>{team.displayName ? capitalizeName(team.displayName) : '-'}</td>
                         <td>{team.appName ? capitalizeName(team.appName) : '-'}</td>
                         <td>
-                          <span className={team.participates ? 'status-badge participating' : 'status-badge not-participating'}>
-                            {team.participates ? '✓ Sí' : '✗ No'}
-                          </span>
+                          <label className="participation-switch">
+                            <input
+                              type="checkbox"
+                              checked={team.participates}
+                              onChange={() => handleToggleParticipation(team)}
+                            />
+                            <span className="switch-slider"></span>
+                          </label>
                         </td>
                         <td>{team.helper?.name ? capitalizeName(team.helper.name) : '-'}</td>
                         <td>{voteCount}</td>
+                        <td>
+                          <div className="action-buttons">
+                            <button 
+                              className="edit-button-small"
+                              onClick={() => handleEditTeamClick(team)}
+                            >
+                              Editar
+                            </button>
+                            <button 
+                              className="delete-button-small"
+                              onClick={() => handleDeleteTeam(team.id)}
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        </td>
                       </tr>
                     );
                   })}
@@ -686,6 +1159,341 @@ const AdminDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Modal Crear Equipo */}
+      {showCreateTeam && (
+        <div className="modal-overlay" onClick={() => setShowCreateTeam(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Crear Equipo</h2>
+              <button className="modal-close" onClick={() => setShowCreateTeam(false)}>×</button>
+            </div>
+            <form onSubmit={handleCreateTeam}>
+              <div className="form-group">
+                <label>Nombre del Grupo <span className="required">*</span></label>
+                <input type="text" name="groupName" required />
+              </div>
+              <div className="form-group">
+                <label>Nombre para Mostrar</label>
+                <input type="text" name="displayName" />
+              </div>
+              <div className="form-group">
+                <label>Nombre de la Aplicación</label>
+                <input type="text" name="appName" />
+              </div>
+              <div className="form-group">
+                <label>Ayudante</label>
+                <select name="helperId">
+                  <option value="">Sin ayudante</option>
+                  {helpers.map(helper => (
+                    <option key={helper.id} value={helper.id}>
+                      {capitalizeName(helper.name)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label>
+                  <input type="checkbox" name="participates" value="true" />
+                  Participa en el concurso
+                </label>
+              </div>
+              <div className="modal-buttons">
+                <button type="button" onClick={() => setShowCreateTeam(false)} className="cancel-button">
+                  Cancelar
+                </button>
+                <button type="submit" className="save-button" disabled={saving}>
+                  {saving ? 'Guardando...' : 'Crear'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Equipo */}
+      {showEditTeam && (
+        <div className="edit-modal-overlay" onClick={() => setShowEditTeam(null)}>
+          <div className="edit-modal" onClick={(e) => e.stopPropagation()}>
+            <button 
+              className="edit-modal-close" 
+              onClick={() => setShowEditTeam(null)}
+              aria-label="Cerrar"
+            >
+              ×
+            </button>
+            <h2 style={{ marginRight: '2.5rem' }}>Editar Equipo</h2>
+
+            <form onSubmit={handleEditTeam}>
+              <div className="form-group">
+                <label>Nombre oficial del grupo</label>
+                <input
+                  type="text"
+                  value={showEditTeam.groupName}
+                  disabled
+                  className="disabled-input"
+                  readOnly
+                />
+                <p className="field-help">Este campo no se puede editar</p>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Nombre grupo (para mostrar) <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={teamFormData.displayName}
+                  onChange={(e) => setTeamFormData(prev => ({ ...prev, displayName: e.target.value }))}
+                  placeholder="Nombre visible del equipo"
+                />
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Nombre de la aplicación <span className="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={teamFormData.appName}
+                  onChange={(e) => setTeamFormData(prev => ({ ...prev, appName: e.target.value }))}
+                  placeholder="Nombre de la app"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>
+                  URL de despliegue <span className="required">*</span>
+                </label>
+                <input
+                  type="url"
+                  value={teamFormData.deployUrl}
+                  onChange={(e) => setTeamFormData(prev => ({ ...prev, deployUrl: e.target.value }))}
+                  placeholder="https://..."
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>
+                  URL del video (YouTube) <span className="required">*</span>
+                </label>
+                <input
+                  type="url"
+                  value={teamFormData.videoUrl}
+                  onChange={(e) => setTeamFormData(prev => ({ ...prev, videoUrl: e.target.value }))}
+                  placeholder="https://youtube.com/..."
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={teamFormData.participates}
+                    onChange={(e) => setTeamFormData(prev => ({ ...prev, participates: e.target.checked }))}
+                  />
+                  Participa en el concurso
+                </label>
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Imagen de Portada <span className="required">*</span>
+                </label>
+                {teamFormData.screenshotUrl ? (
+                  <div className="screenshot-container">
+                    <img src={teamFormData.screenshotUrl} alt="Screenshot" className="screenshot-preview" />
+                    <p className="screenshot-url">Imagen actual cargada</p>
+                  </div>
+                ) : (
+                  <p className="no-screenshot">No hay imagen de portada cargada</p>
+                )}
+                <label className="upload-button">
+                  {imageLoading ? 'Subiendo...' : teamFormData.screenshotUrl ? 'Cambiar Portada' : 'Subir Portada'}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleTeamImageUpload}
+                    style={{ display: 'none' }}
+                    disabled={imageLoading || saving}
+                  />
+                </label>
+              </div>
+
+              <div className="modal-buttons">
+                <button 
+                  type="button"
+                  onClick={() => setShowEditTeam(null)} 
+                  className="cancel-button"
+                  disabled={saving}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit"
+                  className="save-button" 
+                  disabled={saving}
+                >
+                  {saving ? 'Guardando...' : 'Guardar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Crear Ayudante */}
+      {showCreateHelper && (
+        <div className="modal-overlay" onClick={() => setShowCreateHelper(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Crear Ayudante</h2>
+              <button className="modal-close" onClick={() => setShowCreateHelper(false)}>×</button>
+            </div>
+            <form onSubmit={handleCreateHelper}>
+              <div className="form-group">
+                <label>Nombre <span className="required">*</span></label>
+                <input type="text" name="name" required />
+              </div>
+              <div className="form-group">
+                <label>Email <span className="required">*</span></label>
+                <input type="email" name="email" required />
+              </div>
+              <div className="form-group">
+                <label>Contraseña <span className="required">*</span></label>
+                <input type="password" name="password" required minLength="6" />
+              </div>
+              <div className="modal-buttons">
+                <button type="button" onClick={() => setShowCreateHelper(false)} className="cancel-button">
+                  Cancelar
+                </button>
+                <button type="submit" className="save-button" disabled={saving}>
+                  {saving ? 'Guardando...' : 'Crear'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Ayudante */}
+      {showEditHelper && (
+        <div className="modal-overlay" onClick={() => setShowEditHelper(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Editar Ayudante</h2>
+              <button className="modal-close" onClick={() => setShowEditHelper(null)}>×</button>
+            </div>
+            <form onSubmit={handleEditHelper}>
+              <div className="form-group">
+                <label>Nombre <span className="required">*</span></label>
+                <input type="text" name="name" defaultValue={showEditHelper.name} required />
+              </div>
+              <div className="form-group">
+                <label>Email <span className="required">*</span></label>
+                <input type="email" name="email" defaultValue={showEditHelper.email} required />
+              </div>
+              <div className="modal-buttons">
+                <button type="button" onClick={() => setShowEditHelper(null)} className="cancel-button">
+                  Cancelar
+                </button>
+                <button type="submit" className="save-button" disabled={saving}>
+                  {saving ? 'Guardando...' : 'Guardar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Crear Estudiante */}
+      {showCreateStudent && (
+        <div className="modal-overlay" onClick={() => setShowCreateStudent(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Crear Estudiante</h2>
+              <button className="modal-close" onClick={() => setShowCreateStudent(false)}>×</button>
+            </div>
+            <form onSubmit={handleCreateStudent}>
+              <div className="form-group">
+                <label>Nombre <span className="required">*</span></label>
+                <input type="text" name="name" required />
+              </div>
+              <div className="form-group">
+                <label>Email <span className="required">*</span></label>
+                <input type="email" name="email" required />
+              </div>
+              <div className="form-group">
+                <label>Contraseña <span className="required">*</span></label>
+                <input type="password" name="password" required minLength="6" />
+              </div>
+              <div className="form-group">
+                <label>Equipo</label>
+                <select name="teamId">
+                  <option value="">Sin equipo</option>
+                  {teams.map(team => (
+                    <option key={team.id} value={team.id}>
+                      {capitalizeName(team.groupName)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="modal-buttons">
+                <button type="button" onClick={() => setShowCreateStudent(false)} className="cancel-button">
+                  Cancelar
+                </button>
+                <button type="submit" className="save-button" disabled={saving}>
+                  {saving ? 'Guardando...' : 'Crear'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Estudiante */}
+      {showEditStudent && (
+        <div className="modal-overlay" onClick={() => setShowEditStudent(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Editar Estudiante</h2>
+              <button className="modal-close" onClick={() => setShowEditStudent(null)}>×</button>
+            </div>
+            <form onSubmit={handleEditStudent}>
+              <div className="form-group">
+                <label>Nombre <span className="required">*</span></label>
+                <input type="text" name="name" defaultValue={showEditStudent.name} required />
+              </div>
+              <div className="form-group">
+                <label>Email <span className="required">*</span></label>
+                <input type="email" name="email" defaultValue={showEditStudent.email} required />
+              </div>
+              <div className="form-group">
+                <label>Equipo</label>
+                <select name="teamId" defaultValue={showEditStudent.teamId || ''}>
+                  <option value="">Sin equipo</option>
+                  {teams.map(team => (
+                    <option key={team.id} value={team.id}>
+                      {capitalizeName(team.groupName)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="modal-buttons">
+                <button type="button" onClick={() => setShowEditStudent(null)} className="cancel-button">
+                  Cancelar
+                </button>
+                <button type="submit" className="save-button" disabled={saving}>
+                  {saving ? 'Guardando...' : 'Guardar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
