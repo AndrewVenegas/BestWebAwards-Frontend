@@ -2,7 +2,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import './AppCard.css';
 
-const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts }) => {
+const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFavorite, onToggleFavorite }) => {
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showPlayOverlay, setShowPlayOverlay] = useState(false);
   const hoverTimeoutRef = useRef(null);
@@ -101,8 +101,25 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts }) => 
     };
   }, []);
 
+  const handleFavoriteClick = (e) => {
+    e.stopPropagation();
+    if (onToggleFavorite) {
+      onToggleFavorite(team.id);
+    }
+  };
+
   return (
-    <div className={`app-card ${hasVoted ? 'voted' : ''} ${!canVote ? 'disabled' : ''}`}>
+    <div className={`app-card ${hasVoted ? 'voted' : ''} ${!canVote ? 'disabled' : ''} ${isFavorite ? 'favorite' : ''}`}>
+      {onToggleFavorite && (
+        <button 
+          className={`favorite-button ${isFavorite ? 'active' : ''}`}
+          onClick={handleFavoriteClick}
+          aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+          title={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+        >
+          {isFavorite ? '❤️' : '🤍'}
+        </button>
+      )}
       {team.screenshotUrl && (
         <div 
           className="app-screenshot" 

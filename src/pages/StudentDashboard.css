@@ -52,6 +52,32 @@
   flex-wrap: wrap;
 }
 
+.favorites-filter-button {
+  padding: 0.75rem 1.5rem;
+  background: white;
+  border: 2px solid #ff6b6b;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #ff6b6b;
+  white-space: nowrap;
+}
+
+.favorites-filter-button:hover {
+  background: #ff6b6b;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+}
+
+.favorites-filter-button.active {
+  background: #ff6b6b;
+  color: white;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+}
+
 .search-input,
 .filter-select {
   flex: 1;

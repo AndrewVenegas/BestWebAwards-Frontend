@@ -24,6 +24,10 @@ const IntroGuide = () => {
       content: 'En cada tarjeta verás información sobre la aplicación: nombre, equipo, integrantes, y podrás acceder al video de YouTube y al despliegue de la aplicación.'
     },
     {
+      title: 'Sistema de Favoritos',
+      content: 'Puedes marcar tus aplicaciones favoritas haciendo clic en el corazón (🤍) en la esquina superior derecha de cada tarjeta. Los favoritos se marcan con un borde rojo y una estrella. Usa el botón "Ver mis favoritos" para filtrar y ver solo tus aplicaciones favoritas, facilitando tu selección para votar.'
+    },
+    {
       title: 'Countdown de Votaciones',
       content: 'Presta atención al contador de tiempo restante. Cuando se cierre el período de votaciones, podrás ver los resultados y el podio de los ganadores.'
     },

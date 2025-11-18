@@ -26,6 +26,8 @@ const StudentDashboard = () => {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordError, setPasswordError] = useState('');
+  const [favorites, setFavorites] = useState([]);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
 
   useEffect(() => {
     if (user && !user.hasSeenIntro) {
@@ -39,15 +41,26 @@ const StudentDashboard = () => {
     try {
       setLoading(true);
       
-      const [teamsRes, votesRes, configRes] = await Promise.all([
+      const [teamsRes, votesRes, configRes, favoritesRes] = await Promise.all([
         api.get('/teams'),
         api.get('/students/me/votes'),
-        api.get('/config')
+        api.get('/config'),
+        api.get('/favorites')
       ]);
 
       setTeams(teamsRes.data);
       setMyVotes(votesRes.data.map(v => v.teamId));
       setVotingOpen(configRes.data.isOpen);
+      
+      // Obtener favoritos del endpoint o de los teams (si incluyen isFavorite)
+      const favoriteTeamIds = favoritesRes.data.favorites || [];
+      // También usar isFavorite de teams si está disponible
+      const favoritesFromTeams = teamsRes.data
+        .filter(team => team.isFavorite)
+        .map(team => team.id);
+      // Combinar ambos (sin duplicados)
+      const allFavorites = [...new Set([...favoriteTeamIds, ...favoritesFromTeams])];
+      setFavorites(allFavorites);
 
       // Obtener conteos si el estudiante ya votó
       if (votesRes.data.length > 0) {
@@ -121,6 +134,23 @@ const StudentDashboard = () => {
     setPasswordError('');
   };
 
+  const handleToggleFavorite = async (teamId) => {
+    try {
+      const response = await api.post('/favorites', { teamId });
+      
+      // Actualizar estado local inmediatamente
+      if (response.data.isFavorite) {
+        setFavorites(prev => [...prev, teamId]);
+        success('Agregado a favoritos');
+      } else {
+        setFavorites(prev => prev.filter(id => id !== teamId));
+        success('Eliminado de favoritos');
+      }
+    } catch (err) {
+      error(err.response?.data?.error || 'Error al actualizar favoritos');
+    }
+  };
+
   const getVoteCount = (teamId) => {
     const count = voteCounts.find(c => c.teamId === teamId);
     return count ? count.voteCount : 0;
@@ -130,6 +160,11 @@ const StudentDashboard = () => {
   const canVote = remainingVotes > 0 && votingOpen;
 
   const filteredTeams = teams.filter(team => {
+    // Filtro de favoritos
+    if (showFavoritesOnly && !favorites.includes(team.id)) {
+      return false;
+    }
+
     const matchesSearch = 
       team.groupName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (team.appName && team.appName.toLowerCase().includes(searchTerm.toLowerCase())) ||
@@ -181,6 +216,13 @@ const StudentDashboard = () => {
 
         {votingOpen && (
           <div className="filters">
+            <button
+              className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            >
+              {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
+            </button>
+            
             <input
               type="text"
               placeholder="Buscar por nombre de equipo o aplicación..."
@@ -231,6 +273,8 @@ const StudentDashboard = () => {
                   canVote={canVote}
                   voteCount={showCounts ? getVoteCount(team.id) : undefined}
                   showCounts={showCounts}
+                  isFavorite={favorites.includes(team.id) || team.isFavorite}
+                  onToggleFavorite={handleToggleFavorite}
                 />
               ))}
             </div>
