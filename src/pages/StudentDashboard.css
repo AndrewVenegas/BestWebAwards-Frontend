@@ -34,7 +34,7 @@
 
 .voting-closed-message {
   background: white;
-  padding: 2rem;
+  padding: 1.5rem;
   border-radius: 15px;
   margin-bottom: 2rem;
   text-align: center;
@@ -42,7 +42,44 @@
 
 .voting-closed-message h2 {
   color: #c33;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.voting-closed-message p {
   margin-bottom: 1rem;
+  color: #666;
+}
+
+.view-all-teams-button {
+  padding: 0.75rem 2rem;
+  background: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.view-all-teams-button:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.all-teams-section {
+  margin-top: 2rem;
+}
+
+.all-teams-title {
+  color: white;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .filters {

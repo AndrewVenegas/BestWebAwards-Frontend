@@ -13,9 +13,12 @@ const Podium = () => {
   const fetchPodium = async () => {
     try {
       const response = await api.get('/results/podium');
-      setPodium(response.data);
+      console.log('Podium data received:', response.data);
+      setPodium(response.data || []);
     } catch (error) {
       console.error('Error al cargar podio:', error);
+      console.error('Error details:', error.response?.data);
+      setPodium([]);
     } finally {
       setLoading(false);
     }
@@ -67,6 +70,38 @@ const Podium = () => {
                 {entry.appName && (
                   <p className="podium-app-name">{entry.appName}</p>
                 )}
+                
+                {entry.helper && (
+                  <div className="podium-helper">
+                    <span className="podium-helper-label">Ayudante:</span>
+                    <span className="podium-helper-name">{entry.helper.name}</span>
+                  </div>
+                )}
+                
+                {entry.students && entry.students.length > 0 && (
+                  <div className="podium-students">
+                    <h4 className="podium-students-title">Integrantes:</h4>
+                    <div className="podium-students-list">
+                      {entry.students.map((student) => (
+                        <div key={student.id} className="podium-student-item">
+                          {student.avatarUrl ? (
+                            <img 
+                              src={student.avatarUrl} 
+                              alt={student.name} 
+                              className="podium-student-avatar" 
+                            />
+                          ) : (
+                            <div className="podium-student-avatar placeholder">
+                              {student.name.charAt(0)}
+                            </div>
+                          )}
+                          <span className="podium-student-name">{student.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 <div className="podium-votes">
                   <strong>{entry.voteCount}</strong> {entry.voteCount === 1 ? 'voto' : 'votos'}
                 </div>

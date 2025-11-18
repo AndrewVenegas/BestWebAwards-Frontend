@@ -1,8 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import './Landing.css';
 
 const Landing = () => {
+  const { user } = useAuth();
+
   return (
     <div className="landing">
       <div className="landing-content">
@@ -16,9 +19,16 @@ const Landing = () => {
           Descubre las mejores aplicaciones creadas por tus compañeros,
           vota por tus favoritas y celebra la innovación en desarrollo web.
         </p>
-        <Link to="/login" className="landing-button animate-fade-in-delay-3">
-          Iniciar Sesión
-        </Link>
+        {!user && (
+          <Link to="/login" className="landing-button animate-fade-in-delay-3">
+            Iniciar Sesión
+          </Link>
+        )}
+        {user && user.type === 'student' && (
+          <Link to="/dashboard" className="landing-button animate-fade-in-delay-3">
+            Ir a votaciones
+          </Link>
+        )}
       </div>
       <div className="landing-background">
         <div className="floating-shape shape-1"></div>

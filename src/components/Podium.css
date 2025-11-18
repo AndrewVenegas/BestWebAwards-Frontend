@@ -85,6 +85,75 @@
   margin: 0;
 }
 
+.podium-helper {
+  margin: 0.75rem 0;
+  padding: 0.5rem;
+  background: #f0f0f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.podium-helper-label {
+  font-weight: 600;
+  color: #666;
+  margin-right: 0.5rem;
+}
+
+.podium-helper-name {
+  color: #333;
+}
+
+.podium-students {
+  margin: 0.75rem 0;
+}
+
+.podium-students-title {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+}
+
+.podium-students-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.podium-student-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.podium-student-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.podium-student-avatar.placeholder {
+  background: #667eea;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.75rem;
+}
+
+.podium-student-name {
+  color: #333;
+  flex: 1;
+  text-align: left;
+}
+
 .podium-votes {
   background: #667eea;
   color: white;

@@ -28,6 +28,8 @@ const StudentDashboard = () => {
   const [passwordError, setPasswordError] = useState('');
   const [favorites, setFavorites] = useState([]);
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [showAllTeams, setShowAllTeams] = useState(false);
+  const [allTeamsWithVotes, setAllTeamsWithVotes] = useState([]);
 
   useEffect(() => {
     if (user && !user.hasSeenIntro) {
@@ -62,12 +64,23 @@ const StudentDashboard = () => {
       const allFavorites = [...new Set([...favoriteTeamIds, ...favoritesFromTeams])];
       setFavorites(allFavorites);
 
-      // Obtener conteos si el estudiante ya votó
-      if (votesRes.data.length > 0) {
-        const countsRes = await api.get('/votes/visible-counts');
-        if (countsRes.data.showCounts) {
-          setShowCounts(true);
-          setVoteCounts(countsRes.data.counts);
+      // Obtener conteos (siempre si las votaciones están cerradas, o si el estudiante ya votó)
+      const countsRes = await api.get('/votes/visible-counts');
+      if (countsRes.data.showCounts) {
+        setShowCounts(true);
+        setVoteCounts(countsRes.data.counts);
+        
+        // Si las votaciones están cerradas, preparar todos los equipos con votos
+        if (!configRes.data.isOpen) {
+          const teamsWithVotes = teamsRes.data.map(team => {
+            const voteData = countsRes.data.counts.find(c => c.teamId === team.id);
+            return {
+              ...team,
+              voteCount: voteData ? voteData.voteCount : 0
+            };
+          }).sort((a, b) => b.voteCount - a.voteCount);
+          
+          setAllTeamsWithVotes(teamsWithVotes);
         }
       }
     } catch (error) {
@@ -76,6 +89,7 @@ const StudentDashboard = () => {
       setLoading(false);
     }
   };
+
 
   const handleVoteClick = (teamId) => {
     const team = teams.find(t => t.id === teamId);
@@ -194,12 +208,21 @@ const StudentDashboard = () => {
       <div className="dashboard-container">
         <h1 className="dashboard-title">Aplicaciones Participantes</h1>
         
+        {/* Podium siempre visible al inicio cuando las votaciones están cerradas */}
+        {!votingOpen && <Podium />}
+
         <Countdown />
 
+        {/* Mensaje de votaciones cerradas solo si están cerradas */}
         {!votingOpen && (
           <div className="voting-closed-message">
             <h2>Votaciones Cerradas</h2>
-            <p>El período de votación ha finalizado. Revisa los resultados a continuación.</p>
+            <button
+              className="view-all-teams-button"
+              onClick={() => setShowAllTeams(!showAllTeams)}
+            >
+              {showAllTeams ? 'Ocultar todos los grupos' : 'Ver todos los grupos'}
+            </button>
           </div>
         )}
 
@@ -257,9 +280,8 @@ const StudentDashboard = () => {
           </div>
         )}
 
-        {!votingOpen ? (
-          <Podium />
-        ) : (
+        {/* Vista de votación activa */}
+        {votingOpen && (
           <>
             <div className="teams-grid">
               {filteredTeams.map(team => (
@@ -282,6 +304,28 @@ const StudentDashboard = () => {
               </div>
             )}
           </>
+        )}
+
+        {/* Vista de todos los grupos cuando las votaciones están cerradas */}
+        {!votingOpen && showAllTeams && (
+          <div className="all-teams-section">
+            <h2 className="all-teams-title">Todos los Grupos</h2>
+            <div className="teams-grid">
+              {allTeamsWithVotes.map(team => (
+                <AppCard
+                  key={team.id}
+                  team={team}
+                  onVote={null}
+                  hasVoted={myVotes.includes(team.id)}
+                  canVote={false}
+                  voteCount={team.voteCount || 0}
+                  showCounts={true}
+                  isFavorite={favorites.includes(team.id) || team.isFavorite}
+                  onToggleFavorite={handleToggleFavorite}
+                />
+              ))}
+            </div>
+          </div>
         )}
 
       </div>

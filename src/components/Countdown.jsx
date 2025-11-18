@@ -63,13 +63,9 @@ const Countdown = () => {
     return <div className="countdown-loading">Cargando...</div>;
   }
 
+  // Cuando las votaciones están cerradas, no mostrar nada (el mensaje se muestra en el dashboard)
   if (!isOpen && timeLeft && timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0) {
-    return (
-      <div className="countdown-closed">
-        <h3>Votaciones Cerradas</h3>
-        <p>El período de votación ha finalizado</p>
-      </div>
-    );
+    return null;
   }
 
   if (!timeLeft) return null;
