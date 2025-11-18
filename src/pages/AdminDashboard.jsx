@@ -627,6 +627,27 @@ const AdminDashboard = () => {
       );
     }
 
+    // Ordenar por defecto: primero completos (3 votos), luego en proceso (1-2 votos), luego sin votar (0 votos)
+    filtered.sort((a, b) => {
+      const countA = a.votes.length;
+      const countB = b.votes.length;
+      
+      // Prioridad: 3 votos > 1-2 votos > 0 votos
+      if (countA === 3 && countB < 3) return -1;
+      if (countA < 3 && countB === 3) return 1;
+      if (countA > 0 && countA < 3 && countB === 0) return -1;
+      if (countA === 0 && countB > 0 && countB < 3) return 1;
+      
+      // Si ambos están en el mismo grupo, ordenar por cantidad descendente
+      // (dentro de cada grupo: más votos primero)
+      if (countA !== countB) {
+        return countB - countA;
+      }
+      
+      // Si tienen el mismo número de votos, ordenar alfabéticamente por nombre
+      return a.studentName.localeCompare(b.studentName);
+    });
+
     return filtered;
   };
 
@@ -681,6 +702,12 @@ const AdminDashboard = () => {
   const getFilteredStudents = () => {
     let filtered = [...students];
 
+    // Crear mapa de conteo de votos para todos los estudiantes (necesario para ordenamiento y filtros)
+    const studentVoteCounts = new Map();
+    votesByStudent.forEach(s => {
+      studentVoteCounts.set(s.studentId, s.votes.length);
+    });
+
     // Filtro por equipo
     if (studentFilters.teamId) {
       filtered = filtered.filter(student => 
@@ -688,13 +715,8 @@ const AdminDashboard = () => {
       );
     }
 
-    // Filtro por estado de votación (necesitamos obtener los votos)
+    // Filtro por estado de votación
     if (studentFilters.votingStatus !== 'all') {
-      const studentVoteCounts = new Map();
-      votesByStudent.forEach(s => {
-        studentVoteCounts.set(s.studentId, s.votes.length);
-      });
-
       if (studentFilters.votingStatus === 'complete') {
         filtered = filtered.filter(student => studentVoteCounts.get(student.id) === 3);
       } else if (studentFilters.votingStatus === 'in-progress') {
@@ -716,6 +738,27 @@ const AdminDashboard = () => {
         (student.team && student.team.groupName && student.team.groupName.toLowerCase().includes(term))
       );
     }
+
+    // Ordenar por defecto: primero completos (3 votos), luego en proceso (1-2 votos), luego sin votar (0 votos)
+    filtered.sort((a, b) => {
+      const countA = studentVoteCounts.get(a.id) || 0;
+      const countB = studentVoteCounts.get(b.id) || 0;
+      
+      // Prioridad: 3 votos > 1-2 votos > 0 votos
+      if (countA === 3 && countB < 3) return -1;
+      if (countA < 3 && countB === 3) return 1;
+      if (countA > 0 && countA < 3 && countB === 0) return -1;
+      if (countA === 0 && countB > 0 && countB < 3) return 1;
+      
+      // Si ambos están en el mismo grupo, ordenar por cantidad descendente
+      // (dentro de cada grupo: más votos primero)
+      if (countA !== countB) {
+        return countB - countA;
+      }
+      
+      // Si tienen el mismo número de votos, ordenar alfabéticamente por nombre
+      return a.name.localeCompare(b.name);
+    });
 
     return filtered;
   };
@@ -988,6 +1031,16 @@ const AdminDashboard = () => {
               {/* Filtros para Estudiantes */}
               <div className="filters-section">
                 <div className="filters-grid">
+                <div className="filter-group">
+                    <label>Buscar:</label>
+                    <input
+                      type="text"
+                      placeholder="Nombre, email..."
+                      value={studentFilters.searchTerm}
+                      onChange={(e) => setStudentFilters({ ...studentFilters, searchTerm: e.target.value })}
+                      className="filter-input"
+                    />
+                  </div>
                   <div className="filter-group">
                     <label>Estado de Votación:</label>
                     <select
@@ -1018,16 +1071,7 @@ const AdminDashboard = () => {
                     </select>
                   </div>
 
-                  <div className="filter-group">
-                    <label>Buscar:</label>
-                    <input
-                      type="text"
-                      placeholder="Nombre, email..."
-                      value={studentFilters.searchTerm}
-                      onChange={(e) => setStudentFilters({ ...studentFilters, searchTerm: e.target.value })}
-                      className="filter-input"
-                    />
-                  </div>
+
                 </div>
               </div>
 
@@ -1211,6 +1255,16 @@ const AdminDashboard = () => {
               {/* Filtros para Equipos */}
               <div className="filters-section">
                 <div className="filters-grid">
+                <div className="filter-group">
+                    <label>Buscar:</label>
+                    <input
+                      type="text"
+                      placeholder="Nombre equipo, aplicación, ayudante..."
+                      value={teamFilters.searchTerm}
+                      onChange={(e) => setTeamFilters({ ...teamFilters, searchTerm: e.target.value })}
+                      className="filter-input"
+                    />
+                  </div>
                   <div className="filter-group">
                     <label>Participación:</label>
                     <select
@@ -1271,16 +1325,7 @@ const AdminDashboard = () => {
                     </select>
                   </div>
 
-                  <div className="filter-group">
-                    <label>Buscar:</label>
-                    <input
-                      type="text"
-                      placeholder="Nombre equipo, aplicación, ayudante..."
-                      value={teamFilters.searchTerm}
-                      onChange={(e) => setTeamFilters({ ...teamFilters, searchTerm: e.target.value })}
-                      className="filter-input"
-                    />
-                  </div>
+
                 </div>
               </div>
 
