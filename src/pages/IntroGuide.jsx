@@ -13,19 +13,23 @@ const IntroGuide = () => {
   const steps = [
     {
       title: '¡Bienvenido a BestWebAwards!',
-      content: 'Este es el concurso de aplicaciones web más importante del curso. Aquí podrás descubrir y votar por las mejores aplicaciones creadas por tus compañeros.'
+      content: 'Aquí podrás descubrir y votar por las mejores aplicaciones creadas por tus compañeros.'
     },
     {
       title: 'Sistema de Votación',
-      content: 'Cada alumno puede votar por máximo tres aplicaciones diferentes. Recuerda que no puedes votar más de una vez por el mismo grupo.'
+      content: 'Cada alumno puede votar por máximo tres aplicaciones diferentes.'
     },
     {
       title: 'Explorando Aplicaciones',
       content: 'En cada tarjeta verás información sobre la aplicación: nombre, equipo, integrantes, y podrás acceder al video de YouTube y al despliegue de la aplicación.'
     },
     {
-      title: 'Sistema de Favoritos',
-      content: 'Puedes marcar tus aplicaciones favoritas haciendo clic en el corazón (🤍) en la esquina superior derecha de cada tarjeta. Los favoritos se marcan con un borde rojo y una estrella. Usa el botón "Ver mis favoritos" para filtrar y ver solo tus aplicaciones favoritas, facilitando tu selección para votar.'
+      title: 'Marcar Favoritos',
+      content: 'Puedes marcar tus aplicaciones favoritas haciendo clic en el corazón (🤍) en la esquina superior derecha de cada tarjeta.'
+    },
+    {
+      title: 'Filtrar Favoritos',
+      content: 'Usa el botón "Ver mis favoritos" para ver tus aplicaciones favoritas. Esto facilitará tu selección cuando llegue el momento de votar por tus tres aplicaciones preferidas.'
     },
     {
       title: 'Countdown de Votaciones',
@@ -33,7 +37,7 @@ const IntroGuide = () => {
     },
     {
       title: 'Tu Perfil',
-      content: 'Puedes editar tu nombre y foto de perfil en cualquier momento desde la sección "Mi Perfil". La contraseña no se puede cambiar desde aquí.'
+      content: 'Puedes editar tu nombre y foto de perfil en cualquier momento desde la sección "Mi Perfil".'
     }
   ];
 

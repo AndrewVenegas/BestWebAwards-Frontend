@@ -141,10 +141,8 @@ const StudentDashboard = () => {
       // Actualizar estado local inmediatamente
       if (response.data.isFavorite) {
         setFavorites(prev => [...prev, teamId]);
-        success('Agregado a favoritos');
       } else {
         setFavorites(prev => prev.filter(id => id !== teamId));
-        success('Eliminado de favoritos');
       }
     } catch (err) {
       error(err.response?.data?.error || 'Error al actualizar favoritos');
