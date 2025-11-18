@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 import './IntroGuide.css';
 
@@ -7,6 +8,7 @@ const IntroGuide = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { updateUser, user } = useAuth();
 
   const steps = [
     {
@@ -48,10 +50,24 @@ const IntroGuide = () => {
   const handleFinish = async () => {
     setLoading(true);
     try {
-      await api.put('/students/me/intro');
+      const response = await api.put('/students/me/intro');
+      // Actualizar el contexto de autenticación con el nuevo estado
+      if (user && response.data.student) {
+        updateUser({
+          ...user,
+          hasSeenIntro: true
+        });
+      }
       navigate('/dashboard');
     } catch (error) {
       console.error('Error al marcar introducción:', error);
+      // Aún así actualizar el contexto localmente para evitar el loop
+      if (user) {
+        updateUser({
+          ...user,
+          hasSeenIntro: true
+        });
+      }
       navigate('/dashboard');
     }
     setLoading(false);

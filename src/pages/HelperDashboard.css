@@ -132,6 +132,32 @@
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  position: relative;
+}
+
+.edit-modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: #f5f5f5;
+  color: #333;
+  border: none;
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+  line-height: 1;
+}
+
+.edit-modal-close:hover {
+  background: #e0e0e0;
+  transform: scale(1.1);
 }
 
 .edit-modal h2 {
@@ -169,11 +195,31 @@
   margin-right: 0.5rem;
 }
 
+.screenshot-container {
+  margin-bottom: 1rem;
+}
+
 .screenshot-preview {
   width: 100%;
-  max-height: 200px;
+  max-height: 300px;
   object-fit: contain;
   border-radius: 8px;
+  border: 2px solid #e0e0e0;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.screenshot-url {
+  color: #666;
+  font-size: 0.85rem;
+  margin: 0;
+  text-align: center;
+}
+
+.no-screenshot {
+  color: #999;
+  font-size: 0.9rem;
+  font-style: italic;
   margin-bottom: 0.5rem;
 }
 

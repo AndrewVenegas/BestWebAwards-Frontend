@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useNotification } from '../contexts/NotificationContext';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -13,7 +14,7 @@ const AdminDashboard = () => {
   const [teams, setTeams] = useState([]);
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
+  const { success, error, warning } = useNotification();
 
   useEffect(() => {
     fetchDashboardData();
@@ -57,10 +58,9 @@ const AdminDashboard = () => {
         const response = await api.get('/config');
         setConfig(response.data);
       }
-    } catch (error) {
-      console.error('Error al cargar datos:', error);
-      setMessage('Error al cargar los datos');
-      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      console.error('Error al cargar datos:', err);
+      error('Error al cargar los datos');
     } finally {
       setLoading(false);
     }
@@ -71,12 +71,10 @@ const AdminDashboard = () => {
     
     try {
       await api.delete(`/admin/votes/${voteId}`);
-      setMessage('Voto eliminado exitosamente');
-      setTimeout(() => setMessage(''), 3000);
+      success('Voto eliminado exitosamente');
       fetchDashboardData();
-    } catch (error) {
-      setMessage('Error al eliminar el voto');
-      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      error('Error al eliminar el voto');
     }
   };
 
@@ -87,12 +85,10 @@ const AdminDashboard = () => {
     
     try {
       await api.put('/admin/config/voting-deadline', { votingDeadline: deadline });
-      setMessage('Fecha de cierre actualizada exitosamente');
-      setTimeout(() => setMessage(''), 3000);
+      success('Fecha de cierre actualizada exitosamente');
       fetchDashboardData();
-    } catch (error) {
-      setMessage('Error al actualizar la fecha');
-      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      error('Error al actualizar la fecha');
     }
   };
 
@@ -104,12 +100,6 @@ const AdminDashboard = () => {
     <div className="admin-dashboard">
       <div className="admin-container">
         <h1 className="admin-title">Panel de Administración</h1>
-
-        {message && (
-          <div className={`admin-message ${message.includes('Error') ? 'error' : 'success'}`}>
-            {message}
-          </div>
-        )}
 
         <div className="admin-tabs">
           <button

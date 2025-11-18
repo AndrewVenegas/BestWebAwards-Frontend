@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { useNotification } from '../contexts/NotificationContext';
 import './HelperDashboard.css';
 
 const HelperDashboard = () => {
@@ -7,7 +8,7 @@ const HelperDashboard = () => {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
+  const { success, error, warning } = useNotification();
 
   const [formData, setFormData] = useState({
     participates: false,
@@ -35,13 +36,14 @@ const HelperDashboard = () => {
 
   const handleEdit = (team) => {
     setSelectedTeam(team);
+    // Precargar todos los datos del equipo, incluyendo valores existentes
     setFormData({
-      participates: team.participates || false,
-      displayName: team.displayName || '',
-      appName: team.appName || '',
-      deployUrl: team.deployUrl || '',
-      videoUrl: team.videoUrl || '',
-      screenshotUrl: team.screenshotUrl || ''
+      participates: team.participates ?? false,
+      displayName: team.displayName ?? '',
+      appName: team.appName ?? '',
+      deployUrl: team.deployUrl ?? '',
+      videoUrl: team.videoUrl ?? '',
+      screenshotUrl: team.screenshotUrl ?? ''
     });
   };
 
@@ -49,24 +51,47 @@ const HelperDashboard = () => {
     const file = e.target.files[0];
     if (!file) return;
 
+    // Validar tipo de archivo
+    if (!file.type.startsWith('image/')) {
+      error('El archivo debe ser una imagen');
+      return;
+    }
+
+    // Validar tamaño (5MB máximo)
+    if (file.size > 5 * 1024 * 1024) {
+      error('La imagen es demasiado grande (máximo 5MB)');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('image', file);
 
     try {
       setSaving(true);
-      const response = await api.post('/upload/screenshot', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+      
+      console.log('Subiendo imagen:', {
+        nombre: file.name,
+        tamaño: file.size,
+        tipo: file.type
       });
 
-      setFormData(prev => ({ ...prev, screenshotUrl: response.data.url }));
-      setMessage('Imagen subida exitosamente');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      console.error('Error al subir imagen:', error);
-      setMessage('Error al subir la imagen');
-      setTimeout(() => setMessage(''), 3000);
+      // No establecer Content-Type manualmente, axios lo maneja automáticamente para FormData
+      const response = await api.post('/upload/screenshot', formData);
+
+      console.log('Respuesta del servidor:', response.data);
+
+      if (response.data.url) {
+        setFormData(prev => ({ ...prev, screenshotUrl: response.data.url }));
+        success('Imagen subida exitosamente');
+      } else {
+        throw new Error('No se recibió URL de la imagen');
+      }
+    } catch (err) {
+      console.error('Error completo al subir imagen:', err);
+      console.error('Respuesta del error:', err.response?.data);
+      
+      const errorMessage = err.response?.data?.error || err.response?.data?.details || err.message || 'Error al subir la imagen';
+      error(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -80,12 +105,10 @@ const HelperDashboard = () => {
       await api.put(`/helpers/teams/${selectedTeam.id}`, formData);
       await fetchTeams();
       setSelectedTeam(null);
-      setMessage('Equipo actualizado exitosamente');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      console.error('Error al actualizar equipo:', error);
-      setMessage('Error al actualizar el equipo');
-      setTimeout(() => setMessage(''), 3000);
+      success('Equipo actualizado exitosamente');
+    } catch (err) {
+      console.error('Error al actualizar equipo:', err);
+      error('Error al actualizar el equipo');
     } finally {
       setSaving(false);
     }
@@ -99,12 +122,6 @@ const HelperDashboard = () => {
     <div className="helper-dashboard">
       <div className="helper-container">
         <h1 className="helper-title">Mis Equipos</h1>
-
-        {message && (
-          <div className={`helper-message ${message.includes('Error') ? 'error' : 'success'}`}>
-            {message}
-          </div>
-        )}
 
         <div className="teams-list">
           {teams.map(team => (
@@ -132,7 +149,14 @@ const HelperDashboard = () => {
         {selectedTeam && (
           <div className="edit-modal-overlay" onClick={() => setSelectedTeam(null)}>
             <div className="edit-modal" onClick={(e) => e.stopPropagation()}>
-              <h2>Editar Equipo: {selectedTeam.groupName}</h2>
+              <button 
+                className="edit-modal-close" 
+                onClick={() => setSelectedTeam(null)}
+                aria-label="Cerrar"
+              >
+                ×
+              </button>
+              <h2 style={{ marginRight: '2.5rem' }}>Editar Equipo: {selectedTeam.groupName}</h2>
 
               <div className="form-group">
                 <label>
@@ -187,8 +211,13 @@ const HelperDashboard = () => {
 
               <div className="form-group">
                 <label>Screenshot</label>
-                {formData.screenshotUrl && (
-                  <img src={formData.screenshotUrl} alt="Screenshot" className="screenshot-preview" />
+                {formData.screenshotUrl ? (
+                  <div className="screenshot-container">
+                    <img src={formData.screenshotUrl} alt="Screenshot" className="screenshot-preview" />
+                    <p className="screenshot-url">Imagen actual cargada</p>
+                  </div>
+                ) : (
+                  <p className="no-screenshot">No hay screenshot cargado</p>
                 )}
                 <label className="upload-button">
                   {saving ? 'Subiendo...' : formData.screenshotUrl ? 'Cambiar Screenshot' : 'Subir Screenshot'}

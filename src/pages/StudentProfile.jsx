@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
 import api from '../services/api';
 import './StudentProfile.css';
 
 const StudentProfile = () => {
   const { user, updateUser } = useAuth();
+  const { success, error } = useNotification();
   const [student, setStudent] = useState(null);
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState('');
 
   useEffect(() => {
     fetchProfile();
@@ -36,11 +37,8 @@ const StudentProfile = () => {
 
     try {
       setSaving(true);
-      const response = await api.post('/upload/avatar', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      // No establecer Content-Type manualmente, axios lo maneja automáticamente para FormData
+      const response = await api.post('/upload/avatar', formData);
 
       await api.put('/students/me', { avatarUrl: response.data.url });
       await fetchProfile();
@@ -49,12 +47,10 @@ const StudentProfile = () => {
       const updatedUser = { ...user, avatarUrl: response.data.url };
       updateUser(updatedUser);
       
-      setMessage('Foto actualizada exitosamente');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      console.error('Error al subir imagen:', error);
-      setMessage('Error al subir la imagen');
-      setTimeout(() => setMessage(''), 3000);
+      success('Foto actualizada exitosamente');
+    } catch (err) {
+      console.error('Error al subir imagen:', err);
+      error('Error al subir la imagen');
     } finally {
       setSaving(false);
     }
@@ -70,12 +66,10 @@ const StudentProfile = () => {
       const updatedUser = { ...user, name };
       updateUser(updatedUser);
       
-      setMessage('Perfil actualizado exitosamente');
-      setTimeout(() => setMessage(''), 3000);
-    } catch (error) {
-      console.error('Error al actualizar perfil:', error);
-      setMessage('Error al actualizar el perfil');
-      setTimeout(() => setMessage(''), 3000);
+      success('Perfil actualizado exitosamente');
+    } catch (err) {
+      console.error('Error al actualizar perfil:', err);
+      error('Error al actualizar el perfil');
     } finally {
       setSaving(false);
     }
@@ -93,12 +87,6 @@ const StudentProfile = () => {
     <div className="profile-container">
       <div className="profile-card">
         <h1 className="profile-title">Mi Perfil</h1>
-
-        {message && (
-          <div className={`profile-message ${message.includes('Error') ? 'error' : 'success'}`}>
-            {message}
-          </div>
-        )}
 
         <div className="profile-section">
           <div className="profile-avatar-section">

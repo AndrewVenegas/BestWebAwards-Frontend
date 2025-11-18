@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useNotification } from '../contexts/NotificationContext';
 import api from '../services/api';
 import Countdown from '../components/Countdown';
 import AppCard from '../components/AppCard';
@@ -9,6 +10,7 @@ import './StudentDashboard.css';
 
 const StudentDashboard = () => {
   const { user } = useAuth();
+  const { success, error } = useNotification();
   const navigate = useNavigate();
   const [teams, setTeams] = useState([]);
   const [myVotes, setMyVotes] = useState([]);
@@ -61,8 +63,9 @@ const StudentDashboard = () => {
     try {
       await api.post('/votes', { teamId });
       await fetchData();
-    } catch (error) {
-      alert(error.response?.data?.error || 'Error al votar');
+      success('Voto registrado exitosamente');
+    } catch (err) {
+      error(err.response?.data?.error || 'Error al votar');
     }
   };
 

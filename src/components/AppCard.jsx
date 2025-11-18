@@ -1,12 +1,47 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './AppCard.css';
 
 const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts }) => {
+  const [showVideoModal, setShowVideoModal] = useState(false);
+
+  // Convertir URL de YouTube a formato embed
+  const getYouTubeEmbedUrl = (url) => {
+    if (!url) return null;
+    
+    // Si ya es un embed URL, devolverlo
+    if (url.includes('youtube.com/embed')) {
+      return url;
+    }
+    
+    // Extraer ID del video de diferentes formatos de YouTube
+    let videoId = null;
+    
+    // Formato: https://www.youtube.com/watch?v=VIDEO_ID
+    const watchMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
+    if (watchMatch) {
+      videoId = watchMatch[1];
+    }
+    
+    // Formato: https://www.youtube.com/embed/VIDEO_ID
+    const embedMatch = url.match(/youtube\.com\/embed\/([^&\n?#]+)/);
+    if (embedMatch) {
+      videoId = embedMatch[1];
+    }
+    
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}`;
+    }
+    
+    return null;
+  };
+
   const handleScreenshotClick = () => {
     if (team.videoUrl) {
-      window.open(team.videoUrl, '_blank');
+      setShowVideoModal(true);
     }
   };
+
+  const embedUrl = getYouTubeEmbedUrl(team.videoUrl);
 
   return (
     <div className={`app-card ${hasVoted ? 'voted' : ''} ${!canVote ? 'disabled' : ''}`}>
@@ -60,7 +95,7 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts }) => 
               rel="noopener noreferrer"
               className="app-link"
             >
-              Ver Aplicación
+              Probar Aplicación
             </a>
           )}
           
@@ -79,6 +114,38 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts }) => 
           )}
         </div>
       </div>
+
+      {showVideoModal && embedUrl && (
+        <div className="video-modal-overlay" onClick={() => setShowVideoModal(false)}>
+          <div className="video-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="video-modal-close" onClick={() => setShowVideoModal(false)}>×</button>
+            <iframe
+              src={embedUrl}
+              title="Video de la aplicación"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="video-iframe"
+            ></iframe>
+          </div>
+        </div>
+      )}
+
+      {showVideoModal && !embedUrl && (
+        <div className="video-modal-overlay" onClick={() => setShowVideoModal(false)}>
+          <div className="video-modal" onClick={(e) => e.stopPropagation()}>
+            <button className="video-modal-close" onClick={() => setShowVideoModal(false)}>×</button>
+            <div className="video-error">
+              <p>No se pudo cargar el video. URL no válida.</p>
+              {team.videoUrl && (
+                <a href={team.videoUrl} target="_blank" rel="noopener noreferrer">
+                  Abrir en YouTube
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
