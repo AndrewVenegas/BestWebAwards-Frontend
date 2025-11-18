@@ -37,6 +37,7 @@ const AdminDashboard = () => {
     participation: 'all', // 'all', 'participating', 'not-participating'
     searchTerm: '',
     helperId: '',
+    tipoApp: '', // Filtro por tipo de aplicación
     sortBy: 'default' // 'default', 'asc', 'desc' - ordenar por votos
   });
 
@@ -69,7 +70,8 @@ const AdminDashboard = () => {
     appName: '',
     deployUrl: '',
     videoUrl: '',
-    screenshotUrl: ''
+    screenshotUrl: '',
+    tipo_app: ''
   });
 
   useEffect(() => {
@@ -185,7 +187,8 @@ const AdminDashboard = () => {
       displayName: formData.get('displayName') || null,
       appName: formData.get('appName') || null,
       helperId: formData.get('helperId') || null,
-      participates: formData.get('participates') === 'true'
+      participates: formData.get('participates') === 'true',
+      tipo_app: formData.get('tipo_app') || null
     };
 
     try {
@@ -210,7 +213,8 @@ const AdminDashboard = () => {
       appName: team.appName ?? '',
       deployUrl: team.deployUrl ?? '',
       videoUrl: team.videoUrl ?? '',
-      screenshotUrl: team.screenshotUrl ?? ''
+      screenshotUrl: team.screenshotUrl ?? '',
+      tipo_app: team.tipo_app ?? ''
     });
   };
 
@@ -288,7 +292,8 @@ const AdminDashboard = () => {
         videoUrl: teamFormData.videoUrl.trim(),
         screenshotUrl: teamFormData.screenshotUrl.trim(),
         participates: teamFormData.participates,
-        helperId: showEditTeam.helperId || null
+        helperId: showEditTeam.helperId || null,
+        tipo_app: teamFormData.tipo_app || null
       };
       
       await api.put(`/admin/teams/${showEditTeam.id}`, cleanedData);
@@ -638,6 +643,11 @@ const AdminDashboard = () => {
     // Filtro por ayudante
     if (teamFilters.helperId) {
       filtered = filtered.filter(team => team.helperId && team.helperId.toString() === teamFilters.helperId);
+    }
+
+    // Filtro por tipo de aplicación
+    if (teamFilters.tipoApp) {
+      filtered = filtered.filter(team => team.tipo_app === teamFilters.tipoApp);
     }
 
     // Filtro por búsqueda
@@ -1231,6 +1241,24 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="filter-group">
+                    <label>Tipo de aplicación:</label>
+                    <select
+                      value={teamFilters.tipoApp}
+                      onChange={(e) => setTeamFilters({ ...teamFilters, tipoApp: e.target.value })}
+                      className="filter-select"
+                    >
+                      <option value="">Todos los tipos</option>
+                      <option value="Chat">Chat</option>
+                      <option value="E-commerce">E-commerce</option>
+                      <option value="Juego">Juego</option>
+                      <option value="Planificador">Planificador</option>
+                      <option value="Red Social">Red Social</option>
+                      <option value="Mix">Mix</option>
+                      <option value="Otro">Otro</option>
+                    </select>
+                  </div>
+
+                  <div className="filter-group">
                     <label>Ordenar por votos:</label>
                     <select
                       value={teamFilters.sortBy}
@@ -1341,6 +1369,19 @@ const AdminDashboard = () => {
                 <input type="text" name="appName" />
               </div>
               <div className="form-group">
+                <label>Tipo de aplicación</label>
+                <select name="tipo_app">
+                  <option value="">Seleccionar tipo...</option>
+                  <option value="Chat">Chat</option>
+                  <option value="E-commerce">E-commerce</option>
+                  <option value="Juego">Juego</option>
+                  <option value="Planificador">Planificador</option>
+                  <option value="Red Social">Red Social</option>
+                  <option value="Mix">Mix</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+              <div className="form-group">
                 <label>Ayudante</label>
                 <select name="helperId">
                   <option value="">Sin ayudante</option>
@@ -1419,6 +1460,25 @@ const AdminDashboard = () => {
                   placeholder="Nombre de la app"
                   required
                 />
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Tipo de aplicación
+                </label>
+                <select
+                  value={teamFormData.tipo_app}
+                  onChange={(e) => setTeamFormData(prev => ({ ...prev, tipo_app: e.target.value }))}
+                >
+                  <option value="">Seleccionar tipo...</option>
+                  <option value="Chat">Chat</option>
+                  <option value="E-commerce">E-commerce</option>
+                  <option value="Juego">Juego</option>
+                  <option value="Planificador">Planificador</option>
+                  <option value="Red Social">Red Social</option>
+                  <option value="Mix">Mix</option>
+                  <option value="Otro">Otro</option>
+                </select>
               </div>
 
               <div className="form-group">

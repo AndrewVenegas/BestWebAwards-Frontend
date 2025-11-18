@@ -24,6 +24,7 @@ const StudentDashboard = ({ readOnly = false }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStudent, setFilterStudent] = useState('');
   const [filterHelper, setFilterHelper] = useState('');
+  const [filterTipoApp, setFilterTipoApp] = useState('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [passwordLoading, setPasswordLoading] = useState(false);
@@ -253,7 +254,9 @@ const StudentDashboard = ({ readOnly = false }) => {
     const matchesHelper = !filterHelper || 
       (team.helper && team.helper.id.toString() === filterHelper);
 
-    return matchesSearch && matchesStudent && matchesHelper;
+    const matchesTipoApp = !filterTipoApp || team.tipo_app === filterTipoApp;
+
+    return matchesSearch && matchesStudent && matchesHelper && matchesTipoApp;
   });
 
   // Filtrar equipos en la vista de "Todos los Grupos" cuando las votaciones están cerradas
@@ -285,7 +288,10 @@ const StudentDashboard = ({ readOnly = false }) => {
     const matchesHelper = !filterHelper || 
       (team.helper && team.helper.id.toString() === filterHelper);
 
-    return matchesHelper;
+    // Filtro por tipo de aplicación
+    const matchesTipoApp = !filterTipoApp || team.tipo_app === filterTipoApp;
+
+    return matchesHelper && matchesTipoApp;
   });
 
   const allStudents = teams.flatMap(t => t.students || []).filter((s, i, arr) => 
@@ -414,6 +420,21 @@ const StudentDashboard = ({ readOnly = false }) => {
                     </option>
                   ))}
             </select>
+
+            <select
+              value={filterTipoApp}
+              onChange={(e) => setFilterTipoApp(e.target.value)}
+              className="filter-select"
+            >
+              <option value="">Todos los tipos</option>
+              <option value="Chat">Chat</option>
+              <option value="E-commerce">E-commerce</option>
+              <option value="Juego">Juego</option>
+              <option value="Planificador">Planificador</option>
+              <option value="Red Social">Red Social</option>
+              <option value="Mix">Mix</option>
+              <option value="Otro">Otro</option>
+            </select>
           </div>
         )}
 
@@ -487,6 +508,21 @@ const StudentDashboard = ({ readOnly = false }) => {
                   {capitalizeName(helper.name)}
                 </option>
               ))}
+            </select>
+
+            <select
+              value={filterTipoApp}
+              onChange={(e) => setFilterTipoApp(e.target.value)}
+              className="filter-select"
+            >
+              <option value="">Todos los tipos</option>
+              <option value="Chat">Chat</option>
+              <option value="E-commerce">E-commerce</option>
+              <option value="Juego">Juego</option>
+              <option value="Planificador">Planificador</option>
+              <option value="Red Social">Red Social</option>
+              <option value="Mix">Mix</option>
+              <option value="Otro">Otro</option>
             </select>
           </div>
         )}

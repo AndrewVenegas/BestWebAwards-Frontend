@@ -17,7 +17,8 @@ const HelperDashboard = () => {
     appName: '',
     deployUrl: '',
     videoUrl: '',
-    screenshotUrl: ''
+    screenshotUrl: '',
+    tipo_app: ''
   });
 
   useEffect(() => {
@@ -44,7 +45,8 @@ const HelperDashboard = () => {
       appName: team.appName ?? '',
       deployUrl: team.deployUrl ?? '',
       videoUrl: team.videoUrl ?? '',
-      screenshotUrl: team.screenshotUrl ?? ''
+      screenshotUrl: team.screenshotUrl ?? '',
+      tipo_app: team.tipo_app ?? ''
     });
   };
 
@@ -173,7 +175,8 @@ const HelperDashboard = () => {
         appName: formData.appName.trim(),
         deployUrl: formData.deployUrl.trim(),
         videoUrl: formData.videoUrl.trim(),
-        screenshotUrl: formData.screenshotUrl.trim()
+        screenshotUrl: formData.screenshotUrl.trim(),
+        tipo_app: formData.tipo_app || null
       };
       
       await api.put(`/helpers/teams/${selectedTeam.id}`, cleanedData);
@@ -269,6 +272,25 @@ const HelperDashboard = () => {
                   placeholder="Nombre de la app"
                   required
                 />
+              </div>
+
+              <div className="form-group">
+                <label>
+                  Tipo de aplicación
+                </label>
+                <select
+                  value={formData.tipo_app}
+                  onChange={(e) => setFormData(prev => ({ ...prev, tipo_app: e.target.value }))}
+                >
+                  <option value="">Seleccionar tipo...</option>
+                  <option value="Chat">Chat</option>
+                  <option value="E-commerce">E-commerce</option>
+                  <option value="Juego">Juego</option>
+                  <option value="Planificador">Planificador</option>
+                  <option value="Red Social">Red Social</option>
+                  <option value="Mix">Mix</option>
+                  <option value="Otro">Otro</option>
+                </select>
               </div>
 
               <div className="form-group">
