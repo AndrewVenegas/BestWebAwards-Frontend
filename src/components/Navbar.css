@@ -73,10 +73,23 @@
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s ease;
+  position: relative;
 }
 
-.navbar-link:hover {
+.navbar-link:hover,
+.navbar-link.active {
   color: #667eea;
+}
+
+.navbar-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #667eea;
+  border-radius: 2px;
 }
 
 .navbar-button {

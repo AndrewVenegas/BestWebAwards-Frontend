@@ -53,22 +53,52 @@ const Navbar = () => {
           <div className="navbar-menu">
             {user.type === 'student' && (
               <>
-                <Link to="/dashboard" className="navbar-link">Votaciones</Link>
-                <Link to="/profile" className="navbar-link">Mi Perfil</Link>
+                <Link 
+                  to="/dashboard" 
+                  className={`navbar-link ${location.pathname === '/dashboard' || location.pathname === '/votaciones' ? 'active' : ''}`}
+                >
+                  Votaciones
+                </Link>
+                <Link 
+                  to="/profile" 
+                  className={`navbar-link ${location.pathname === '/profile' ? 'active' : ''}`}
+                >
+                  Mi Perfil
+                </Link>
               </>
             )}
             
             {user.type === 'helper' && (
               <>
-                <Link to="/dashboard" className="navbar-link">Equipos</Link>
-                <Link to="/votaciones" className="navbar-link">Votaciones</Link>
+                <Link 
+                  to="/dashboard" 
+                  className={`navbar-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
+                >
+                  Equipos
+                </Link>
+                <Link 
+                  to="/votaciones" 
+                  className={`navbar-link ${location.pathname === '/votaciones' ? 'active' : ''}`}
+                >
+                  Votaciones
+                </Link>
               </>
             )}
             
             {user.type === 'admin' && (
               <>
-                <Link to="/dashboard" className="navbar-link">Dashboard</Link>
-                <Link to="/votaciones" className="navbar-link">Votaciones</Link>
+                <Link 
+                  to="/dashboard" 
+                  className={`navbar-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  to="/votaciones" 
+                  className={`navbar-link ${location.pathname === '/votaciones' ? 'active' : ''}`}
+                >
+                  Votaciones
+                </Link>
               </>
             )}
             

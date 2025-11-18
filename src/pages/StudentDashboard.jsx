@@ -36,6 +36,7 @@ const StudentDashboard = ({ readOnly = false }) => {
   const [allTeamsWithVotes, setAllTeamsWithVotes] = useState([]);
   const [visibleTeamsCount, setVisibleTeamsCount] = useState(0);
   const [visibleAllTeamsCount, setVisibleAllTeamsCount] = useState(0);
+  const [countdownReady, setCountdownReady] = useState(false);
 
   // Si es modo readOnly (admin/helper), no verificar hasSeenIntro
   const isReadOnly = readOnly || (user && user.type !== 'student');
@@ -337,9 +338,9 @@ const StudentDashboard = ({ readOnly = false }) => {
     h && arr.findIndex(hl => hl && hl.id === h.id) === i
   );
 
-  // Efecto para mostrar proyectos gradualmente
+  // Efecto para mostrar proyectos gradualmente (solo después de que el countdown esté listo)
   useEffect(() => {
-    if (loading || filteredTeams.length === 0) {
+    if (loading || filteredTeams.length === 0 || !countdownReady) {
       setVisibleTeamsCount(0);
       return;
     }
@@ -359,11 +360,11 @@ const StudentDashboard = ({ readOnly = false }) => {
     }, 100);
     
     return () => clearInterval(interval);
-  }, [loading, filteredTeams.length, searchTerm, filterStudent, filterHelper, filterTipoApp, showFavoritesOnly]);
+  }, [loading, filteredTeams.length, countdownReady, searchTerm, filterStudent, filterHelper, filterTipoApp, showFavoritesOnly]);
 
-  // Efecto para mostrar todos los equipos gradualmente cuando las votaciones están cerradas
+  // Efecto para mostrar todos los equipos gradualmente cuando las votaciones están cerradas (solo después de que el countdown esté listo)
   useEffect(() => {
-    if (loading || !showAllTeams || filteredAllTeams.length === 0) {
+    if (loading || !showAllTeams || filteredAllTeams.length === 0 || !countdownReady) {
       setVisibleAllTeamsCount(0);
       return;
     }
@@ -383,7 +384,7 @@ const StudentDashboard = ({ readOnly = false }) => {
     }, 100);
     
     return () => clearInterval(interval);
-  }, [loading, showAllTeams, filteredAllTeams.length, searchTerm, filterStudent, filterHelper, filterTipoApp, showFavoritesOnly]);
+  }, [loading, showAllTeams, filteredAllTeams.length, countdownReady, searchTerm, filterStudent, filterHelper, filterTipoApp, showFavoritesOnly]);
 
   if (loading) {
     return <div className="dashboard-loading">Cargando...</div>;
@@ -401,7 +402,10 @@ const StudentDashboard = ({ readOnly = false }) => {
           )}
         </div>
         
-        <Countdown onVotingClosed={handleVotingClosed} />
+        <Countdown 
+          onVotingClosed={handleVotingClosed} 
+          onInitialized={() => setCountdownReady(true)}
+        />
 
         {/* Switch para alternar entre podio y todos los grupos cuando las votaciones están cerradas */}
         {!votingOpen && (

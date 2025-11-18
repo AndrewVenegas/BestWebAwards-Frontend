@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import Toast from './components/Toast';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -11,6 +12,7 @@ import StudentProfile from './pages/StudentProfile';
 import IntroGuide from './pages/IntroGuide';
 import HelperDashboard from './pages/HelperDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import './App.css';
 
 const PrivateRoute = ({ children, allowedRoles = [] }) => {
   const { user, loading } = useAuth();
@@ -104,7 +106,10 @@ function App() {
         <Router>
           <div className="App">
             <Navbar />
-            <AppRoutes />
+            <main className="App-main">
+              <AppRoutes />
+            </main>
+            <Footer />
             <Toast />
           </div>
         </Router>

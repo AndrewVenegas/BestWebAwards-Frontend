@@ -3,12 +3,13 @@ import api from '../services/api';
 import Fireworks from './Fireworks';
 import './Countdown.css';
 
-const Countdown = ({ onVotingClosed }) => {
+const Countdown = ({ onVotingClosed, onInitialized }) => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isOpen, setIsOpen] = useState(true);
   const [showFireworks, setShowFireworks] = useState(false);
   const hasTriggeredFireworks = useRef(false);
   const isInitialized = useRef(false);
+  const hasNotifiedInitialized = useRef(false);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -27,14 +28,26 @@ const Countdown = ({ onVotingClosed }) => {
           setIsOpen(false);
           hasTriggeredFireworks.current = true; // Marcar como ya disparado para evitar loops
           isInitialized.current = true;
+          if (onInitialized && !hasNotifiedInitialized.current) {
+            hasNotifiedInitialized.current = true;
+            onInitialized();
+          }
           return; // No continuar con el temporizador si ya están cerradas
         }
         
         updateTimeLeft(deadline);
         isInitialized.current = true;
+        if (onInitialized && !hasNotifiedInitialized.current) {
+          hasNotifiedInitialized.current = true;
+          onInitialized();
+        }
       } catch (error) {
         console.error('Error al obtener configuración:', error);
         isInitialized.current = true;
+        if (onInitialized && !hasNotifiedInitialized.current) {
+          hasNotifiedInitialized.current = true;
+          onInitialized();
+        }
       }
     };
 
@@ -124,8 +137,11 @@ const Countdown = ({ onVotingClosed }) => {
         {!isOpen && timeLeft && timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0 && !showFireworks ? (
           <div className="countdown countdown-empty"></div>
         ) : !isInitialized.current ? (
-          // Mientras carga, mostrar espacio vacío
-          <div className="countdown countdown-empty"></div>
+          // Mientras carga, mostrar mensaje de carga
+          <div className="countdown countdown-loading">
+            <h3 className="countdown-title">Tiempo Restante para Votar</h3>
+            <div className="countdown-loading-message">Cargando...</div>
+          </div>
         ) : !showFireworks && timeLeft ? (
           <div className="countdown">
             <h3 className="countdown-title">Tiempo Restante para Votar</h3>
