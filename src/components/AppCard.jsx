@@ -109,12 +109,11 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
     }
   };
 
-  // Solo aplicar disabled cuando realmente no se puede votar Y estamos en modo de votación activa
-  // Cuando las votaciones están cerradas (onVote es null), no aplicar disabled para que todo siga siendo clickeable
-  const isDisabled = !canVote && onVote !== null;
+  // NO aplicar disabled a toda la tarjeta - solo deshabilitar el botón de votar
+  // Esto permite que los usuarios que han completado sus votos puedan seguir viendo videos, usar favoritos, etc.
   
   return (
-    <div className={`app-card ${hasVoted ? 'voted' : ''} ${isDisabled ? 'disabled' : ''} ${isFavorite ? 'favorite' : ''}`}>
+    <div className={`app-card ${hasVoted ? 'voted' : ''} ${isFavorite ? 'favorite' : ''}`}>
       {onToggleFavorite && (
         <button 
           className={`favorite-button ${isFavorite ? 'active' : ''}`}

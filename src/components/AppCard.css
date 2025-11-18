@@ -18,15 +18,11 @@
   border: 2px solid #667eea;
 }
 
-.app-card.disabled {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-/* Cuando las votaciones están cerradas, mantener la tarjeta interactiva pero solo deshabilitar el botón de votar */
-.app-card:not(.disabled) .vote-button:disabled {
+/* El botón de votar deshabilitado debe verse diferente pero no bloquear la tarjeta */
+.app-card .vote-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  background: #ccc;
 }
 
 .favorite-button {
