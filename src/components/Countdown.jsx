@@ -4,11 +4,11 @@ import Fireworks from './Fireworks';
 import './Countdown.css';
 
 const Countdown = ({ onVotingClosed }) => {
-  const [timeLeft, setTimeLeft] = useState(null);
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isOpen, setIsOpen] = useState(true);
-  const [loading, setLoading] = useState(true);
   const [showFireworks, setShowFireworks] = useState(false);
   const hasTriggeredFireworks = useRef(false);
+  const isInitialized = useRef(false);
 
   useEffect(() => {
     const fetchConfig = async () => {
@@ -25,16 +25,16 @@ const Countdown = ({ onVotingClosed }) => {
         if (difference <= 0) {
           setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, deadline });
           setIsOpen(false);
-          setLoading(false);
           hasTriggeredFireworks.current = true; // Marcar como ya disparado para evitar loops
+          isInitialized.current = true;
           return; // No continuar con el temporizador si ya están cerradas
         }
         
         updateTimeLeft(deadline);
-        setLoading(false);
+        isInitialized.current = true;
       } catch (error) {
         console.error('Error al obtener configuración:', error);
-        setLoading(false);
+        isInitialized.current = true;
       }
     };
 
@@ -49,10 +49,13 @@ const Countdown = ({ onVotingClosed }) => {
   }, []);
 
   useEffect(() => {
-    if (!timeLeft) return;
-    
-    // Si las votaciones ya están cerradas, no iniciar el temporizador
+    // Si las votaciones ya están cerradas o no hay deadline, no iniciar el temporizador
     if (!isOpen && timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0) {
+      return;
+    }
+
+    // Si no hay deadline, no iniciar el temporizador
+    if (!timeLeft.deadline) {
       return;
     }
 
@@ -107,17 +110,6 @@ const Countdown = ({ onVotingClosed }) => {
     }, 500);
   };
 
-  if (loading) {
-    return <div className="countdown-loading">Cargando...</div>;
-  }
-
-  // Cuando las votaciones están cerradas, no mostrar nada (el mensaje se muestra en el dashboard)
-  if (!isOpen && timeLeft && timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0 && !showFireworks) {
-    return null;
-  }
-
-  if (!timeLeft) return null;
-
   return (
     <>
       {showFireworks && (
@@ -126,29 +118,40 @@ const Countdown = ({ onVotingClosed }) => {
           onComplete={handleFireworksComplete} 
         />
       )}
-      {!showFireworks && timeLeft && (
-        <div className="countdown">
-          <h3 className="countdown-title">Tiempo Restante para Votar</h3>
-          <div className="countdown-grid">
-            <div className="countdown-item">
-              <div className="countdown-value">{timeLeft.days}</div>
-              <div className="countdown-label">Días</div>
-            </div>
-            <div className="countdown-item">
-              <div className="countdown-value">{timeLeft.hours}</div>
-              <div className="countdown-label">Horas</div>
-            </div>
-            <div className="countdown-item">
-              <div className="countdown-value">{timeLeft.minutes}</div>
-              <div className="countdown-label">Minutos</div>
-            </div>
-            <div className="countdown-item">
-              <div className="countdown-value">{timeLeft.seconds}</div>
-              <div className="countdown-label">Segundos</div>
+      {/* Siempre reservar el espacio del countdown */}
+      <div className="countdown-container">
+        {/* Cuando las votaciones están cerradas, no mostrar contenido (pero mantener el espacio) */}
+        {!isOpen && timeLeft && timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0 && !showFireworks ? (
+          <div className="countdown countdown-empty"></div>
+        ) : !isInitialized.current ? (
+          // Mientras carga, mostrar espacio vacío
+          <div className="countdown countdown-empty"></div>
+        ) : !showFireworks && timeLeft ? (
+          <div className="countdown">
+            <h3 className="countdown-title">Tiempo Restante para Votar</h3>
+            <div className="countdown-grid">
+              <div className="countdown-item">
+                <div className="countdown-value">{timeLeft.days}</div>
+                <div className="countdown-label">Días</div>
+              </div>
+              <div className="countdown-item">
+                <div className="countdown-value">{timeLeft.hours}</div>
+                <div className="countdown-label">Horas</div>
+              </div>
+              <div className="countdown-item">
+                <div className="countdown-value">{timeLeft.minutes}</div>
+                <div className="countdown-label">Minutos</div>
+              </div>
+              <div className="countdown-item">
+                <div className="countdown-value">{timeLeft.seconds}</div>
+                <div className="countdown-label">Segundos</div>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="countdown countdown-empty"></div>
+        )}
+      </div>
     </>
   );
 };

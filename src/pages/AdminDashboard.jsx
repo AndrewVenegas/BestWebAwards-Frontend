@@ -3,6 +3,7 @@ import api from '../services/api';
 import { useNotification } from '../contexts/NotificationContext';
 import { capitalizeName } from '../utils/format';
 import PasswordConfirmModal from '../components/PasswordConfirmModal';
+import FilterDropdown from '../components/FilterDropdown';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -859,35 +860,7 @@ const AdminDashboard = () => {
               </div>
 
               {/* Filtros del Dashboard */}
-              <div className="filters-section">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h3>Filtros</h3>
-                  <button
-                    onClick={resetDashboardFilters}
-                    className="reset-filters-button"
-                    style={{
-                      padding: '0.5rem 1rem',
-                      background: '#f44336',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '0.9rem',
-                      fontWeight: '500',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = '#d32f2f';
-                      e.target.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = '#f44336';
-                      e.target.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    🗑️ Eliminar filtros
-                  </button>
-                </div>
+              <FilterDropdown onReset={resetDashboardFilters}>
                 <div className="filters-grid">
                   <div className="filter-group">
                     <label>Equipos:</label>
@@ -927,7 +900,7 @@ const AdminDashboard = () => {
                     />
                   </div>
                 </div>
-              </div>
+              </FilterDropdown>
 
               <div className="votes-summary">
                 <h2>Votos por Equipo ({getFilteredVotesSummary().length})</h2>
@@ -1083,37 +1056,9 @@ const AdminDashboard = () => {
               </div>
               
               {/* Filtros para Estudiantes */}
-              <div className="filters-section">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h3 style={{ margin: 0 }}>Filtros</h3>
-                  <button
-                    onClick={resetStudentFilters}
-                    className="reset-filters-button"
-                    style={{
-                      padding: '0.5rem 1rem',
-                      background: '#f44336',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '0.9rem',
-                      fontWeight: '500',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = '#d32f2f';
-                      e.target.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = '#f44336';
-                      e.target.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    🗑️ Eliminar filtros
-                  </button>
-                </div>
+              <FilterDropdown onReset={resetStudentFilters}>
                 <div className="filters-grid">
-                <div className="filter-group">
+                  <div className="filter-group">
                     <label>Buscar:</label>
                     <input
                       type="text"
@@ -1152,10 +1097,8 @@ const AdminDashboard = () => {
                       ))}
                     </select>
                   </div>
-
-
                 </div>
-              </div>
+              </FilterDropdown>
 
               <table className="admin-table">
                 <thead>
@@ -1335,37 +1278,9 @@ const AdminDashboard = () => {
               </div>
               
               {/* Filtros para Equipos */}
-              <div className="filters-section">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h3 style={{ margin: 0 }}>Filtros</h3>
-                  <button
-                    onClick={resetTeamFilters}
-                    className="reset-filters-button"
-                    style={{
-                      padding: '0.5rem 1rem',
-                      background: '#f44336',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontSize: '0.9rem',
-                      fontWeight: '500',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.background = '#d32f2f';
-                      e.target.style.transform = 'translateY(-1px)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.background = '#f44336';
-                      e.target.style.transform = 'translateY(0)';
-                    }}
-                  >
-                    🗑️ Eliminar filtros
-                  </button>
-                </div>
+              <FilterDropdown onReset={resetTeamFilters}>
                 <div className="filters-grid">
-                <div className="filter-group">
+                  <div className="filter-group">
                     <label>Buscar:</label>
                     <input
                       type="text"
@@ -1434,10 +1349,8 @@ const AdminDashboard = () => {
                       <option value="asc">Menor a mayor</option>
                     </select>
                   </div>
-
-
                 </div>
-              </div>
+              </FilterDropdown>
 
               <table className="admin-table">
                 <thead>

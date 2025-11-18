@@ -1,10 +1,24 @@
+.countdown-container {
+  min-height: 180px;
+  margin-bottom: 2rem;
+}
+
 .countdown {
   background: white;
   border-radius: 15px;
   padding: 2rem;
-  margin-bottom: 2rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
   text-align: center;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.countdown-empty {
+  visibility: hidden;
+  opacity: 0;
+  min-height: 180px;
 }
 
 .countdown-title {

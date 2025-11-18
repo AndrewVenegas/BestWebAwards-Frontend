@@ -110,6 +110,14 @@
   flex-wrap: wrap;
 }
 
+.filters-top-section {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .favorites-filter-button {
   padding: 0.75rem 1.5rem;
   background: white;
@@ -157,6 +165,18 @@
   cursor: pointer;
 }
 
+.filters-top-section .search-input {
+  flex: 1;
+  min-width: 250px;
+  background-image: none;
+  padding-right: 1rem;
+  height: fit-content;
+}
+
+.filters-top-section .filter-dropdown-container {
+  height: fit-content;
+}
+
 .search-input {
   background-image: none;
   padding-right: 1rem;
@@ -202,6 +222,15 @@
   
   .filters {
     flex-direction: column;
+  }
+  
+  .filters-top-section {
+    flex-direction: column;
+  }
+  
+  .filters-top-section .search-input {
+    width: 100%;
+    min-width: 100%;
   }
   
   .teams-grid {

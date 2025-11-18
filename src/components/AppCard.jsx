@@ -1,9 +1,11 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { capitalizeName } from '../utils/format';
+import useScrollAnimation from '../hooks/useScrollAnimation';
 import './AppCard.css';
 
-const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFavorite, onToggleFavorite }) => {
+const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFavorite, onToggleFavorite, index = 0 }) => {
+  const [elementRef, isVisible] = useScrollAnimation({ threshold: 0.1 });
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showPlayOverlay, setShowPlayOverlay] = useState(false);
   const hoverTimeoutRef = useRef(null);
@@ -113,7 +115,11 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
   // Esto permite que los usuarios que han completado sus votos puedan seguir viendo videos, usar favoritos, etc.
   
   return (
-    <div className={`app-card ${hasVoted ? 'voted' : ''} ${isFavorite ? 'favorite' : ''}`}>
+    <div 
+      ref={elementRef}
+      className={`app-card ${hasVoted ? 'voted' : ''} ${isFavorite ? 'favorite' : ''} ${isVisible ? 'scroll-visible' : 'scroll-hidden'}`}
+      style={isVisible ? { transitionDelay: `${Math.min(index * 0.1, 0.5)}s` } : {}}
+    >
       {onToggleFavorite && (
         <button 
           className={`favorite-button ${isFavorite ? 'active' : ''}`}
