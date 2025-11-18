@@ -1,0 +1,189 @@
+.app-card {
+  background: white;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.app-card.voted {
+  border: 2px solid #667eea;
+}
+
+.app-card.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.app-screenshot {
+  width: 100%;
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.app-screenshot:hover {
+  transform: scale(1.05);
+}
+
+.play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.app-screenshot:hover .play-overlay {
+  opacity: 1;
+}
+
+.play-icon {
+  color: white;
+  font-size: 3rem;
+}
+
+.app-content {
+  padding: 1.5rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-name {
+  font-size: 1.3rem;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.app-team {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+}
+
+.app-members {
+  margin-bottom: 1rem;
+}
+
+.app-members h4 {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.members-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f5f5f5;
+  padding: 0.25rem 0.5rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+}
+
+.member-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.member-avatar.placeholder {
+  background: #667eea;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.7rem;
+}
+
+.member-name {
+  color: #333;
+}
+
+.app-vote-count {
+  background: #e0e7ff;
+  color: #667eea;
+  padding: 0.5rem;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.app-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}
+
+.app-link {
+  flex: 1;
+  text-align: center;
+  padding: 0.75rem;
+  background: #f5f5f5;
+  color: #667eea;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: background 0.3s ease;
+}
+
+.app-link:hover {
+  background: #e0e0e0;
+}
+
+.app-button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.vote-button {
+  background: #667eea;
+  color: white;
+}
+
+.vote-button:hover:not(:disabled) {
+  background: #5568d3;
+  transform: translateY(-2px);
+}
+
+.vote-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.voted-button {
+  background: #4caf50;
+  color: white;
+  cursor: default;
+}
+
