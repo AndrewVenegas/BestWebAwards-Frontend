@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import './AppCard.css';
 
 const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts }) => {
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [showPlayOverlay, setShowPlayOverlay] = useState(false);
+  const hoverTimeoutRef = useRef(null);
 
   // Convertir URL de YouTube a formato embed
   const getYouTubeEmbedUrl = (url) => {
@@ -35,13 +38,68 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts }) => 
     return null;
   };
 
-  const handleScreenshotClick = () => {
-    if (team.videoUrl) {
-      setShowVideoModal(true);
+  const handleScreenshotClick = useCallback((e) => {
+    if (!team.videoUrl || showVideoModal) return;
+    e.preventDefault();
+    e.stopPropagation();
+    setShowPlayOverlay(false);
+    setShowVideoModal(true);
+  }, [team.videoUrl, showVideoModal]);
+
+  const handleCloseModal = useCallback(() => {
+    setShowVideoModal(false);
+    setShowPlayOverlay(false);
+  }, []);
+
+  const handleOverlayClick = useCallback((e) => {
+    e.stopPropagation();
+    handleCloseModal();
+  }, [handleCloseModal]);
+
+  const handleMouseEnter = useCallback(() => {
+    if (!team.videoUrl || showVideoModal) return;
+    // Limpiar timeout anterior si existe
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
     }
-  };
+    hoverTimeoutRef.current = null;
+    setShowPlayOverlay(true);
+  }, [team.videoUrl, showVideoModal]);
+
+  const handleMouseLeave = useCallback(() => {
+    // Limpiar timeout anterior
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    // Delay para evitar parpadeo cuando el mouse pasa sobre el overlay
+    hoverTimeoutRef.current = setTimeout(() => {
+      if (!showVideoModal) {
+        setShowPlayOverlay(false);
+      }
+      hoverTimeoutRef.current = null;
+    }, 200);
+  }, [showVideoModal]);
 
   const embedUrl = getYouTubeEmbedUrl(team.videoUrl);
+
+  // Limpiar timeout al desmontar y cuando el modal se abre
+  useEffect(() => {
+    if (showVideoModal) {
+      setShowPlayOverlay(false);
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+        hoverTimeoutRef.current = null;
+      }
+    }
+  }, [showVideoModal]);
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className={`app-card ${hasVoted ? 'voted' : ''} ${!canVote ? 'disabled' : ''}`}>
@@ -49,10 +107,16 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts }) => 
         <div 
           className="app-screenshot" 
           onClick={handleScreenshotClick}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
           style={{ backgroundImage: `url(${team.screenshotUrl})` }}
         >
-          {team.videoUrl && (
-            <div className="play-overlay">
+          {team.videoUrl && showPlayOverlay && !showVideoModal && (
+            <div 
+              className="play-overlay"
+              onMouseEnter={handleMouseEnter}
+              onMouseLeave={handleMouseLeave}
+            >
               <span className="play-icon">▶</span>
             </div>
           )}
@@ -115,36 +179,48 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts }) => 
         </div>
       </div>
 
-      {showVideoModal && embedUrl && (
-        <div className="video-modal-overlay" onClick={() => setShowVideoModal(false)}>
-          <div className="video-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="video-modal-close" onClick={() => setShowVideoModal(false)}>×</button>
-            <iframe
-              src={embedUrl}
-              title="Video de la aplicación"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              className="video-iframe"
-            ></iframe>
+      {showVideoModal && createPortal(
+        <div 
+          className="video-modal-overlay" 
+          onClick={handleOverlayClick}
+        >
+          <div 
+            className="video-modal" 
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button 
+              className="video-modal-close" 
+              onClick={(e) => {
+                e.stopPropagation();
+                handleCloseModal();
+              }}
+              type="button"
+              aria-label="Cerrar video"
+            >
+              ×
+            </button>
+            {embedUrl ? (
+              <iframe
+                src={embedUrl}
+                title="Video de la aplicación"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="video-iframe"
+              ></iframe>
+            ) : (
+              <div className="video-error">
+                <p>No se pudo cargar el video. URL no válida.</p>
+                {team.videoUrl && (
+                  <a href={team.videoUrl} target="_blank" rel="noopener noreferrer">
+                    Abrir en YouTube
+                  </a>
+                )}
+              </div>
+            )}
           </div>
-        </div>
-      )}
-
-      {showVideoModal && !embedUrl && (
-        <div className="video-modal-overlay" onClick={() => setShowVideoModal(false)}>
-          <div className="video-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="video-modal-close" onClick={() => setShowVideoModal(false)}>×</button>
-            <div className="video-error">
-              <p>No se pudo cargar el video. URL no válida.</p>
-              {team.videoUrl && (
-                <a href={team.videoUrl} target="_blank" rel="noopener noreferrer">
-                  Abrir en YouTube
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

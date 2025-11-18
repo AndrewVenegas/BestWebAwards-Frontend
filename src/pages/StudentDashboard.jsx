@@ -6,6 +6,7 @@ import api from '../services/api';
 import Countdown from '../components/Countdown';
 import AppCard from '../components/AppCard';
 import Podium from '../components/Podium';
+import PasswordConfirmModal from '../components/PasswordConfirmModal';
 import './StudentDashboard.css';
 
 const StudentDashboard = () => {
@@ -21,6 +22,10 @@ const StudentDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStudent, setFilterStudent] = useState('');
   const [filterHelper, setFilterHelper] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
   useEffect(() => {
     if (user && !user.hasSeenIntro) {
@@ -59,14 +64,61 @@ const StudentDashboard = () => {
     }
   };
 
-  const handleVote = async (teamId) => {
-    try {
-      await api.post('/votes', { teamId });
-      await fetchData();
-      success('Voto registrado exitosamente');
-    } catch (err) {
-      error(err.response?.data?.error || 'Error al votar');
+  const handleVoteClick = (teamId) => {
+    const team = teams.find(t => t.id === teamId);
+    if (team) {
+      setSelectedTeam(team);
+      setPasswordError('');
+      setShowPasswordModal(true);
     }
+  };
+
+  const handlePasswordConfirm = async (password) => {
+    if (!selectedTeam) return;
+
+    setPasswordLoading(true);
+    try {
+      // Primero validar la contraseña
+      // Agregar skipAuthRedirect para evitar que el interceptor redirija al login
+      const verifyRes = await api.post('/students/me/verify-password', { password }, {
+        skipAuthRedirect: true
+      });
+      
+      if (verifyRes.data.valid) {
+        // Si la contraseña es válida, proceder con el voto
+        await api.post('/votes', { teamId: selectedTeam.id });
+        await fetchData();
+        
+        // Mostrar mensaje de éxito con votos restantes
+        const remainingVotes = verifyRes.data.remainingVotes - 1; // -1 porque acabamos de votar
+        if (remainingVotes > 0) {
+          success(`¡Voto registrado exitosamente! Te quedan ${remainingVotes} ${remainingVotes === 1 ? 'voto' : 'votos'} restantes.`);
+        } else {
+          success('¡Voto registrado exitosamente! Has usado todos tus votos.');
+        }
+        
+        setShowPasswordModal(false);
+        setSelectedTeam(null);
+      }
+    } catch (err) {
+      if (err.response?.status === 401) {
+        setPasswordError('Contraseña incorrecta. Por favor, inténtalo nuevamente.');
+        error('Contraseña incorrecta. Por favor, inténtalo nuevamente.');
+      } else {
+        const errorMsg = err.response?.data?.error || 'Error al votar';
+        setPasswordError(errorMsg);
+        error(errorMsg);
+      }
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleClosePasswordModal = () => {
+    setShowPasswordModal(false);
+    setSelectedTeam(null);
+    setPasswordLoading(false);
+    setPasswordError('');
   };
 
   const getVoteCount = (teamId) => {
@@ -174,7 +226,7 @@ const StudentDashboard = () => {
                 <AppCard
                   key={team.id}
                   team={team}
-                  onVote={handleVote}
+                  onVote={handleVoteClick}
                   hasVoted={myVotes.includes(team.id)}
                   canVote={canVote}
                   voteCount={showCounts ? getVoteCount(team.id) : undefined}
@@ -191,6 +243,15 @@ const StudentDashboard = () => {
         )}
 
       </div>
+
+      <PasswordConfirmModal
+        isOpen={showPasswordModal}
+        onClose={handleClosePasswordModal}
+        onConfirm={handlePasswordConfirm}
+        teamName={selectedTeam ? (selectedTeam.appName || selectedTeam.displayName || selectedTeam.groupName) : ''}
+        loading={passwordLoading}
+        errorMessage={passwordError}
+      />
     </div>
   );
 };

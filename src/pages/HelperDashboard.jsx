@@ -210,17 +210,17 @@ const HelperDashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>Screenshot</label>
+                <label>Imagen de Portada</label>
                 {formData.screenshotUrl ? (
                   <div className="screenshot-container">
                     <img src={formData.screenshotUrl} alt="Screenshot" className="screenshot-preview" />
                     <p className="screenshot-url">Imagen actual cargada</p>
                   </div>
                 ) : (
-                  <p className="no-screenshot">No hay screenshot cargado</p>
+                  <p className="no-screenshot">No hay imagen de portada cargada</p>
                 )}
                 <label className="upload-button">
-                  {saving ? 'Subiendo...' : formData.screenshotUrl ? 'Cambiar Screenshot' : 'Subir Screenshot'}
+                  {saving ? 'Subiendo...' : formData.screenshotUrl ? 'Cambiar Portada' : 'Subir Portada'}
                   <input
                     type="file"
                     accept="image/*"

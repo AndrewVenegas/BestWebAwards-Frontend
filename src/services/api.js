@@ -35,9 +35,16 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      // No redirigir al login si es el endpoint de verificación de contraseña
+      // o si la petición tiene la marca skipAuthRedirect
+      const url = error.config?.url || '';
+      const skipAuthRedirect = error.config?.skipAuthRedirect;
+      
+      if (!skipAuthRedirect && !url.includes('/verify-password')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
