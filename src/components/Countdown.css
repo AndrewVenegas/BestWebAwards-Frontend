@@ -58,6 +58,57 @@
   color: #666;
 }
 
+.results-countdown {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.results-countdown .countdown-title {
+  color: white;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.results-countdown-message {
+  margin-top: 1rem;
+}
+
+.results-countdown-message p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+  color: white;
+  font-weight: 500;
+}
+
+.results-countdown-number {
+  font-size: 5rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 60px rgba(255, 255, 255, 0.4);
+  animation: bounce 0.5s ease-in-out infinite;
+  line-height: 1;
+  margin: 0;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 @media (max-width: 768px) {
   .countdown-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -65,6 +116,10 @@
   
   .countdown-value {
     font-size: 2rem;
+  }
+
+  .results-countdown-number {
+    font-size: 3rem;
   }
 }
 

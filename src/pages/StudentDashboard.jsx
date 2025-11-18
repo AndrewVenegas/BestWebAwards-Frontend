@@ -187,6 +187,47 @@ const StudentDashboard = ({ readOnly = false }) => {
     }
   };
 
+  const handleVotingClosed = async () => {
+    console.log('handleVotingClosed llamado - cargando podio');
+    
+    // Asegurar que se muestre el podio, no todos los grupos
+    setShowAllTeams(false);
+    
+    // Forzar que las votaciones estén cerradas inmediatamente
+    setVotingOpen(false);
+    
+    // Recargar datos para mostrar el podio automáticamente
+    try {
+      await fetchData();
+      
+      // Asegurar que se obtengan los conteos de votos
+      const countsRes = await api.get('/votes/visible-counts');
+      if (countsRes.data.showCounts) {
+        setShowCounts(true);
+        setVoteCounts(countsRes.data.counts);
+        
+        // Preparar todos los equipos con votos para la vista de "Todos los Grupos"
+        const teamsWithVotes = teams.map(team => {
+          const voteData = countsRes.data.counts.find(c => c.teamId === team.id);
+          return {
+            ...team,
+            voteCount: voteData ? voteData.voteCount : 0
+          };
+        }).sort((a, b) => b.voteCount - a.voteCount);
+        
+        setAllTeamsWithVotes(teamsWithVotes);
+      }
+      
+      // Forzar nuevamente que las votaciones estén cerradas después de fetchData
+      setVotingOpen(false);
+      console.log('Podio cargado correctamente');
+    } catch (error) {
+      console.error('Error al cargar podio:', error);
+      // Aún así, forzar que las votaciones estén cerradas
+      setVotingOpen(false);
+    }
+  };
+
   const getVoteCount = (teamId) => {
     const count = voteCounts.find(c => c.teamId === teamId);
     return count ? count.voteCount : 0;
@@ -289,7 +330,7 @@ const StudentDashboard = ({ readOnly = false }) => {
           )}
         </div>
         
-        <Countdown />
+        <Countdown onVotingClosed={handleVotingClosed} />
 
         {/* Switch para alternar entre podio y todos los grupos cuando las votaciones están cerradas */}
         {!votingOpen && (
