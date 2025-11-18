@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useNotification } from '../contexts/NotificationContext';
 import { capitalizeName } from '../utils/format';
+import PasswordConfirmModal from '../components/PasswordConfirmModal';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -53,6 +54,11 @@ const AdminDashboard = () => {
   const [showEditHelper, setShowEditHelper] = useState(null);
   const [showCreateStudent, setShowCreateStudent] = useState(false);
   const [showEditStudent, setShowEditStudent] = useState(null);
+  const [showCreateAdmin, setShowCreateAdmin] = useState(false);
+  const [showEditAdmin, setShowEditAdmin] = useState(null);
+  const [showDeleteAdminModal, setShowDeleteAdminModal] = useState(null);
+  const [deletePasswordLoading, setDeletePasswordLoading] = useState(false);
+  const [deletePasswordError, setDeletePasswordError] = useState('');
   const [saving, setSaving] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
   
@@ -485,6 +491,86 @@ const AdminDashboard = () => {
     } catch (err) {
       error('Error al eliminar el estudiante');
     }
+  };
+
+  // Funciones CRUD para Administradores
+  const handleCreateAdmin = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const adminData = {
+      name: formData.get('name'),
+      email: formData.get('email'),
+      password: formData.get('password')
+    };
+
+    try {
+      setSaving(true);
+      await api.post('/admin/admins', adminData);
+      success('Administrador creado exitosamente');
+      setShowCreateAdmin(false);
+      fetchDashboardData();
+    } catch (err) {
+      error(err.response?.data?.error || 'Error al crear el administrador');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEditAdmin = async (e) => {
+    e.preventDefault();
+    if (!showEditAdmin) return;
+    
+    const formData = new FormData(e.target);
+    const adminData = {
+      name: formData.get('name'),
+      email: formData.get('email')
+    };
+
+    try {
+      setSaving(true);
+      await api.put(`/admin/admins/${showEditAdmin.id}`, adminData);
+      success('Administrador actualizado exitosamente');
+      setShowEditAdmin(null);
+      fetchDashboardData();
+    } catch (err) {
+      error(err.response?.data?.error || 'Error al actualizar el administrador');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteAdminClick = (admin) => {
+    setShowDeleteAdminModal(admin);
+    setDeletePasswordError('');
+  };
+
+  const handleDeleteAdminConfirm = async (password) => {
+    if (!showDeleteAdminModal) return;
+
+    setDeletePasswordLoading(true);
+    setDeletePasswordError('');
+    
+    try {
+      // Enviar la contraseña en el body del DELETE
+      await api.delete(`/admin/admins/${showDeleteAdminModal.id}`, {
+        data: { password }
+      });
+      success('Administrador eliminado exitosamente');
+      setShowDeleteAdminModal(null);
+      fetchDashboardData();
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || 'Error al eliminar el administrador';
+      setDeletePasswordError(errorMsg);
+      error(errorMsg);
+    } finally {
+      setDeletePasswordLoading(false);
+    }
+  };
+
+  const handleCloseDeleteModal = () => {
+    setShowDeleteAdminModal(null);
+    setDeletePasswordError('');
+    setDeletePasswordLoading(false);
   };
 
   // Funciones de filtrado
@@ -1048,12 +1134,21 @@ const AdminDashboard = () => {
               )}
               {!loading.admins && (
             <div className="table-content">
-              <h2>Administradores</h2>
+              <div className="section-header">
+                <h2>Administradores</h2>
+                <button 
+                  className="create-button"
+                  onClick={() => setShowCreateAdmin(true)}
+                >
+                  + Crear Administrador
+                </button>
+              </div>
               <table className="admin-table">
                 <thead>
                   <tr>
                     <th>Nombre</th>
                     <th>Email</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1061,6 +1156,22 @@ const AdminDashboard = () => {
                     <tr key={admin.id}>
                       <td>{capitalizeName(admin.name)}</td>
                       <td>{admin.email}</td>
+                      <td>
+                        <div className="action-buttons">
+                          <button 
+                            className="edit-button-small"
+                            onClick={() => setShowEditAdmin(admin)}
+                          >
+                            Editar
+                          </button>
+                          <button 
+                            className="delete-button-small"
+                            onClick={() => handleDeleteAdminClick(admin)}
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -1541,6 +1652,83 @@ const AdminDashboard = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Modal Crear Administrador */}
+      {showCreateAdmin && (
+        <div className="modal-overlay" onClick={() => setShowCreateAdmin(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Crear Administrador</h2>
+              <button className="modal-close" onClick={() => setShowCreateAdmin(false)}>×</button>
+            </div>
+            <form onSubmit={handleCreateAdmin}>
+              <div className="form-group">
+                <label>Nombre <span className="required">*</span></label>
+                <input type="text" name="name" required />
+              </div>
+              <div className="form-group">
+                <label>Email <span className="required">*</span></label>
+                <input type="email" name="email" required />
+              </div>
+              <div className="form-group">
+                <label>Contraseña <span className="required">*</span></label>
+                <input type="password" name="password" required minLength="6" />
+              </div>
+              <div className="modal-buttons">
+                <button type="button" onClick={() => setShowCreateAdmin(false)} className="cancel-button">
+                  Cancelar
+                </button>
+                <button type="submit" className="save-button" disabled={saving}>
+                  {saving ? 'Guardando...' : 'Crear'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar Administrador */}
+      {showEditAdmin && (
+        <div className="modal-overlay" onClick={() => setShowEditAdmin(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Editar Administrador</h2>
+              <button className="modal-close" onClick={() => setShowEditAdmin(null)}>×</button>
+            </div>
+            <form onSubmit={handleEditAdmin}>
+              <div className="form-group">
+                <label>Nombre <span className="required">*</span></label>
+                <input type="text" name="name" defaultValue={showEditAdmin.name} required />
+              </div>
+              <div className="form-group">
+                <label>Email <span className="required">*</span></label>
+                <input type="email" name="email" defaultValue={showEditAdmin.email} required />
+              </div>
+              <div className="modal-buttons">
+                <button type="button" onClick={() => setShowEditAdmin(null)} className="cancel-button">
+                  Cancelar
+                </button>
+                <button type="submit" className="save-button" disabled={saving}>
+                  {saving ? 'Guardando...' : 'Guardar'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Confirmar Eliminación de Administrador */}
+      {showDeleteAdminModal && (
+        <PasswordConfirmModal
+          isOpen={!!showDeleteAdminModal}
+          onClose={handleCloseDeleteModal}
+          onConfirm={handleDeleteAdminConfirm}
+          teamName={capitalizeName(showDeleteAdminModal.name)}
+          loading={deletePasswordLoading}
+          errorMessage={deletePasswordError}
+          isDeleteAction={true}
+        />
       )}
     </div>
   );

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import './PasswordConfirmModal.css';
 
-const PasswordConfirmModal = ({ isOpen, onClose, onConfirm, teamName, loading, errorMessage }) => {
+const PasswordConfirmModal = ({ isOpen, onClose, onConfirm, teamName, loading, errorMessage, isDeleteAction = false }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -52,12 +52,24 @@ const PasswordConfirmModal = ({ isOpen, onClose, onConfirm, teamName, loading, e
           ×
         </button>
         
-        <h2>Confirmar Voto</h2>
+        <h2>{isDeleteAction ? 'Confirmar Eliminación' : 'Confirmar Voto'}</h2>
         <p className="password-modal-message">
-          Estás a punto de votar por <strong>{teamName}</strong>
+          {isDeleteAction ? (
+            <>
+              Estás a punto de eliminar al administrador <strong>{teamName}</strong>
+            </>
+          ) : (
+            <>
+              Estás a punto de votar por <strong>{teamName}</strong>
+            </>
+          )}
         </p>
         <p className="password-modal-subtitle">
-          Por favor ingresa tu contraseña para confirmar tu voto
+          {isDeleteAction ? (
+            'Por favor ingresa tu contraseña para confirmar la eliminación'
+          ) : (
+            'Por favor ingresa tu contraseña para confirmar tu voto'
+          )}
         </p>
 
         <form onSubmit={handleSubmit} className="password-modal-form">
@@ -96,7 +108,7 @@ const PasswordConfirmModal = ({ isOpen, onClose, onConfirm, teamName, loading, e
               className="btn-confirm"
               disabled={loading || !password}
             >
-              {loading ? 'Verificando...' : 'Confirmar Voto'}
+              {loading ? 'Verificando...' : (isDeleteAction ? 'Confirmar Eliminación' : 'Confirmar Voto')}
             </button>
           </div>
         </form>

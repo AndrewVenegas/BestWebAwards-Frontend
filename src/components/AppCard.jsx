@@ -199,7 +199,7 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
             </button>
           ) : (
             <button className="app-button vote-button" disabled>
-              Votaciones cerradas
+              {onToggleFavorite === null ? 'Solo lectura' : 'Votaciones cerradas'}
             </button>
           )}
         </div>

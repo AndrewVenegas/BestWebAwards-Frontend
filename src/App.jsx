@@ -59,6 +59,15 @@ const AppRoutes = () => {
       />
       
       <Route
+        path="/votaciones"
+        element={
+          <PrivateRoute allowedRoles={['student', 'helper', 'admin']}>
+            <StudentDashboard readOnly={user?.type !== 'student'} />
+          </PrivateRoute>
+        }
+      />
+      
+      <Route
         path="/profile"
         element={
           <PrivateRoute allowedRoles={['student']}>

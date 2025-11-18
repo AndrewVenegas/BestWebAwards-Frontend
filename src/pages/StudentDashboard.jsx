@@ -10,7 +10,7 @@ import Podium from '../components/Podium';
 import PasswordConfirmModal from '../components/PasswordConfirmModal';
 import './StudentDashboard.css';
 
-const StudentDashboard = () => {
+const StudentDashboard = ({ readOnly = false }) => {
   const { user } = useAuth();
   const { success, error } = useNotification();
   const navigate = useNavigate();
@@ -32,31 +32,43 @@ const StudentDashboard = () => {
   const [showAllTeams, setShowAllTeams] = useState(false); // false = podio, true = todos los grupos
   const [allTeamsWithVotes, setAllTeamsWithVotes] = useState([]);
 
+  // Si es modo readOnly (admin/helper), no verificar hasSeenIntro
+  const isReadOnly = readOnly || (user && user.type !== 'student');
+
   useEffect(() => {
-    if (user && !user.hasSeenIntro) {
+    if (!isReadOnly && user && !user.hasSeenIntro) {
       navigate('/intro');
       return;
     }
     fetchData();
-  }, [user, navigate]);
+  }, [user, navigate, isReadOnly]);
 
   const fetchData = async () => {
     try {
       setLoading(true);
       
-      const [teamsRes, votesRes, configRes, favoritesRes] = await Promise.all([
+      // Si es readOnly, no intentar obtener votos ni favoritos del estudiante
+      const promises = [
         api.get('/teams'),
-        api.get('/students/me/votes'),
-        api.get('/config'),
-        api.get('/favorites')
-      ]);
+        api.get('/config')
+      ];
+      
+      if (!isReadOnly) {
+        promises.push(api.get('/students/me/votes'));
+        promises.push(api.get('/favorites'));
+      } else {
+        promises.push(Promise.resolve({ data: [] })); // votes
+        promises.push(Promise.resolve({ data: { favorites: [] } })); // favorites
+      }
+      
+      const [teamsRes, configRes, votesRes, favoritesRes] = await Promise.all(promises);
 
       setTeams(teamsRes.data);
-      setMyVotes(votesRes.data.map(v => v.teamId));
+      setMyVotes(isReadOnly ? [] : votesRes.data.map(v => v.teamId));
       setVotingOpen(configRes.data.isOpen);
       
       // Obtener favoritos del endpoint o de los teams (si incluyen isFavorite)
-      const favoriteTeamIds = favoritesRes.data.favorites || [];
+      const favoriteTeamIds = isReadOnly ? [] : (favoritesRes.data.favorites || []);
       // También usar isFavorite de teams si está disponible
       const favoritesFromTeams = teamsRes.data
         .filter(team => team.isFavorite)
@@ -97,6 +109,9 @@ const StudentDashboard = () => {
 
 
   const handleVoteClick = (teamId) => {
+    if (isReadOnly) {
+      return; // No permitir votar en modo readOnly
+    }
     const team = teams.find(t => t.id === teamId);
     if (team) {
       setSelectedTeam(team);
@@ -154,6 +169,9 @@ const StudentDashboard = () => {
   };
 
   const handleToggleFavorite = async (teamId) => {
+    if (isReadOnly) {
+      return; // No permitir cambiar favoritos en modo readOnly
+    }
     try {
       const response = await api.post('/favorites', { teamId });
       
@@ -173,8 +191,8 @@ const StudentDashboard = () => {
     return count ? count.voteCount : 0;
   };
 
-  const remainingVotes = 3 - myVotes.length;
-  const canVote = remainingVotes > 0 && votingOpen;
+  const remainingVotes = isReadOnly ? 0 : (3 - myVotes.length);
+  const canVote = !isReadOnly && remainingVotes > 0 && votingOpen;
 
   const filteredTeams = teams.filter(team => {
     // Filtro de favoritos
@@ -297,21 +315,29 @@ const StudentDashboard = () => {
 
         {votingOpen && (
           <div className="votes-info">
-            <p>Votos restantes: <strong>{remainingVotes}</strong> de 3</p>
-            {remainingVotes === 0 && (
-              <p className="no-votes-left">Ya has usado todos tus votos</p>
+            {isReadOnly ? (
+              <p className="read-only-notice">👁️ Modo de solo lectura - No puedes votar</p>
+            ) : (
+              <>
+                <p>Votos restantes: <strong>{remainingVotes}</strong> de 3</p>
+                {remainingVotes === 0 && (
+                  <p className="no-votes-left">Ya has usado todos tus votos</p>
+                )}
+              </>
             )}
           </div>
         )}
 
         {votingOpen && (
           <div className="filters">
-            <button
-              className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            >
-              {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
-            </button>
+            {!isReadOnly && (
+              <button
+                className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              >
+                {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
+              </button>
+            )}
             
             <input
               type="text"
@@ -357,13 +383,13 @@ const StudentDashboard = () => {
                 <AppCard
                   key={team.id}
                   team={team}
-                  onVote={handleVoteClick}
+                  onVote={isReadOnly ? null : handleVoteClick}
                   hasVoted={myVotes.includes(team.id)}
                   canVote={canVote}
                   voteCount={showCounts ? getVoteCount(team.id) : undefined}
                   showCounts={showCounts}
                   isFavorite={favorites.includes(team.id) || team.isFavorite}
-                  onToggleFavorite={handleToggleFavorite}
+                  onToggleFavorite={isReadOnly ? null : handleToggleFavorite}
                 />
               ))}
             </div>
@@ -378,12 +404,14 @@ const StudentDashboard = () => {
         {/* Filtros para la vista de todos los grupos */}
         {!votingOpen && showAllTeams && (
           <div className="filters">
-            <button
-              className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-            >
-              {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
-            </button>
+            {!isReadOnly && (
+              <button
+                className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
+                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              >
+                {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
+              </button>
+            )}
             
             <input
               type="text"
@@ -426,17 +454,17 @@ const StudentDashboard = () => {
           <div className="all-teams-section">
             <div className="teams-grid">
               {filteredAllTeams.map(team => (
-                <AppCard
-                  key={team.id}
-                  team={team}
-                  onVote={null}
-                  hasVoted={myVotes.includes(team.id)}
-                  canVote={false}
-                  voteCount={team.voteCount || 0}
-                  showCounts={true}
-                  isFavorite={favorites.includes(team.id) || team.isFavorite}
-                  onToggleFavorite={handleToggleFavorite}
-                />
+                  <AppCard
+                    key={team.id}
+                    team={team}
+                    onVote={null}
+                    hasVoted={myVotes.includes(team.id)}
+                    canVote={false}
+                    voteCount={team.voteCount || 0}
+                    showCounts={true}
+                    isFavorite={favorites.includes(team.id) || team.isFavorite}
+                    onToggleFavorite={isReadOnly ? null : handleToggleFavorite}
+                  />
               ))}
             </div>
             {filteredAllTeams.length === 0 && (
