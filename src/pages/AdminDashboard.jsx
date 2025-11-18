@@ -14,7 +14,14 @@ const AdminDashboard = () => {
   const [admins, setAdmins] = useState([]);
   const [teams, setTeams] = useState([]);
   const [config, setConfig] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState({
+    dashboard: false,
+    students: false,
+    helpers: false,
+    admins: false,
+    teams: false,
+    config: false
+  });
   const { success, error, warning } = useNotification();
 
   // Filtros para Dashboard
@@ -60,7 +67,9 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => {
+    // Solo cargar datos si no están cargados aún o si cambió la pestaña
     fetchDashboardData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   // Cargar equipos y helpers cuando se necesiten para los filtros y modales
@@ -91,7 +100,7 @@ const AdminDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
+      setLoading(prev => ({ ...prev, [activeTab]: true }));
       
       if (activeTab === 'dashboard') {
         const [summaryRes, byStudentRes] = await Promise.all([
@@ -131,7 +140,7 @@ const AdminDashboard = () => {
       console.error('Error al cargar datos:', err);
       error('Error al cargar los datos');
     } finally {
-      setLoading(false);
+      setLoading(prev => ({ ...prev, [activeTab]: false }));
     }
   };
 
@@ -615,9 +624,6 @@ const AdminDashboard = () => {
     return filtered;
   };
 
-  if (loading) {
-    return <div className="admin-loading">Cargando...</div>;
-  }
 
   return (
     <div className="admin-dashboard">
@@ -666,6 +672,11 @@ const AdminDashboard = () => {
         <div className="admin-content">
           {activeTab === 'dashboard' && (
             <div className="dashboard-content">
+              {loading.dashboard && (
+                <div className="section-loading">Cargando datos del dashboard...</div>
+              )}
+              {!loading.dashboard && (
+              <>
               <div className="stats-grid">
                 <div className="stat-card">
                   <h3>Total de Alumnos</h3>
@@ -798,61 +809,75 @@ const AdminDashboard = () => {
                   <p className="no-results">No se encontraron estudiantes con los filtros seleccionados</p>
                 )}
               </div>
+              </>
+              )}
             </div>
           )}
 
-          {activeTab === 'config' && config && (
-            <div className="config-content">
-              <div className="config-header">
-                <h2>⚙️ Configuración de Votaciones</h2>
-                <p className="config-subtitle">Gestiona el período de votación del concurso</p>
-              </div>
-              
-              <div className="config-card">
-                <div className="config-status-section">
-                  <h3>Estado Actual</h3>
-                  <div className="status-badges">
-                    <span className={`status-badge-large ${config.isOpen ? 'status-open' : 'status-closed'}`}>
-                      {config.isOpen ? '✓ Abierta' : '✗ Cerrada'}
-                    </span>
+          {activeTab === 'config' && (
+            <>
+              {loading.config && (
+                <div className="section-loading">Cargando configuración...</div>
+              )}
+              {!loading.config && config && (
+                <div className="config-content">
+                  <div className="config-header">
+                    <h2>⚙️ Configuración de Votaciones</h2>
+                    <p className="config-subtitle">Gestiona el período de votación del concurso</p>
                   </div>
-                  <div className="config-info-box">
-                    <div className="info-item">
-                      <span className="info-label">📅 Fecha de cierre actual:</span>
-                      <span className="info-value">{new Date(config.votingDeadline).toLocaleString('es-ES', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}</span>
+                  
+                  <div className="config-card">
+                    <div className="config-status-section">
+                      <h3>Estado Actual</h3>
+                      <div className="status-badges">
+                        <span className={`status-badge-large ${config.isOpen ? 'status-open' : 'status-closed'}`}>
+                          {config.isOpen ? '✓ Abierta' : '✗ Cerrada'}
+                        </span>
+                      </div>
+                      <div className="config-info-box">
+                        <div className="info-item">
+                          <span className="info-label">📅 Fecha de cierre actual:</span>
+                          <span className="info-value">{new Date(config.votingDeadline).toLocaleString('es-ES', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="config-form-section">
+                      <h3>Actualizar Fecha de Cierre</h3>
+                      <form onSubmit={handleUpdateDeadline} className="config-form">
+                        <div className="form-group">
+                          <label>Nueva fecha de cierre</label>
+                          <input
+                            type="datetime-local"
+                            name="deadline"
+                            required
+                            defaultValue={new Date(config.votingDeadline).toISOString().slice(0, 16)}
+                            className="config-input"
+                          />
+                        </div>
+                        <button type="submit" className="config-submit-button">
+                          💾 Actualizar Fecha
+                        </button>
+                      </form>
                     </div>
                   </div>
                 </div>
-                
-                <div className="config-form-section">
-                  <h3>Actualizar Fecha de Cierre</h3>
-                  <form onSubmit={handleUpdateDeadline} className="config-form">
-                    <div className="form-group">
-                      <label>Nueva fecha de cierre</label>
-                      <input
-                        type="datetime-local"
-                        name="deadline"
-                        required
-                        defaultValue={new Date(config.votingDeadline).toISOString().slice(0, 16)}
-                        className="config-input"
-                      />
-                    </div>
-                    <button type="submit" className="config-submit-button">
-                      💾 Actualizar Fecha
-                    </button>
-                  </form>
-                </div>
-              </div>
-            </div>
+              )}
+            </>
           )}
 
           {activeTab === 'students' && (
+            <>
+              {loading.students && (
+                <div className="section-loading">Cargando estudiantes...</div>
+              )}
+              {!loading.students && (
             <div className="table-content">
               <div className="section-header">
                 <h2>Estudiantes</h2>
@@ -958,9 +983,16 @@ const AdminDashboard = () => {
                 <p className="no-results">No se encontraron estudiantes con los filtros seleccionados</p>
               )}
             </div>
+              )}
+            </>
           )}
 
           {activeTab === 'helpers' && (
+            <>
+              {loading.helpers && (
+                <div className="section-loading">Cargando ayudantes...</div>
+              )}
+              {!loading.helpers && (
             <div className="table-content">
               <div className="section-header">
                 <h2>Ayudantes</h2>
@@ -1005,9 +1037,16 @@ const AdminDashboard = () => {
                 </tbody>
               </table>
             </div>
+              )}
+            </>
           )}
 
           {activeTab === 'admins' && (
+            <>
+              {loading.admins && (
+                <div className="section-loading">Cargando administradores...</div>
+              )}
+              {!loading.admins && (
             <div className="table-content">
               <h2>Administradores</h2>
               <table className="admin-table">
@@ -1027,9 +1066,16 @@ const AdminDashboard = () => {
                 </tbody>
               </table>
             </div>
+              )}
+            </>
           )}
 
           {activeTab === 'teams' && (
+            <>
+              {loading.teams && (
+                <div className="section-loading">Cargando equipos...</div>
+              )}
+              {!loading.teams && (
             <div className="table-content">
               <div className="section-header">
                 <h2>Equipos</h2>
@@ -1156,6 +1202,8 @@ const AdminDashboard = () => {
                 <p className="no-results">No se encontraron equipos con los filtros seleccionados</p>
               )}
             </div>
+              )}
+            </>
           )}
         </div>
       </div>
