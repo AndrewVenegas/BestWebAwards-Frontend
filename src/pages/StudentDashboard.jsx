@@ -8,6 +8,7 @@ import Countdown from '../components/Countdown';
 import AppCard from '../components/AppCard';
 import Podium from '../components/Podium';
 import PasswordConfirmModal from '../components/PasswordConfirmModal';
+import InstructionsButton from '../components/InstructionsButton';
 import './StudentDashboard.css';
 
 const StudentDashboard = ({ readOnly = false }) => {
@@ -415,7 +416,7 @@ const StudentDashboard = ({ readOnly = false }) => {
             
             <input
               type="text"
-              placeholder="Buscar por nombre de equipo o aplicación..."
+              placeholder="Buscar por equipo o aplicación"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
@@ -485,6 +486,9 @@ const StudentDashboard = ({ readOnly = false }) => {
         loading={passwordLoading}
         errorMessage={passwordError}
       />
+
+      {/* Botón flotante de instrucciones */}
+      {!isReadOnly && <InstructionsButton />}
     </div>
   );
 };

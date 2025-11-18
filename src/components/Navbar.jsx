@@ -38,7 +38,6 @@ const Navbar = () => {
             {user.type === 'admin' && (
               <>
                 <Link to="/dashboard" className="navbar-link">Dashboard</Link>
-                <Link to="/admin" className="navbar-link">Gestión</Link>
                 <Link to="/votaciones" className="navbar-link">Votaciones</Link>
               </>
             )}

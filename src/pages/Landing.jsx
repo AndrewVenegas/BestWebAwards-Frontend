@@ -13,7 +13,7 @@ const Landing = () => {
           BestWebAwards
         </h1>
         <p className="landing-subtitle animate-fade-in-delay">
-          El concurso de aplicaciones web más importante del curso
+          El concurso de aplicaciones web más importante del curso IIC2513
         </p>
         <p className="landing-description animate-fade-in-delay-2">
           Descubre las mejores aplicaciones creadas por tus compañeros,
