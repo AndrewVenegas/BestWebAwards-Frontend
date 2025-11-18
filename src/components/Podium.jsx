@@ -104,104 +104,228 @@ const Podium = () => {
     );
   }
 
+  // Separar los primeros 3 lugares del resto
+  const topThree = podium.filter(entry => entry.position <= 3);
+  const rest = podium.filter(entry => entry.position > 3);
+
   return (
     <div className="podium-container">
-      <h2 className="podium-title">🏆 Podio de Ganadores 🏆</h2>
-      <div className="podium-grid">
-        {podium.map((entry, index) => {
-          const isFirst = entry.position === 1;
-          const isSecond = entry.position === 2;
-          const isThird = entry.position === 3;
-          const isTopThree = entry.position <= 3;
+      <div className="podium-header">
+        <h2 className="podium-title">🏆 Podio de Ganadores 🏆</h2>
+        <p className="podium-subtitle">Los 5 mejores proyectos del concurso</p>
+      </div>
+      
+      {/* Top 3 en formato podio olímpico */}
+      {topThree.length > 0 && (
+        <div className="podium-top-three">
+          {topThree.map((entry) => {
+            const isFirst = entry.position === 1;
+            const isSecond = entry.position === 2;
+            const isThird = entry.position === 3;
 
-          return (
-            <div
-              key={entry.teamId}
-              className={`podium-item ${isFirst ? 'first' : ''} ${isSecond ? 'second' : ''} ${isThird ? 'third' : ''}`}
-            >
-              <div className="podium-position">
-                {entry.position === 1 && '🥇'}
-                {entry.position === 2 && '🥈'}
-                {entry.position === 3 && '🥉'}
-                {entry.position > 3 && `#${entry.position}`}
-              </div>
-              
-              {entry.screenshotUrl && (
-                <div 
-                  className={`podium-screenshot ${entry.videoUrl ? 'clickable' : ''}`}
-                  style={{ backgroundImage: `url(${entry.screenshotUrl})` }}
-                  onClick={() => entry.videoUrl && handleScreenshotClick(entry)}
-                  onMouseEnter={() => entry.videoUrl && handleMouseEnter(entry.teamId)}
-                  onMouseLeave={() => entry.videoUrl && handleMouseLeave(entry.teamId)}
-                >
-                  {entry.videoUrl && showPlayOverlay[entry.teamId] && !showVideoModal && (
-                    <div 
-                      className="podium-play-overlay"
-                      onMouseEnter={() => handleMouseEnter(entry.teamId)}
-                      onMouseLeave={() => handleMouseLeave(entry.teamId)}
-                    >
-                      <span className="podium-play-icon">▶</span>
-                    </div>
-                  )}
+            return (
+              <div
+                key={entry.teamId}
+                className={`podium-item-top ${isFirst ? 'first' : ''} ${isSecond ? 'second' : ''} ${isThird ? 'third' : ''}`}
+              >
+                <div className="podium-rank-badge">
+                  {entry.position === 1 && <span className="medal">🥇</span>}
+                  {entry.position === 2 && <span className="medal">🥈</span>}
+                  {entry.position === 3 && <span className="medal">🥉</span>}
+                  <span className="rank-number">#{entry.position}</span>
                 </div>
-              )}
-              
-              <div className="podium-info">
-                <h3 className="podium-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
-                {entry.appName && (
-                  <p className="podium-app-name">{capitalizeName(entry.appName)}</p>
-                )}
                 
-                {entry.helper && (
-                  <div className="podium-helper">
-                    <span className="podium-helper-label">Ayudante:</span>
-                    <span className="podium-helper-name">{capitalizeName(entry.helper.name)}</span>
-                  </div>
-                )}
-                
-                {entry.students && entry.students.length > 0 && (
-                  <div className="podium-students">
-                    <h4 className="podium-students-title">Integrantes:</h4>
-                    <div className="podium-students-list">
-                      {entry.students.map((student) => (
-                        <div key={student.id} className="podium-student-item">
+                {entry.screenshotUrl && (
+                  <div 
+                    className={`podium-screenshot ${entry.videoUrl ? 'clickable' : ''}`}
+                    style={{ backgroundImage: `url(${entry.screenshotUrl})` }}
+                    onClick={() => entry.videoUrl && handleScreenshotClick(entry)}
+                    onMouseEnter={() => entry.videoUrl && handleMouseEnter(entry.teamId)}
+                    onMouseLeave={() => entry.videoUrl && handleMouseLeave(entry.teamId)}
+                  >
+                    {/* Avatares de estudiantes y ayudante sobre la imagen */}
+                    <div className="podium-avatars-overlay">
+                      {entry.students && entry.students.map((student) => (
+                        <div key={student.id} className="podium-avatar-wrapper">
                           {student.avatarUrl ? (
                             <img 
                               src={student.avatarUrl} 
-                              alt={capitalizeName(student.name)} 
-                              className="podium-student-avatar" 
+                              alt={capitalizeName(student.name)}
+                              className="podium-avatar"
                             />
                           ) : (
-                            <div className="podium-student-avatar placeholder">
+                            <div className="podium-avatar placeholder">
                               {student.name.charAt(0).toUpperCase()}
                             </div>
                           )}
-                          <span className="podium-student-name">{capitalizeName(student.name)}</span>
+                          <div className="podium-avatar-tooltip">
+                            <span className="tooltip-name">{capitalizeName(student.name)}</span>
+                          </div>
                         </div>
                       ))}
+                      {entry.helper && (
+                        <div className="podium-avatar-wrapper helper-avatar">
+                          {entry.helper.avatarUrl ? (
+                            <img 
+                              src={entry.helper.avatarUrl} 
+                              alt={capitalizeName(entry.helper.name)}
+                              className="podium-avatar"
+                            />
+                          ) : (
+                            <div className="podium-avatar placeholder">
+                              {entry.helper.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="podium-avatar-tooltip">
+                            <span className="tooltip-label">Ayudante:</span>
+                            <span className="tooltip-name">{capitalizeName(entry.helper.name)}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
+                    
+                    {entry.videoUrl && showPlayOverlay[entry.teamId] && !showVideoModal && (
+                      <div 
+                        className="podium-play-overlay"
+                        onMouseEnter={() => handleMouseEnter(entry.teamId)}
+                        onMouseLeave={() => handleMouseLeave(entry.teamId)}
+                      >
+                        <span className="podium-play-icon">▶</span>
+                      </div>
+                    )}
                   </div>
                 )}
                 
-                <div className="podium-votes">
-                  <strong>{entry.voteCount}</strong> {entry.voteCount === 1 ? 'voto' : 'votos'}
-                </div>
+                <div className="podium-info-top">
+                  <h3 className="podium-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
+                  {entry.appName && (
+                    <p className="podium-app-name">{capitalizeName(entry.appName)}</p>
+                  )}
+                  
+                  <div className="podium-votes-top">
+                    <span className="votes-label">Votos:</span>
+                    <span className="votes-count">{entry.voteCount}</span>
+                  </div>
 
-                {entry.deployUrl && (
-                  <a 
-                    href={entry.deployUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="podium-deploy-link"
-                  >
-                    Probar Aplicación
-                  </a>
-                )}
+                  {entry.deployUrl && (
+                    <a 
+                      href={entry.deployUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="podium-deploy-link"
+                    >
+                      Probar Aplicación
+                    </a>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Lugares 4 y 5 */}
+      {rest.length > 0 && (
+        <div className="podium-rest">
+          <h3 className="podium-rest-title">Otros Finalistas</h3>
+          <div className="podium-rest-grid">
+            {rest.map((entry) => (
+              <div
+                key={entry.teamId}
+                className="podium-item-rest"
+              >
+                <div className="podium-rank-badge-rest">
+                  <span className="rank-number">#{entry.position}</span>
+                </div>
+                
+                {entry.screenshotUrl && (
+                  <div 
+                    className={`podium-screenshot-rest ${entry.videoUrl ? 'clickable' : ''}`}
+                    style={{ backgroundImage: `url(${entry.screenshotUrl})` }}
+                    onClick={() => entry.videoUrl && handleScreenshotClick(entry)}
+                    onMouseEnter={() => entry.videoUrl && handleMouseEnter(entry.teamId)}
+                    onMouseLeave={() => entry.videoUrl && handleMouseLeave(entry.teamId)}
+                  >
+                    {/* Avatares de estudiantes y ayudante sobre la imagen */}
+                    <div className="podium-avatars-overlay">
+                      {entry.students && entry.students.map((student) => (
+                        <div key={student.id} className="podium-avatar-wrapper">
+                          {student.avatarUrl ? (
+                            <img 
+                              src={student.avatarUrl} 
+                              alt={capitalizeName(student.name)}
+                              className="podium-avatar"
+                            />
+                          ) : (
+                            <div className="podium-avatar placeholder">
+                              {student.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="podium-avatar-tooltip">
+                            <span className="tooltip-name">{capitalizeName(student.name)}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {entry.helper && (
+                        <div className="podium-avatar-wrapper helper-avatar">
+                          {entry.helper.avatarUrl ? (
+                            <img 
+                              src={entry.helper.avatarUrl} 
+                              alt={capitalizeName(entry.helper.name)}
+                              className="podium-avatar"
+                            />
+                          ) : (
+                            <div className="podium-avatar placeholder">
+                              {entry.helper.name.charAt(0).toUpperCase()}
+                            </div>
+                          )}
+                          <div className="podium-avatar-tooltip">
+                            <span className="tooltip-label">Ayudante:</span>
+                            <span className="tooltip-name">{capitalizeName(entry.helper.name)}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {entry.videoUrl && showPlayOverlay[entry.teamId] && !showVideoModal && (
+                      <div 
+                        className="podium-play-overlay"
+                        onMouseEnter={() => handleMouseEnter(entry.teamId)}
+                        onMouseLeave={() => handleMouseLeave(entry.teamId)}
+                      >
+                        <span className="podium-play-icon">▶</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+                
+                <div className="podium-info-rest">
+                  <h3 className="podium-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
+                  {entry.appName && (
+                    <p className="podium-app-name">{capitalizeName(entry.appName)}</p>
+                  )}
+                  
+                  <div className="podium-votes-rest">
+                    <span className="votes-count">{entry.voteCount}</span>
+                    <span className="votes-label"> {entry.voteCount === 1 ? 'voto' : 'votos'}</span>
+                  </div>
+
+                  {entry.deployUrl && (
+                    <a 
+                      href={entry.deployUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="podium-deploy-link"
+                    >
+                      Probar Aplicación
+                    </a>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Modal de video */}
       {showVideoModal && (() => {
