@@ -49,38 +49,54 @@
   max-width: 320px;
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.6s ease;
   min-height: 600px;
+  opacity: 0;
+  transform: translateY(100px);
 }
 
 .podium-item-top.first {
   background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #fff9e6 100%);
   border: 4px solid #ffd700;
-  transform: translateY(-20px) scale(1.05);
   z-index: 3;
   box-shadow: 0 12px 40px rgba(255, 215, 0, 0.4);
-  animation-delay: 0.1s;
 }
 
 .podium-item-top.second {
   background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 50%, #f5f5f5 100%);
   border: 4px solid #c0c0c0;
-  transform: translateY(-10px) scale(1.02);
   z-index: 2;
   box-shadow: 0 10px 35px rgba(192, 192, 192, 0.35);
-  animation-delay: 0.2s;
 }
 
 .podium-item-top.third {
   background: linear-gradient(135deg, #cd7f32 0%, #e6a85c 50%, #fff4e6 100%);
   border: 4px solid #cd7f32;
-  transform: translateY(-5px);
   z-index: 1;
   box-shadow: 0 8px 30px rgba(205, 127, 50, 0.3);
-  animation-delay: 0.3s;
 }
 
-.podium-item-top:hover {
+/* Animaciones de aparición de abajo hacia arriba */
+.podium-item-top.first.podium-animate-1 {
+  animation: podiumSlideUpFirst 0.8s ease 0.2s forwards;
+}
+
+.podium-item-top.second.podium-animate-2 {
+  animation: podiumSlideUpSecond 0.8s ease 0.5s forwards;
+}
+
+.podium-item-top.third.podium-animate-3 {
+  animation: podiumSlideUpThird 0.8s ease 0.8s forwards;
+}
+
+.podium-animate-rest-0 {
+  animation: podiumSlideUp 0.8s ease 1.1s forwards;
+}
+
+.podium-animate-rest-1 {
+  animation: podiumSlideUp 0.8s ease 1.4s forwards;
+}
+
+.podium-item-top.first:hover {
   transform: translateY(-25px) scale(1.08);
 }
 
@@ -361,6 +377,8 @@
   flex-direction: column;
   height: 100%;
   min-height: 500px;
+  opacity: 0;
+  transform: translateY(100px);
 }
 
 .podium-item-rest:hover {
@@ -570,6 +588,50 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes podiumSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes podiumSlideUpFirst {
+  from {
+    opacity: 0;
+    transform: translateY(100px) scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-20px) scale(1.05);
+  }
+}
+
+@keyframes podiumSlideUpSecond {
+  from {
+    opacity: 0;
+    transform: translateY(100px) scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.02);
+  }
+}
+
+@keyframes podiumSlideUpThird {
+  from {
+    opacity: 0;
+    transform: translateY(100px) scale(1);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-5px) scale(1);
   }
 }
 

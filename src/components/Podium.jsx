@@ -126,7 +126,7 @@ const Podium = () => {
             return (
               <div
                 key={entry.teamId}
-                className={`podium-item-top ${isFirst ? 'first' : ''} ${isSecond ? 'second' : ''} ${isThird ? 'third' : ''}`}
+                className={`podium-item-top ${isFirst ? 'first' : ''} ${isSecond ? 'second' : ''} ${isThird ? 'third' : ''} podium-animate-${entry.position}`}
               >
                 <div className="podium-rank-badge">
                   {entry.position === 1 && <span className="medal">🥇</span>}
@@ -229,10 +229,10 @@ const Podium = () => {
         <div className="podium-rest">
           <h3 className="podium-rest-title">Otros Finalistas</h3>
           <div className="podium-rest-grid">
-            {rest.map((entry) => (
+            {rest.map((entry, index) => (
               <div
                 key={entry.teamId}
-                className="podium-item-rest"
+                className={`podium-item-rest podium-animate-rest-${index}`}
               >
                 <div className="podium-rank-badge-rest">
                   <span className="rank-number">#{entry.position}</span>

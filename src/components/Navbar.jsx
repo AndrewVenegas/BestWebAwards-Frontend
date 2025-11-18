@@ -36,12 +36,18 @@ const Navbar = () => {
   return (
     <nav ref={navRef} className={`navbar ${isLoginPage ? 'navbar-slide-down' : ''}`}>
       <div className="navbar-container">
-        {!isLandingPage && (
+        {!isLandingPage ? (
           <Link to="/" className="navbar-brand">
             <img src="/logo.svg" alt="BestWebAwards Logo" className="navbar-logo" />
             <span>BestWebAwards</span>
           </Link>
-        )}
+        ) : user ? (
+          // Mantener el espacio del logo cuando está en landing page con usuario logueado
+          <div className="navbar-brand navbar-brand-spacer" aria-hidden="true">
+            <img src="/logo.svg" alt="" className="navbar-logo" style={{ opacity: 0, pointerEvents: 'none' }} />
+            <span style={{ opacity: 0, pointerEvents: 'none' }}>BestWebAwards</span>
+          </div>
+        ) : null}
         
         {user && (
           <div className="navbar-menu">
