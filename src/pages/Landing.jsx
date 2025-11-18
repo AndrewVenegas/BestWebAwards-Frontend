@@ -9,23 +9,26 @@ const Landing = () => {
   return (
     <div className="landing">
       <div className="landing-content">
-        <h1 className="landing-title animate-fade-in">
+        <div className="landing-logo-container animate-fade-in">
+          <img src="/logo.svg" alt="BestWebAwards Logo" className="landing-logo" />
+        </div>
+        <h1 className="landing-title animate-fade-in-delay">
           BestWebAwards
         </h1>
-        <p className="landing-subtitle animate-fade-in-delay">
+        <p className="landing-subtitle animate-fade-in-delay-2">
           El concurso de aplicaciones web más importante del curso IIC2513
         </p>
-        <p className="landing-description animate-fade-in-delay-2">
+        <p className="landing-description animate-fade-in-delay-3">
           Descubre las mejores aplicaciones creadas por tus compañeros,
           vota por tus favoritas y celebra la innovación en desarrollo web.
         </p>
         {!user && (
-          <Link to="/login" className="landing-button animate-fade-in-delay-3">
+          <Link to="/login" className="landing-button animate-fade-in-delay-4">
             Iniciar Sesión
           </Link>
         )}
         {user && user.type === 'student' && (
-          <Link to="/dashboard" className="landing-button animate-fade-in-delay-3">
+          <Link to="/dashboard" className="landing-button animate-fade-in-delay-4">
             Ir a votaciones
           </Link>
         )}

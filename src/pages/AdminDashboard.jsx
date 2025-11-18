@@ -651,6 +651,33 @@ const AdminDashboard = () => {
     return filtered;
   };
 
+  // Funciones para resetear filtros
+  const resetDashboardFilters = () => {
+    setDashboardFilters({
+      teamParticipation: 'all',
+      studentVotingStatus: 'all',
+      searchTerm: ''
+    });
+  };
+
+  const resetStudentFilters = () => {
+    setStudentFilters({
+      votingStatus: 'all',
+      searchTerm: '',
+      teamId: ''
+    });
+  };
+
+  const resetTeamFilters = () => {
+    setTeamFilters({
+      participation: 'all',
+      searchTerm: '',
+      helperId: '',
+      tipoApp: '',
+      sortBy: 'default'
+    });
+  };
+
   const getFilteredTeams = () => {
     let filtered = [...teams];
 
@@ -833,7 +860,34 @@ const AdminDashboard = () => {
 
               {/* Filtros del Dashboard */}
               <div className="filters-section">
-                <h3>Filtros</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3>Filtros</h3>
+                  <button
+                    onClick={resetDashboardFilters}
+                    className="reset-filters-button"
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: '#f44336',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = '#d32f2f';
+                      e.target.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = '#f44336';
+                      e.target.style.transform = 'translateY(0)';
+                    }}
+                  >
+                    🗑️ Eliminar filtros
+                  </button>
+                </div>
                 <div className="filters-grid">
                   <div className="filter-group">
                     <label>Equipos:</label>
@@ -1030,6 +1084,34 @@ const AdminDashboard = () => {
               
               {/* Filtros para Estudiantes */}
               <div className="filters-section">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 style={{ margin: 0 }}>Filtros</h3>
+                  <button
+                    onClick={resetStudentFilters}
+                    className="reset-filters-button"
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: '#f44336',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = '#d32f2f';
+                      e.target.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = '#f44336';
+                      e.target.style.transform = 'translateY(0)';
+                    }}
+                  >
+                    🗑️ Eliminar filtros
+                  </button>
+                </div>
                 <div className="filters-grid">
                 <div className="filter-group">
                     <label>Buscar:</label>
@@ -1254,6 +1336,34 @@ const AdminDashboard = () => {
               
               {/* Filtros para Equipos */}
               <div className="filters-section">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 style={{ margin: 0 }}>Filtros</h3>
+                  <button
+                    onClick={resetTeamFilters}
+                    className="reset-filters-button"
+                    style={{
+                      padding: '0.5rem 1rem',
+                      background: '#f44336',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '0.9rem',
+                      fontWeight: '500',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.background = '#d32f2f';
+                      e.target.style.transform = 'translateY(-1px)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.background = '#f44336';
+                      e.target.style.transform = 'translateY(0)';
+                    }}
+                  >
+                    🗑️ Eliminar filtros
+                  </button>
+                </div>
                 <div className="filters-grid">
                 <div className="filter-group">
                     <label>Buscar:</label>

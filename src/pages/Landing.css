@@ -14,6 +14,30 @@
   max-width: 800px;
 }
 
+.landing-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.landing-logo {
+  width: 200px;
+  height: 200px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.3));
+  animation: logoFloat 3s ease-in-out infinite;
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
 .landing-title {
   font-size: 4rem;
   font-weight: bold;
@@ -125,6 +149,10 @@
 }
 
 .animate-fade-in-delay-3 {
+  animation: fadeIn 1s ease-in 0.6s both;
+}
+
+.animate-fade-in-delay-4 {
   animation: fadeIn 1s ease-in 0.9s both;
 }
 
@@ -140,6 +168,11 @@
 }
 
 @media (max-width: 768px) {
+  .landing-logo {
+    width: 150px;
+    height: 150px;
+  }
+
   .landing-title {
     font-size: 2.5rem;
   }

@@ -45,6 +45,15 @@ const StudentDashboard = ({ readOnly = false }) => {
     fetchData();
   }, [user, navigate, isReadOnly]);
 
+  // Función para resetear todos los filtros
+  const resetFilters = () => {
+    setSearchTerm('');
+    setFilterStudent('');
+    setFilterHelper('');
+    setFilterTipoApp('');
+    setShowFavoritesOnly(false);
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -378,63 +387,92 @@ const StudentDashboard = ({ readOnly = false }) => {
 
         {votingOpen && (
           <div className="filters">
-            {!isReadOnly && (
-              <button
-                className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
-                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
+              {!isReadOnly && (
+                <button
+                  className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
+                  onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                >
+                  {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
+                </button>
+              )}
+              
+              <input
+                type="text"
+                placeholder="Buscar por equipo o aplicación"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              
+              <select
+                value={filterStudent}
+                onChange={(e) => setFilterStudent(e.target.value)}
+                className="filter-select"
               >
-                {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
+                <option value="">Todos los estudiantes</option>
+                {allStudents.map(student => (
+                  <option key={student.id} value={student.id}>
+                    {capitalizeName(student.name)}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={filterHelper}
+                onChange={(e) => setFilterHelper(e.target.value)}
+                className="filter-select"
+              >
+                    <option value="">Todos los ayudantes</option>
+                    {allHelpers.map(helper => (
+                      <option key={helper.id} value={helper.id}>
+                        {capitalizeName(helper.name)}
+                      </option>
+                    ))}
+              </select>
+
+              <select
+                value={filterTipoApp}
+                onChange={(e) => setFilterTipoApp(e.target.value)}
+                className="filter-select"
+              >
+                <option value="">Todos los tipos</option>
+                <option value="Chat">Chat</option>
+                <option value="E-commerce">E-commerce</option>
+                <option value="Juego">Juego</option>
+                <option value="Planificador">Planificador</option>
+                <option value="Red Social">Red Social</option>
+                <option value="Mix">Mix</option>
+                <option value="Otro">Otro</option>
+              </select>
+
+              <button
+                onClick={resetFilters}
+                className="reset-filters-button"
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  transition: 'all 0.3s ease',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#d32f2f';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#f44336';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                🗑️ Eliminar filtros
               </button>
-            )}
-            
-            <input
-              type="text"
-              placeholder="Buscar por equipo o aplicación"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-            
-            <select
-              value={filterStudent}
-              onChange={(e) => setFilterStudent(e.target.value)}
-              className="filter-select"
-            >
-              <option value="">Todos los estudiantes</option>
-              {allStudents.map(student => (
-                <option key={student.id} value={student.id}>
-                  {capitalizeName(student.name)}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={filterHelper}
-              onChange={(e) => setFilterHelper(e.target.value)}
-              className="filter-select"
-            >
-                  <option value="">Todos los ayudantes</option>
-                  {allHelpers.map(helper => (
-                    <option key={helper.id} value={helper.id}>
-                      {capitalizeName(helper.name)}
-                    </option>
-                  ))}
-            </select>
-
-            <select
-              value={filterTipoApp}
-              onChange={(e) => setFilterTipoApp(e.target.value)}
-              className="filter-select"
-            >
-              <option value="">Todos los tipos</option>
-              <option value="Chat">Chat</option>
-              <option value="E-commerce">E-commerce</option>
-              <option value="Juego">Juego</option>
-              <option value="Planificador">Planificador</option>
-              <option value="Red Social">Red Social</option>
-              <option value="Mix">Mix</option>
-              <option value="Otro">Otro</option>
-            </select>
+            </div>
           </div>
         )}
 
@@ -467,63 +505,92 @@ const StudentDashboard = ({ readOnly = false }) => {
         {/* Filtros para la vista de todos los grupos */}
         {!votingOpen && showAllTeams && (
           <div className="filters">
-            {!isReadOnly && (
-              <button
-                className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
-                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', marginBottom: '1rem' }}>
+              {!isReadOnly && (
+                <button
+                  className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
+                  onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+                >
+                  {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
+                </button>
+              )}
+              
+              <input
+                type="text"
+                placeholder="Buscar por equipo o aplicación"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+              
+              <select
+                value={filterStudent}
+                onChange={(e) => setFilterStudent(e.target.value)}
+                className="filter-select"
               >
-                {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
+                <option value="">Todos los estudiantes</option>
+                {combinedStudents.map(student => (
+                  <option key={student.id} value={student.id}>
+                    {capitalizeName(student.name)}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={filterHelper}
+                onChange={(e) => setFilterHelper(e.target.value)}
+                className="filter-select"
+              >
+                <option value="">Todos los ayudantes</option>
+                {combinedHelpers.map(helper => (
+                  <option key={helper.id} value={helper.id}>
+                    {capitalizeName(helper.name)}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={filterTipoApp}
+                onChange={(e) => setFilterTipoApp(e.target.value)}
+                className="filter-select"
+              >
+                <option value="">Todos los tipos</option>
+                <option value="Chat">Chat</option>
+                <option value="E-commerce">E-commerce</option>
+                <option value="Juego">Juego</option>
+                <option value="Planificador">Planificador</option>
+                <option value="Red Social">Red Social</option>
+                <option value="Mix">Mix</option>
+                <option value="Otro">Otro</option>
+              </select>
+
+              <button
+                onClick={resetFilters}
+                className="reset-filters-button"
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#f44336',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  transition: 'all 0.3s ease',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#d32f2f';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = '#f44336';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                🗑️ Eliminar filtros
               </button>
-            )}
-            
-            <input
-              type="text"
-              placeholder="Buscar por equipo o aplicación"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
-            
-            <select
-              value={filterStudent}
-              onChange={(e) => setFilterStudent(e.target.value)}
-              className="filter-select"
-            >
-              <option value="">Todos los estudiantes</option>
-              {combinedStudents.map(student => (
-                <option key={student.id} value={student.id}>
-                  {capitalizeName(student.name)}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={filterHelper}
-              onChange={(e) => setFilterHelper(e.target.value)}
-              className="filter-select"
-            >
-              <option value="">Todos los ayudantes</option>
-              {combinedHelpers.map(helper => (
-                <option key={helper.id} value={helper.id}>
-                  {capitalizeName(helper.name)}
-                </option>
-              ))}
-            </select>
-
-            <select
-              value={filterTipoApp}
-              onChange={(e) => setFilterTipoApp(e.target.value)}
-              className="filter-select"
-            >
-              <option value="">Todos los tipos</option>
-              <option value="Chat">Chat</option>
-              <option value="E-commerce">E-commerce</option>
-              <option value="Juego">Juego</option>
-              <option value="Planificador">Planificador</option>
-              <option value="Red Social">Red Social</option>
-              <option value="Mix">Mix</option>
-              <option value="Otro">Otro</option>
-            </select>
+            </div>
           </div>
         )}
 

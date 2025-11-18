@@ -35,17 +35,19 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // No redirigir al login si es el endpoint de verificación de contraseña
+      // No redirigir al login si es el endpoint de login (el componente maneja el error)
+      // o si es el endpoint de verificación de contraseña
       // o si es una eliminación de admin (contraseña incorrecta, no sesión expirada)
       // o si la petición tiene la marca skipAuthRedirect
       const url = error.config?.url || '';
       const method = error.config?.method?.toLowerCase() || '';
       const skipAuthRedirect = error.config?.skipAuthRedirect;
       
+      const isLoginEndpoint = url.includes('/auth/login');
       const isPasswordVerification = url.includes('/verify-password');
       const isAdminDelete = url.includes('/admin/admins/') && method === 'delete';
       
-      if (!skipAuthRedirect && !isPasswordVerification && !isAdminDelete) {
+      if (!skipAuthRedirect && !isLoginEndpoint && !isPasswordVerification && !isAdminDelete) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';

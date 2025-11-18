@@ -14,30 +14,46 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    const result = await login(email, password);
-
-    if (result.success) {
-      const user = result.user;
-      
-      // Redirigir según el tipo de usuario
-      if (user.type === 'student') {
-        if (!user.hasSeenIntro) {
-          navigate('/intro');
-        } else {
-          navigate('/dashboard');
-        }
-      } else if (user.type === 'helper') {
-        navigate('/dashboard');
-      } else if (user.type === 'admin') {
-        navigate('/dashboard');
-      }
-    } else {
-      showError(result.error || 'Error al iniciar sesión');
+    
+    // Validación básica antes de enviar
+    if (!email || !password) {
+      showError('Por favor completa todos los campos');
+      return;
     }
     
-    setLoading(false);
+    setLoading(true);
+
+    try {
+      const result = await login(email, password);
+
+      if (result.success) {
+        const user = result.user;
+        
+        // Redirigir según el tipo de usuario
+        if (user.type === 'student') {
+          if (!user.hasSeenIntro) {
+            navigate('/intro');
+          } else {
+            navigate('/dashboard');
+          }
+        } else if (user.type === 'helper') {
+          navigate('/dashboard');
+        } else if (user.type === 'admin') {
+          navigate('/dashboard');
+        }
+      } else {
+        // Si hay error, solo mostrar el pop-up y NO navegar
+        // Asegurarse de que el mensaje de error se muestre
+        const errorMessage = result.error || 'Credenciales incorrectas. Por favor intenta nuevamente.';
+        showError(errorMessage);
+        setLoading(false);
+      }
+    } catch (error) {
+      // Manejar cualquier error inesperado
+      console.error('Error en login:', error);
+      showError('Error al iniciar sesión. Por favor intenta nuevamente.');
+      setLoading(false);
+    }
   };
 
   return (
