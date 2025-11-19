@@ -123,6 +123,16 @@ const Countdown = ({ onVotingClosed, onInitialized }) => {
     }, 500);
   };
 
+  // Si las votaciones están cerradas y ya se inicializó, no mostrar nada (ni siquiera el contenedor)
+  if (isInitialized.current && !isOpen && timeLeft && timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0 && !showFireworks) {
+    return showFireworks ? (
+      <Fireworks 
+        key="fireworks" 
+        onComplete={handleFireworksComplete} 
+      />
+    ) : null;
+  }
+
   return (
     <>
       {showFireworks && (
@@ -131,43 +141,40 @@ const Countdown = ({ onVotingClosed, onInitialized }) => {
           onComplete={handleFireworksComplete} 
         />
       )}
-      {/* Siempre reservar el espacio del countdown */}
-      <div className="countdown-container">
-        {/* Cuando las votaciones están cerradas, no mostrar contenido (pero mantener el espacio) */}
-        {!isOpen && timeLeft && timeLeft.days === 0 && timeLeft.hours === 0 && timeLeft.minutes === 0 && timeLeft.seconds === 0 && !showFireworks ? (
-          <div className="countdown countdown-empty"></div>
-        ) : !isInitialized.current ? (
-          // Mientras carga, mostrar mensaje de carga
-          <div className="countdown countdown-loading">
-            <h3 className="countdown-title">Tiempo Restante para Votar</h3>
-            <div className="countdown-loading-message">Cargando...</div>
-          </div>
-        ) : !showFireworks && timeLeft ? (
-          <div className="countdown">
-            <h3 className="countdown-title">Tiempo Restante para Votar</h3>
-            <div className="countdown-grid">
-              <div className="countdown-item">
-                <div className="countdown-value">{timeLeft.days}</div>
-                <div className="countdown-label">Días</div>
-              </div>
-              <div className="countdown-item">
-                <div className="countdown-value">{timeLeft.hours}</div>
-                <div className="countdown-label">Horas</div>
-              </div>
-              <div className="countdown-item">
-                <div className="countdown-value">{timeLeft.minutes}</div>
-                <div className="countdown-label">Minutos</div>
-              </div>
-              <div className="countdown-item">
-                <div className="countdown-value">{timeLeft.seconds}</div>
-                <div className="countdown-label">Segundos</div>
+      {/* Reservar el espacio del countdown solo cuando las votaciones están abiertas o están cargando */}
+      {(!isInitialized.current || (isOpen && !showFireworks && timeLeft)) && (
+        <div className="countdown-container">
+          {!isInitialized.current ? (
+            // Mientras carga, mostrar mensaje de carga
+            <div className="countdown countdown-loading">
+              <h3 className="countdown-title">Tiempo Restante para Votar</h3>
+              <div className="countdown-loading-message">Cargando...</div>
+            </div>
+          ) : !showFireworks && timeLeft && isOpen ? (
+            <div className="countdown">
+              <h3 className="countdown-title">Tiempo Restante para Votar</h3>
+              <div className="countdown-grid">
+                <div className="countdown-item">
+                  <div className="countdown-value">{timeLeft.days}</div>
+                  <div className="countdown-label">Días</div>
+                </div>
+                <div className="countdown-item">
+                  <div className="countdown-value">{timeLeft.hours}</div>
+                  <div className="countdown-label">Horas</div>
+                </div>
+                <div className="countdown-item">
+                  <div className="countdown-value">{timeLeft.minutes}</div>
+                  <div className="countdown-label">Minutos</div>
+                </div>
+                <div className="countdown-item">
+                  <div className="countdown-value">{timeLeft.seconds}</div>
+                  <div className="countdown-label">Segundos</div>
+                </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="countdown countdown-empty"></div>
-        )}
-      </div>
+          ) : null}
+        </div>
+      )}
     </>
   );
 };

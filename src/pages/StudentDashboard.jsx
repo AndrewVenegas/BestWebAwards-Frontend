@@ -397,7 +397,8 @@ const StudentDashboard = ({ readOnly = false }) => {
           <h1 className="dashboard-title">Aplicaciones Participantes</h1>
           {!votingOpen && (
             <div className="voting-status-badge">
-              Estado votaciones: cerradas
+              <span className="status-dot status-dot-closed"></span>
+              <span>Estado votaciones: cerradas</span>
             </div>
           )}
         </div>
