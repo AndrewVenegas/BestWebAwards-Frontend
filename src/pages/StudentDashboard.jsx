@@ -62,7 +62,7 @@ const StudentDashboard = ({ readOnly = false }) => {
     try {
       setLoading(true);
       
-      // Si es readOnly, no intentar obtener votos ni favoritos del estudiante
+      // Si es readOnly, no intentar obtener votos del estudiante, pero sí favoritos (para helpers/admins)
       const promises = [
         api.get('/teams'),
         api.get('/config')
@@ -73,7 +73,8 @@ const StudentDashboard = ({ readOnly = false }) => {
         promises.push(api.get('/favorites'));
       } else {
         promises.push(Promise.resolve({ data: [] })); // votes
-        promises.push(Promise.resolve({ data: { favorites: [] } })); // favorites
+        // Helpers y admins también pueden tener favoritos
+        promises.push(api.get('/favorites'));
       }
       
       const [teamsRes, configRes, votesRes, favoritesRes] = await Promise.all(promises);
@@ -86,7 +87,8 @@ const StudentDashboard = ({ readOnly = false }) => {
       setVisibleTeamsCount(0);
       
       // Obtener favoritos del endpoint o de los teams (si incluyen isFavorite)
-      const favoriteTeamIds = isReadOnly ? [] : (favoritesRes.data.favorites || []);
+      // Ahora también funciona para helpers y admins
+      const favoriteTeamIds = favoritesRes.data.favorites || [];
       // También usar isFavorite de teams si está disponible
       const favoritesFromTeams = teamsRes.data
         .filter(team => team.isFavorite)
@@ -189,9 +191,7 @@ const StudentDashboard = ({ readOnly = false }) => {
   };
 
   const handleToggleFavorite = async (teamId) => {
-    if (isReadOnly) {
-      return; // No permitir cambiar favoritos en modo readOnly
-    }
+    // Ahora helpers y admins también pueden usar favoritos
     try {
       const response = await api.post('/favorites', { teamId });
       
@@ -448,14 +448,12 @@ const StudentDashboard = ({ readOnly = false }) => {
 
         {votingOpen && (
           <div className="filters-top-section">
-            {!isReadOnly && (
-              <button
-                className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
-                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              >
-                {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
-              </button>
-            )}
+            <button
+              className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            >
+              {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
+            </button>
             
             <input
               type="text"
@@ -533,7 +531,7 @@ const StudentDashboard = ({ readOnly = false }) => {
                   voteCount={showCounts ? getVoteCount(team.id) : undefined}
                   showCounts={showCounts}
                   isFavorite={favorites.includes(team.id) || team.isFavorite}
-                  onToggleFavorite={isReadOnly ? null : handleToggleFavorite}
+                  onToggleFavorite={handleToggleFavorite}
                   index={index}
                 />
               ))}
@@ -549,14 +547,12 @@ const StudentDashboard = ({ readOnly = false }) => {
         {/* Filtros para la vista de todos los grupos */}
         {!votingOpen && showAllTeams && (
           <div className="filters-top-section">
-            {!isReadOnly && (
-              <button
-                className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
-                onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
-              >
-                {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
-              </button>
-            )}
+            <button
+              className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
+              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+            >
+              {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
+            </button>
             
             <input
               type="text"
@@ -634,7 +630,7 @@ const StudentDashboard = ({ readOnly = false }) => {
                     voteCount={team.voteCount || 0}
                     showCounts={true}
                     isFavorite={favorites.includes(team.id) || team.isFavorite}
-                    onToggleFavorite={isReadOnly ? null : handleToggleFavorite}
+                    onToggleFavorite={handleToggleFavorite}
                     index={index}
                   />
               ))}

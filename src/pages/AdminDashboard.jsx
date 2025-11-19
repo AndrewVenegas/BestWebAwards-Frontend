@@ -4,11 +4,18 @@ import { useNotification } from '../contexts/NotificationContext';
 import { capitalizeName } from '../utils/format';
 import PasswordConfirmModal from '../components/PasswordConfirmModal';
 import FilterDropdown from '../components/FilterDropdown';
+import useAnimatedNumber from '../hooks/useAnimatedNumber';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState(null);
+  
+  // Valores animados para las estadísticas del dashboard (secuencial: 0s, 1s, 2s)
+  const animatedTotalStudents = useAnimatedNumber(stats?.totalStudents || 0, 1000, 0);
+  const animatedTotalVotes = useAnimatedNumber(stats?.totalVotes || 0, 1000, 1000);
+  const animatedParticipatingTeams = useAnimatedNumber(stats?.participatingTeams || 0, 1000, 2000);
+  
   const [votesSummary, setVotesSummary] = useState([]);
   const [votesByStudent, setVotesByStudent] = useState([]);
   const [students, setStudents] = useState([]);
@@ -47,6 +54,16 @@ const AdminDashboard = () => {
     votingStatus: 'all', // 'all', 'complete', 'in-progress', 'not-voted'
     searchTerm: '',
     teamId: ''
+  });
+
+  // Filtros para Ayudantes
+  const [helperFilters, setHelperFilters] = useState({
+    searchTerm: ''
+  });
+
+  // Filtros para Administradores
+  const [adminFilters, setAdminFilters] = useState({
+    searchTerm: ''
   });
 
   // Estados para modales y formularios
@@ -679,6 +696,48 @@ const AdminDashboard = () => {
     });
   };
 
+  const resetHelperFilters = () => {
+    setHelperFilters({
+      searchTerm: ''
+    });
+  };
+
+  const resetAdminFilters = () => {
+    setAdminFilters({
+      searchTerm: ''
+    });
+  };
+
+  const getFilteredHelpers = () => {
+    let filtered = [...helpers];
+
+    // Filtro por búsqueda
+    if (helperFilters.searchTerm) {
+      const term = helperFilters.searchTerm.toLowerCase();
+      filtered = filtered.filter(helper => 
+        (helper.name && helper.name.toLowerCase().includes(term)) ||
+        (helper.email && helper.email.toLowerCase().includes(term))
+      );
+    }
+
+    return filtered;
+  };
+
+  const getFilteredAdmins = () => {
+    let filtered = [...admins];
+
+    // Filtro por búsqueda
+    if (adminFilters.searchTerm) {
+      const term = adminFilters.searchTerm.toLowerCase();
+      filtered = filtered.filter(admin => 
+        (admin.name && admin.name.toLowerCase().includes(term)) ||
+        (admin.email && admin.email.toLowerCase().includes(term))
+      );
+    }
+
+    return filtered;
+  };
+
   const getFilteredTeams = () => {
     let filtered = [...teams];
 
@@ -847,21 +906,29 @@ const AdminDashboard = () => {
               <div className="stats-grid">
                 <div className="stat-card">
                   <h3>Total de Alumnos</h3>
-                  <p className="stat-value">{stats?.totalStudents || 0}</p>
+                  <p className="stat-value">{animatedTotalStudents}</p>
                 </div>
                 <div className="stat-card">
                   <h3>Total de Votos</h3>
-                  <p className="stat-value">{stats?.totalVotes || 0}</p>
+                  <p className="stat-value">{animatedTotalVotes}</p>
                 </div>
                 <div className="stat-card">
                   <h3>Equipos Participantes</h3>
-                  <p className="stat-value">{stats?.participatingTeams || 0}</p>
+                  <p className="stat-value">{animatedParticipatingTeams}</p>
                 </div>
               </div>
 
               {/* Filtros del Dashboard */}
-              <FilterDropdown onReset={resetDashboardFilters}>
-                <div className="filters-grid">
+              <div className="filters-top-section">
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre, grupo, aplicación..."
+                  value={dashboardFilters.searchTerm}
+                  onChange={(e) => setDashboardFilters({ ...dashboardFilters, searchTerm: e.target.value })}
+                  className="search-input"
+                />
+                
+                <FilterDropdown onReset={resetDashboardFilters}>
                   <div className="filter-group">
                     <label>Equipos:</label>
                     <select
@@ -888,19 +955,8 @@ const AdminDashboard = () => {
                       <option value="not-voted">Sin votar</option>
                     </select>
                   </div>
-
-                  <div className="filter-group">
-                    <label>Buscar:</label>
-                    <input
-                      type="text"
-                      placeholder="Nombre, grupo, aplicación..."
-                      value={dashboardFilters.searchTerm}
-                      onChange={(e) => setDashboardFilters({ ...dashboardFilters, searchTerm: e.target.value })}
-                      className="filter-input"
-                    />
-                  </div>
-                </div>
-              </FilterDropdown>
+                </FilterDropdown>
+              </div>
 
               <div className="votes-summary">
                 <h2>Votos por Equipo ({getFilteredVotesSummary().length})</h2>
@@ -1056,18 +1112,16 @@ const AdminDashboard = () => {
               </div>
               
               {/* Filtros para Estudiantes */}
-              <FilterDropdown onReset={resetStudentFilters}>
-                <div className="filters-grid">
-                  <div className="filter-group">
-                    <label>Buscar:</label>
-                    <input
-                      type="text"
-                      placeholder="Nombre, email..."
-                      value={studentFilters.searchTerm}
-                      onChange={(e) => setStudentFilters({ ...studentFilters, searchTerm: e.target.value })}
-                      className="filter-input"
-                    />
-                  </div>
+              <div className="filters-top-section">
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre, email o grupo..."
+                  value={studentFilters.searchTerm}
+                  onChange={(e) => setStudentFilters({ ...studentFilters, searchTerm: e.target.value })}
+                  className="search-input"
+                />
+                
+                <FilterDropdown onReset={resetStudentFilters}>
                   <div className="filter-group">
                     <label>Estado de Votación:</label>
                     <select
@@ -1097,8 +1151,8 @@ const AdminDashboard = () => {
                       ))}
                     </select>
                   </div>
-                </div>
-              </FilterDropdown>
+                </FilterDropdown>
+              </div>
 
               <table className="admin-table">
                 <thead>
@@ -1168,6 +1222,18 @@ const AdminDashboard = () => {
                   + Crear Ayudante
                 </button>
               </div>
+              
+              {/* Filtros para Ayudantes */}
+              <div className="filters-top-section">
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre o email..."
+                  value={helperFilters.searchTerm}
+                  onChange={(e) => setHelperFilters({ ...helperFilters, searchTerm: e.target.value })}
+                  className="search-input"
+                />
+              </div>
+              
               <table className="admin-table">
                 <thead>
                   <tr>
@@ -1177,7 +1243,7 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {helpers.map(helper => (
+                  {getFilteredHelpers().map(helper => (
                     <tr key={helper.id}>
                       <td>{capitalizeName(helper.name)}</td>
                       <td>{helper.email}</td>
@@ -1222,6 +1288,18 @@ const AdminDashboard = () => {
                   + Crear Administrador
                 </button>
               </div>
+              
+              {/* Filtros para Administradores */}
+              <div className="filters-top-section">
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre o email..."
+                  value={adminFilters.searchTerm}
+                  onChange={(e) => setAdminFilters({ ...adminFilters, searchTerm: e.target.value })}
+                  className="search-input"
+                />
+              </div>
+              
               <table className="admin-table">
                 <thead>
                   <tr>
@@ -1231,7 +1309,7 @@ const AdminDashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {admins.map(admin => (
+                  {getFilteredAdmins().map(admin => (
                     <tr key={admin.id}>
                       <td>{capitalizeName(admin.name)}</td>
                       <td>{admin.email}</td>
@@ -1278,18 +1356,16 @@ const AdminDashboard = () => {
               </div>
               
               {/* Filtros para Equipos */}
-              <FilterDropdown onReset={resetTeamFilters}>
-                <div className="filters-grid">
-                  <div className="filter-group">
-                    <label>Buscar:</label>
-                    <input
-                      type="text"
-                      placeholder="Nombre equipo, aplicación, ayudante..."
-                      value={teamFilters.searchTerm}
-                      onChange={(e) => setTeamFilters({ ...teamFilters, searchTerm: e.target.value })}
-                      className="filter-input"
-                    />
-                  </div>
+              <div className="filters-top-section">
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre equipo, aplicación o ayudante..."
+                  value={teamFilters.searchTerm}
+                  onChange={(e) => setTeamFilters({ ...teamFilters, searchTerm: e.target.value })}
+                  className="search-input"
+                />
+                
+                <FilterDropdown onReset={resetTeamFilters}>
                   <div className="filter-group">
                     <label>Participación:</label>
                     <select
@@ -1349,8 +1425,8 @@ const AdminDashboard = () => {
                       <option value="asc">Menor a mayor</option>
                     </select>
                   </div>
-                </div>
-              </FilterDropdown>
+                </FilterDropdown>
+              </div>
 
               <table className="admin-table">
                 <thead>
