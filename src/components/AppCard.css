@@ -229,13 +229,38 @@
   color: white;
 }
 
+.app-back-header {
+  position: absolute;
+  top: 1rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  width: calc(100% - 3rem);
+  text-align: center;
+  z-index: 3;
+}
+
+.app-back-name {
+  font-size: 1.3rem;
+  color: #333;
+  margin: 0 0 0.25rem 0;
+  font-weight: 600;
+}
+
+.app-back-type {
+  font-size: 0.9rem;
+  color: #667eea;
+  margin: 0;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
 .app-content-back {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   padding: 1.5rem;
-  padding-top: 3.5rem;
+  padding-top: 5rem;
   height: 100%;
   position: relative;
   overflow: hidden;

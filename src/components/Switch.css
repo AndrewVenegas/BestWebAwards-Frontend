@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0;
 }
 
 .edit-modal-header .switch-container {
@@ -27,6 +27,7 @@
   width: 56px;
   height: 32px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .switch input {
@@ -42,8 +43,8 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #e74c3c;
-  transition: all 0.3s ease;
+  background-color: #e74c3c !important;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
   border-radius: 32px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
@@ -54,19 +55,20 @@
   height: 24px;
   width: 24px;
   left: 4px;
-  bottom: 4px;
+  top: 50%;
+  transform: translateY(-50%);
   background-color: white;
-  transition: all 0.3s ease;
+  transition: transform 0.3s ease;
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-.switch.checked .switch-slider {
-  background-color: #27ae60;
+.switch.checked .switch-slider:before {
+  transform: translateY(-50%) translateX(24px);
 }
 
-.switch.checked .switch-slider:before {
-  transform: translateX(24px);
+.switch.checked .switch-slider {
+  background-color: #27ae60 !important;
 }
 
 .switch:hover:not(.disabled) .switch-slider {

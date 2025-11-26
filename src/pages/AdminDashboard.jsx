@@ -1938,15 +1938,17 @@ const AdminDashboard = () => {
             </button>
             <div className="edit-modal-header">
               <h2>Editar Equipo</h2>
-              <Switch
-                checked={teamFormData.participates}
-                onChange={(e) => setTeamFormData(prev => ({ ...prev, participates: e.target.checked }))}
-                label="Participa en el concurso"
-                disabled={saving}
-              />
             </div>
 
             <form onSubmit={handleEditTeam}>
+              <div className="form-group">
+                <Switch
+                  checked={teamFormData.participates}
+                  onChange={(e) => setTeamFormData(prev => ({ ...prev, participates: e.target.checked }))}
+                  label="Participa en el concurso"
+                  disabled={saving}
+                />
+              </div>
               <div className="form-group">
                 <label>Nombre oficial del grupo</label>
                 <input

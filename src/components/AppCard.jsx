@@ -243,6 +243,12 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
                 {isFavorite ? '❤️' : '🤍'}
               </button>
             )}
+            <div className="app-back-header">
+              <h3 className="app-back-name">{capitalizeName(team.appName || team.displayName || team.groupName)}</h3>
+              {team.tipo_app && (
+                <p className="app-back-type">{team.tipo_app}</p>
+              )}
+            </div>
             <div className="app-content app-content-back">
               <div className="app-description-card">
                 <div className="quote-mark quote-mark-top">"</div>

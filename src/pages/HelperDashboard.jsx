@@ -263,15 +263,17 @@ const HelperDashboard = () => {
               </button>
               <div className="edit-modal-header">
                 <h2>Editar Equipo</h2>
-                <Switch
-                  checked={formData.participates}
-                  onChange={(e) => setFormData(prev => ({ ...prev, participates: e.target.checked }))}
-                  label="Participa en el concurso"
-                  disabled={saving}
-                />
               </div>
 
               <form onSubmit={handleSave}>
+                <div className="form-group">
+                  <Switch
+                    checked={formData.participates}
+                    onChange={(e) => setFormData(prev => ({ ...prev, participates: e.target.checked }))}
+                    label="Participa en el concurso"
+                    disabled={saving}
+                  />
+                </div>
               <div className="form-group">
                 <label>Nombre oficial del grupo</label>
                 <input
