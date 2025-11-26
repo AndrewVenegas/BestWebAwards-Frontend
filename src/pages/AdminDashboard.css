@@ -141,6 +141,106 @@
   background: #a22;
 }
 
+.delete-all-votes-button {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.delete-all-votes-button:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(231, 76, 60, 0.3);
+}
+
+.delete-all-votes-button:active {
+  transform: translateY(0);
+}
+
+.votes-by-student-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.votes-by-student-header h2 {
+  margin: 0;
+  color: #667eea;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-delete-buttons {
+  padding: 0.625rem 1.25rem;
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.toggle-delete-buttons:hover {
+  background: #f5f7ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+.toggle-delete-buttons.active {
+  background: #667eea;
+  color: white;
+}
+
+.toggle-delete-buttons.active:hover {
+  background: #5568d3;
+}
+
+.votes-by-helper {
+  margin-top: 3rem;
+}
+
+.votes-by-admin {
+  margin-top: 3rem;
+}
+
+.show-more-button {
+  margin-top: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(102, 126, 234, 0.25);
+}
+
+.show-more-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(102, 126, 234, 0.35);
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
+}
+
+.show-more-button:active {
+  transform: translateY(0);
+}
+
 .config-content {
   max-width: 800px;
   margin: 0 auto;

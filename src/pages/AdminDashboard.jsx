@@ -9,6 +9,18 @@ import FileDropzone from '../components/FileDropzone';
 import Switch from '../components/Switch';
 import './AdminDashboard.css';
 
+// Función helper para convertir fecha UTC a formato datetime-local (hora local)
+const formatDateForInput = (dateString) => {
+  const date = new Date(dateString);
+  // Obtener año, mes, día, hora y minutos en hora local
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+};
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState(null);
@@ -20,6 +32,16 @@ const AdminDashboard = () => {
   
   const [votesSummary, setVotesSummary] = useState([]);
   const [votesByStudent, setVotesByStudent] = useState([]);
+  const [votesByHelper, setVotesByHelper] = useState([]);
+  const [votesByAdmin, setVotesByAdmin] = useState([]);
+  const [showDeleteHelperVoteButtons, setShowDeleteHelperVoteButtons] = useState(false);
+  const [showDeleteAdminVoteButtons, setShowDeleteAdminVoteButtons] = useState(false);
+  
+  // Estados para controlar cuántas filas mostrar en cada tabla
+  const [showAllStudents, setShowAllStudents] = useState(false);
+  const [showAllHelpers, setShowAllHelpers] = useState(false);
+  const [showAllAdmins, setShowAllAdmins] = useState(false);
+  const [showAllVotesSummary, setShowAllVotesSummary] = useState(false);
   const [students, setStudents] = useState([]);
   const [helpers, setHelpers] = useState([]);
   const [admins, setAdmins] = useState([]);
@@ -79,6 +101,7 @@ const AdminDashboard = () => {
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
   const [showEditAdmin, setShowEditAdmin] = useState(null);
   const [showDeleteAdminModal, setShowDeleteAdminModal] = useState(null);
+  const [showDeleteVoteButtons, setShowDeleteVoteButtons] = useState(false);
   const [deletePasswordLoading, setDeletePasswordLoading] = useState(false);
   const [deletePasswordError, setDeletePasswordError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -132,12 +155,16 @@ const AdminDashboard = () => {
       setLoading(prev => ({ ...prev, [activeTab]: true }));
       
       if (activeTab === 'dashboard') {
-        const [summaryRes, byStudentRes] = await Promise.all([
+        const [summaryRes, byStudentRes, byHelperRes, byAdminRes] = await Promise.all([
           api.get('/admin/votes/summary'),
-          api.get('/admin/votes/by-student')
+          api.get('/admin/votes/by-student'),
+          api.get('/admin/votes/by-helper'),
+          api.get('/admin/votes/by-admin')
         ]);
         setVotesSummary(summaryRes.data);
         setVotesByStudent(byStudentRes.data);
+        setVotesByHelper(byHelperRes.data);
+        setVotesByAdmin(byAdminRes.data);
         
         // Calcular estadísticas
         const totalStudents = byStudentRes.data.length;
@@ -182,6 +209,29 @@ const AdminDashboard = () => {
       fetchDashboardData();
     } catch (err) {
       error('Error al eliminar el voto');
+    }
+  };
+
+  const handleDeleteAllVotes = async (studentId) => {
+    const student = votesByStudent.find(s => s.studentId === studentId);
+    const voteCount = student?.votes.length || 0;
+    
+    if (voteCount === 0) {
+      return;
+    }
+
+    if (!window.confirm(`¿Estás seguro de eliminar todos los votos (${voteCount}) de este estudiante?`)) return;
+    
+    try {
+      // Eliminar todos los votos del estudiante uno por uno
+      const deletePromises = student.votes.map(vote => 
+        api.delete(`/admin/votes/${vote.voteId}`)
+      );
+      await Promise.all(deletePromises);
+      success(`Se eliminaron ${voteCount} ${voteCount === 1 ? 'voto' : 'votos'} exitosamente`);
+      fetchDashboardData();
+    } catch (err) {
+      error('Error al eliminar los votos');
     }
   };
 
@@ -671,6 +721,68 @@ const AdminDashboard = () => {
     return filtered;
   };
 
+  const getFilteredVotesByHelper = () => {
+    let filtered = [...votesByHelper];
+
+    // Filtro por búsqueda
+    if (dashboardFilters.searchTerm) {
+      const term = dashboardFilters.searchTerm.toLowerCase();
+      filtered = filtered.filter(helper => 
+        helper.helperName.toLowerCase().includes(term) ||
+        helper.helperEmail.toLowerCase().includes(term) ||
+        helper.votes.some(vote => 
+          (vote.displayName && vote.displayName.toLowerCase().includes(term)) ||
+          (vote.teamName && vote.teamName.toLowerCase().includes(term))
+        )
+      );
+    }
+
+    // Ordenar por cantidad de votos descendente, luego alfabéticamente
+    filtered.sort((a, b) => {
+      const countA = a.votes.length;
+      const countB = b.votes.length;
+      
+      if (countA !== countB) {
+        return countB - countA;
+      }
+      
+      return a.helperName.localeCompare(b.helperName);
+    });
+
+    return filtered;
+  };
+
+  const getFilteredVotesByAdmin = () => {
+    let filtered = [...votesByAdmin];
+
+    // Filtro por búsqueda
+    if (dashboardFilters.searchTerm) {
+      const term = dashboardFilters.searchTerm.toLowerCase();
+      filtered = filtered.filter(admin => 
+        admin.adminName.toLowerCase().includes(term) ||
+        admin.adminEmail.toLowerCase().includes(term) ||
+        admin.votes.some(vote => 
+          (vote.displayName && vote.displayName.toLowerCase().includes(term)) ||
+          (vote.teamName && vote.teamName.toLowerCase().includes(term))
+        )
+      );
+    }
+
+    // Ordenar por cantidad de votos descendente, luego alfabéticamente
+    filtered.sort((a, b) => {
+      const countA = a.votes.length;
+      const countB = b.votes.length;
+      
+      if (countA !== countB) {
+        return countB - countA;
+      }
+      
+      return a.adminName.localeCompare(b.adminName);
+    });
+
+    return filtered;
+  };
+
   // Funciones para resetear filtros
   const resetDashboardFilters = () => {
     setDashboardFilters({
@@ -971,7 +1083,7 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {getFilteredVotesSummary().map(item => (
+                    {(showAllVotesSummary ? getFilteredVotesSummary() : getFilteredVotesSummary().slice(0, 20)).map(item => (
                       <tr key={item.teamId}>
                         <td>{capitalizeName(item.displayName || item.groupName)}</td>
                         <td>{item.appName ? capitalizeName(item.appName) : '-'}</td>
@@ -980,24 +1092,208 @@ const AdminDashboard = () => {
                     ))}
                   </tbody>
                 </table>
+                {getFilteredVotesSummary().length > 20 && (
+                  <button 
+                    onClick={() => setShowAllVotesSummary(!showAllVotesSummary)}
+                    className="show-more-button"
+                  >
+                    {showAllVotesSummary 
+                      ? `Ver menos (mostrando ${getFilteredVotesSummary().length})` 
+                      : `Ver más (${getFilteredVotesSummary().length - 20} más)`
+                    }
+                  </button>
+                )}
                 {getFilteredVotesSummary().length === 0 && (
                   <p className="no-results">No se encontraron equipos con los filtros seleccionados</p>
                 )}
               </div>
 
+              <div className="votes-by-admin">
+                <div className="votes-by-student-header">
+                  <h2>Votos por Administrador ({getFilteredVotesByAdmin().length})</h2>
+                  <button
+                    onClick={() => setShowDeleteAdminVoteButtons(!showDeleteAdminVoteButtons)}
+                    className={`toggle-delete-buttons ${showDeleteAdminVoteButtons ? 'active' : ''}`}
+                  >
+                    {showDeleteAdminVoteButtons ? '👁️ Ocultar botones eliminar' : '👁️‍🗨️ Mostrar botones eliminar'}
+                  </button>
+                </div>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Administrador</th>
+                      <th>Email</th>
+                      <th>Votos</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(showAllAdmins ? getFilteredVotesByAdmin() : getFilteredVotesByAdmin().slice(0, 20)).map(admin => (
+                      <tr key={admin.adminId}>
+                        <td>{capitalizeName(admin.adminName)}</td>
+                        <td>{admin.adminEmail}</td>
+                        <td>
+                          {admin.votes.length > 0 ? (
+                            <ul>
+                              {admin.votes.map(vote => (
+                                <li key={vote.voteId}>
+                                  {capitalizeName(vote.displayName || vote.teamName)}
+                                  {showDeleteAdminVoteButtons && (
+                                    <button
+                                      onClick={() => handleDeleteVote(vote.voteId)}
+                                      className="delete-vote-button"
+                                    >
+                                      Eliminar
+                                    </button>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            'Sin votos'
+                          )}
+                        </td>
+                        <td>
+                          <span className={`vote-status-badge ${admin.votes.length === 3 ? 'complete' : admin.votes.length > 0 ? 'in-progress' : 'not-voted'}`}>
+                            {admin.votes.length === 3 ? '✓ Completa' : admin.votes.length > 0 ? '⏳ En proceso' : '○ Sin votar'}
+                          </span>
+                        </td>
+                        <td>
+                          {admin.votes.length > 0 && (
+                            <button
+                              onClick={() => handleDeleteAllAdminVotes(admin.adminId)}
+                              className="delete-all-votes-button"
+                              title={`Eliminar todos los votos (${admin.votes.length})`}
+                            >
+                              🗑️ Eliminar votos
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {getFilteredVotesByAdmin().length > 20 && (
+                  <button 
+                    onClick={() => setShowAllAdmins(!showAllAdmins)}
+                    className="show-more-button"
+                  >
+                    {showAllAdmins 
+                      ? `Ver menos (mostrando ${getFilteredVotesByAdmin().length})` 
+                      : `Ver más (${getFilteredVotesByAdmin().length - 20} más)`
+                    }
+                  </button>
+                )}
+                {getFilteredVotesByAdmin().length === 0 && (
+                  <p className="no-results">No se encontraron administradores con los filtros seleccionados</p>
+                )}
+              </div>
+
+              <div className="votes-by-helper">
+                <div className="votes-by-student-header">
+                  <h2>Votos por Ayudante ({getFilteredVotesByHelper().length})</h2>
+                  <button
+                    onClick={() => setShowDeleteHelperVoteButtons(!showDeleteHelperVoteButtons)}
+                    className={`toggle-delete-buttons ${showDeleteHelperVoteButtons ? 'active' : ''}`}
+                  >
+                    {showDeleteHelperVoteButtons ? '👁️ Ocultar botones eliminar' : '👁️‍🗨️ Mostrar botones eliminar'}
+                  </button>
+                </div>
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Ayudante</th>
+                      <th>Email</th>
+                      <th>Votos</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(showAllHelpers ? getFilteredVotesByHelper() : getFilteredVotesByHelper().slice(0, 20)).map(helper => (
+                      <tr key={helper.helperId}>
+                        <td>{capitalizeName(helper.helperName)}</td>
+                        <td>{helper.helperEmail}</td>
+                        <td>
+                          {helper.votes.length > 0 ? (
+                            <ul>
+                              {helper.votes.map(vote => (
+                                <li key={vote.voteId}>
+                                  {capitalizeName(vote.displayName || vote.teamName)}
+                                  {showDeleteHelperVoteButtons && (
+                                    <button
+                                      onClick={() => handleDeleteVote(vote.voteId)}
+                                      className="delete-vote-button"
+                                    >
+                                      Eliminar
+                                    </button>
+                                  )}
+                                </li>
+                              ))}
+                            </ul>
+                          ) : (
+                            'Sin votos'
+                          )}
+                        </td>
+                        <td>
+                          <span className={`vote-status-badge ${helper.votes.length === 3 ? 'complete' : helper.votes.length > 0 ? 'in-progress' : 'not-voted'}`}>
+                            {helper.votes.length === 3 ? '✓ Completa' : helper.votes.length > 0 ? '⏳ En proceso' : '○ Sin votar'}
+                          </span>
+                        </td>
+                        <td>
+                          {helper.votes.length > 0 && (
+                            <button
+                              onClick={() => handleDeleteAllHelperVotes(helper.helperId)}
+                              className="delete-all-votes-button"
+                              title={`Eliminar todos los votos (${helper.votes.length})`}
+                            >
+                              🗑️ Eliminar votos
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {getFilteredVotesByHelper().length > 20 && (
+                  <button 
+                    onClick={() => setShowAllHelpers(!showAllHelpers)}
+                    className="show-more-button"
+                  >
+                    {showAllHelpers 
+                      ? `Ver menos (mostrando ${getFilteredVotesByHelper().length})` 
+                      : `Ver más (${getFilteredVotesByHelper().length - 20} más)`
+                    }
+                  </button>
+                )}
+                {getFilteredVotesByHelper().length === 0 && (
+                  <p className="no-results">No se encontraron ayudantes con los filtros seleccionados</p>
+                )}
+              </div>
+
               <div className="votes-by-student">
-                <h2>Votos por Estudiante ({getFilteredVotesByStudent().length})</h2>
+                <div className="votes-by-student-header">
+                  <h2>Votos por Estudiante ({getFilteredVotesByStudent().length})</h2>
+                  <button
+                    onClick={() => setShowDeleteVoteButtons(!showDeleteVoteButtons)}
+                    className={`toggle-delete-buttons ${showDeleteVoteButtons ? 'active' : ''}`}
+                  >
+                    {showDeleteVoteButtons ? '👁️ Ocultar botones eliminar' : '👁️‍🗨️ Mostrar botones eliminar'}
+                  </button>
+                </div>
                 <table className="admin-table">
                   <thead>
                     <tr>
                       <th>Estudiante</th>
                       <th>Email</th>
                       <th>Votos</th>
+                      <th>Estado</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {getFilteredVotesByStudent().map(student => (
+                    {(showAllStudents ? getFilteredVotesByStudent() : getFilteredVotesByStudent().slice(0, 20)).map(student => (
                       <tr key={student.studentId}>
                         <td>{capitalizeName(student.studentName)}</td>
                         <td>{student.studentEmail}</td>
@@ -1007,12 +1303,14 @@ const AdminDashboard = () => {
                               {student.votes.map(vote => (
                                 <li key={vote.voteId}>
                                   {capitalizeName(vote.displayName || vote.teamName)}
-                                  <button
-                                    onClick={() => handleDeleteVote(vote.voteId)}
-                                    className="delete-vote-button"
-                                  >
-                                    Eliminar
-                                  </button>
+                                  {showDeleteVoteButtons && (
+                                    <button
+                                      onClick={() => handleDeleteVote(vote.voteId)}
+                                      className="delete-vote-button"
+                                    >
+                                      Eliminar
+                                    </button>
+                                  )}
                                 </li>
                               ))}
                             </ul>
@@ -1025,10 +1323,32 @@ const AdminDashboard = () => {
                             {student.votes.length === 3 ? '✓ Completa' : student.votes.length > 0 ? '⏳ En proceso' : '○ Sin votar'}
                           </span>
                         </td>
+                        <td>
+                          {student.votes.length > 0 && (
+                            <button
+                              onClick={() => handleDeleteAllVotes(student.studentId)}
+                              className="delete-all-votes-button"
+                              title={`Eliminar todos los votos (${student.votes.length})`}
+                            >
+                              🗑️ Eliminar votos
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
+                {getFilteredVotesByStudent().length > 20 && (
+                  <button 
+                    onClick={() => setShowAllStudents(!showAllStudents)}
+                    className="show-more-button"
+                  >
+                    {showAllStudents 
+                      ? `Ver menos (mostrando ${getFilteredVotesByStudent().length})` 
+                      : `Ver más (${getFilteredVotesByStudent().length - 20} más)`
+                    }
+                  </button>
+                )}
                 {getFilteredVotesByStudent().length === 0 && (
                   <p className="no-results">No se encontraron estudiantes con los filtros seleccionados</p>
                 )}
@@ -1081,7 +1401,7 @@ const AdminDashboard = () => {
                             type="datetime-local"
                             name="deadline"
                             required
-                            defaultValue={new Date(config.votingDeadline).toISOString().slice(0, 16)}
+                            defaultValue={formatDateForInput(config.votingDeadline)}
                             className="config-input"
                           />
                         </div>

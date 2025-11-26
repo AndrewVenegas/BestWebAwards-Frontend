@@ -38,8 +38,10 @@ const StudentDashboard = ({ readOnly = false }) => {
   const [visibleAllTeamsCount, setVisibleAllTeamsCount] = useState(0);
   const [countdownReady, setCountdownReady] = useState(false);
 
-  // Si es modo readOnly (admin/helper), no verificar hasSeenIntro
+  // Solo para verificación de intro - helpers y admins no necesitan ver intro
   const isReadOnly = readOnly || (user && user.type !== 'student');
+  // Para votación, todos los usuarios autenticados pueden votar
+  const canUserVote = user && (user.type === 'student' || user.type === 'helper' || user.type === 'admin');
 
   useEffect(() => {
     if (!isReadOnly && user && !user.hasSeenIntro) {
@@ -62,25 +64,24 @@ const StudentDashboard = ({ readOnly = false }) => {
     try {
       setLoading(true);
       
-      // Si es readOnly, no intentar obtener votos del estudiante, pero sí favoritos (para helpers/admins)
+      // Todos los usuarios autenticados pueden obtener sus votos y favoritos
       const promises = [
         api.get('/teams'),
         api.get('/config')
       ];
       
-      if (!isReadOnly) {
-        promises.push(api.get('/students/me/votes'));
+      if (canUserVote) {
+        promises.push(api.get('/votes/me'));
         promises.push(api.get('/favorites'));
       } else {
         promises.push(Promise.resolve({ data: [] })); // votes
-        // Helpers y admins también pueden tener favoritos
         promises.push(api.get('/favorites'));
       }
       
       const [teamsRes, configRes, votesRes, favoritesRes] = await Promise.all(promises);
 
       setTeams(teamsRes.data);
-      setMyVotes(isReadOnly ? [] : votesRes.data.map(v => v.teamId));
+      setMyVotes(canUserVote ? votesRes.data.map(v => v.teamId) : []);
       setVotingOpen(configRes.data.isOpen);
       
       // Iniciar la aparición gradual de proyectos
@@ -131,13 +132,14 @@ const StudentDashboard = ({ readOnly = false }) => {
 
 
   const handleVoteClick = (teamId) => {
-    if (isReadOnly) {
-      return; // No permitir votar en modo readOnly
+    if (!canUserVote) {
+      return; // Solo usuarios autenticados pueden votar
     }
     const team = teams.find(t => t.id === teamId);
     if (team) {
       setSelectedTeam(team);
       setPasswordError('');
+      // Todos los usuarios deben confirmar con contraseña antes de votar
       setShowPasswordModal(true);
     }
   };
@@ -147,9 +149,23 @@ const StudentDashboard = ({ readOnly = false }) => {
 
     setPasswordLoading(true);
     try {
+      // Determinar el endpoint de verificación según el tipo de usuario
+      let verifyEndpoint = '';
+      if (user.type === 'student') {
+        verifyEndpoint = '/students/me/verify-password';
+      } else if (user.type === 'helper') {
+        verifyEndpoint = '/helpers/me/verify-password';
+      } else if (user.type === 'admin') {
+        verifyEndpoint = '/admin/admins/verify-password';
+      } else {
+        error('Tipo de usuario no válido');
+        setPasswordLoading(false);
+        return;
+      }
+
       // Primero validar la contraseña
       // Agregar skipAuthRedirect para evitar que el interceptor redirija al login
-      const verifyRes = await api.post('/students/me/verify-password', { password }, {
+      const verifyRes = await api.post(verifyEndpoint, { password }, {
         skipAuthRedirect: true
       });
       
@@ -252,8 +268,8 @@ const StudentDashboard = ({ readOnly = false }) => {
     return count ? count.voteCount : 0;
   };
 
-  const remainingVotes = isReadOnly ? 0 : (3 - myVotes.length);
-  const canVote = !isReadOnly && remainingVotes > 0 && votingOpen;
+  const remainingVotes = canUserVote ? (3 - myVotes.length) : 0;
+  const canVote = canUserVote && remainingVotes > 0 && votingOpen;
 
   const filteredTeams = teams.filter(team => {
     // Filtro de favoritos
@@ -275,6 +291,14 @@ const StudentDashboard = ({ readOnly = false }) => {
     const matchesTipoApp = !filterTipoApp || team.tipo_app === filterTipoApp;
 
     return matchesSearch && matchesStudent && matchesHelper && matchesTipoApp;
+  }).sort((a, b) => {
+    // Ordenar: primero los equipos por los que ya votó, luego los demás
+    const aVoted = myVotes.includes(a.id);
+    const bVoted = myVotes.includes(b.id);
+    
+    if (aVoted && !bVoted) return -1; // a primero
+    if (!aVoted && bVoted) return 1;  // b primero
+    return 0; // mantener orden original si ambos tienen el mismo estado
   });
 
   // Filtrar equipos en la vista de "Todos los Grupos" cuando las votaciones están cerradas
@@ -310,6 +334,14 @@ const StudentDashboard = ({ readOnly = false }) => {
     const matchesTipoApp = !filterTipoApp || team.tipo_app === filterTipoApp;
 
     return matchesHelper && matchesTipoApp;
+  }).sort((a, b) => {
+    // Ordenar: primero los equipos por los que ya votó, luego los demás
+    const aVoted = myVotes.includes(a.id);
+    const bVoted = myVotes.includes(b.id);
+    
+    if (aVoted && !bVoted) return -1; // a primero
+    if (!aVoted && bVoted) return 1;  // b primero
+    return 0; // mantener orden original si ambos tienen el mismo estado
   });
 
   const allStudents = teams.flatMap(t => t.students || []).filter((s, i, arr) => 
@@ -433,15 +465,15 @@ const StudentDashboard = ({ readOnly = false }) => {
 
         {votingOpen && (
           <div className="votes-info">
-            {isReadOnly ? (
-              <p className="read-only-notice">👁️ Modo de solo lectura - No puedes votar</p>
-            ) : (
+            {canUserVote ? (
               <>
                 <p>Votos restantes: <strong>{remainingVotes}</strong> de 3</p>
                 {remainingVotes === 0 && (
                   <p className="no-votes-left">Ya has usado todos tus votos</p>
                 )}
               </>
+            ) : (
+              <p className="read-only-notice">👁️ Modo de solo lectura - No puedes votar</p>
             )}
           </div>
         )}
@@ -525,7 +557,7 @@ const StudentDashboard = ({ readOnly = false }) => {
                 <AppCard
                   key={team.id}
                   team={team}
-                  onVote={isReadOnly ? null : handleVoteClick}
+                  onVote={canUserVote ? handleVoteClick : null}
                   hasVoted={myVotes.includes(team.id)}
                   canVote={canVote}
                   voteCount={showCounts ? getVoteCount(team.id) : undefined}
