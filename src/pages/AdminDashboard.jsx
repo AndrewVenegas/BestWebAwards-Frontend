@@ -5,6 +5,8 @@ import { capitalizeName } from '../utils/format';
 import PasswordConfirmModal from '../components/PasswordConfirmModal';
 import FilterDropdown from '../components/FilterDropdown';
 import useAnimatedNumber from '../hooks/useAnimatedNumber';
+import FileDropzone from '../components/FileDropzone';
+import Switch from '../components/Switch';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -69,6 +71,7 @@ const AdminDashboard = () => {
   // Estados para modales y formularios
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [showEditTeam, setShowEditTeam] = useState(null);
+  const [clickStartedInModal, setClickStartedInModal] = useState(false);
   const [showCreateHelper, setShowCreateHelper] = useState(false);
   const [showEditHelper, setShowEditHelper] = useState(null);
   const [showCreateStudent, setShowCreateStudent] = useState(false);
@@ -327,8 +330,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleTeamImageUpload = async (e) => {
-    const file = e.target.files[0];
+  const handleTeamImageUpload = async (file) => {
     if (!file) return;
 
     // Validar tipo de archivo
@@ -1557,8 +1559,28 @@ const AdminDashboard = () => {
 
       {/* Modal Editar Equipo */}
       {showEditTeam && (
-        <div className="edit-modal-overlay" onClick={() => setShowEditTeam(null)}>
-          <div className="edit-modal" onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="edit-modal-overlay" 
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              setClickStartedInModal(false);
+            }
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget && !clickStartedInModal) {
+              setShowEditTeam(null);
+            }
+            setClickStartedInModal(false);
+          }}
+        >
+          <div 
+            className="edit-modal" 
+            onMouseDown={(e) => {
+              setClickStartedInModal(true);
+              e.stopPropagation();
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
             <button 
               className="edit-modal-close" 
               onClick={() => setShowEditTeam(null)}
@@ -1566,7 +1588,15 @@ const AdminDashboard = () => {
             >
               ×
             </button>
-            <h2 style={{ marginRight: '2.5rem' }}>Editar Equipo</h2>
+            <div className="edit-modal-header">
+              <h2>Editar Equipo</h2>
+              <Switch
+                checked={teamFormData.participates}
+                onChange={(e) => setTeamFormData(prev => ({ ...prev, participates: e.target.checked }))}
+                label="Participa en el concurso"
+                disabled={saving}
+              />
+            </div>
 
             <form onSubmit={handleEditTeam}>
               <div className="form-group">
@@ -1652,38 +1682,17 @@ const AdminDashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={teamFormData.participates}
-                    onChange={(e) => setTeamFormData(prev => ({ ...prev, participates: e.target.checked }))}
-                  />
-                  Participa en el concurso
-                </label>
-              </div>
-
-              <div className="form-group">
-                <label>
-                  Imagen de Portada <span className="required">*</span>
-                </label>
-                {teamFormData.screenshotUrl ? (
-                  <div className="screenshot-container">
-                    <img src={teamFormData.screenshotUrl} alt="Screenshot" className="screenshot-preview" />
-                    <p className="screenshot-url">Imagen actual cargada</p>
-                  </div>
-                ) : (
-                  <p className="no-screenshot">No hay imagen de portada cargada</p>
+                <FileDropzone
+                  onFileSelect={handleTeamImageUpload}
+                  currentImageUrl={teamFormData.screenshotUrl}
+                  disabled={imageLoading || saving}
+                  label="Imagen de Portada"
+                />
+                {imageLoading && (
+                  <p style={{ textAlign: 'center', color: '#667eea', marginTop: '0.5rem', fontWeight: 500 }}>
+                    Subiendo imagen...
+                  </p>
                 )}
-                <label className="upload-button">
-                  {imageLoading ? 'Subiendo...' : teamFormData.screenshotUrl ? 'Cambiar Portada' : 'Subir Portada'}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleTeamImageUpload}
-                    style={{ display: 'none' }}
-                    disabled={imageLoading || saving}
-                  />
-                </label>
               </div>
 
               <div className="modal-buttons">

@@ -1,0 +1,147 @@
+.file-dropzone-container {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.file-dropzone-label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.file-dropzone {
+  width: 100%;
+  min-height: 200px;
+  border: 2px dashed #e0e0e0;
+  border-radius: 12px;
+  background: #fafafa;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-dropzone:hover:not(.disabled) {
+  border-color: #667eea;
+  background: #f5f7ff;
+}
+
+.file-dropzone.dragging {
+  border-color: #667eea;
+  background: #f0f4ff;
+  border-style: solid;
+  transform: scale(1.02);
+}
+
+.file-dropzone.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.file-dropzone.has-image {
+  min-height: 300px;
+  border-style: solid;
+  border-color: #e0e0e0;
+  background: white;
+}
+
+.file-dropzone-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  color: #999;
+}
+
+.file-dropzone-empty svg {
+  color: #667eea;
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.file-dropzone-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #333;
+  margin: 0.5rem 0 0.25rem 0;
+}
+
+.file-dropzone-subtext {
+  font-size: 0.9rem;
+  color: #666;
+  margin: 0.25rem 0;
+}
+
+.file-dropzone-hint {
+  font-size: 0.85rem;
+  color: #999;
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.file-dropzone-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.file-dropzone-image {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.file-dropzone-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(102, 126, 234, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  border-radius: 12px;
+}
+
+.file-dropzone:hover .file-dropzone-overlay {
+  opacity: 1;
+}
+
+.file-dropzone-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  color: white;
+}
+
+.file-dropzone-overlay-content svg {
+  color: white;
+}
+
+.file-dropzone-overlay-content .file-dropzone-text {
+  color: white;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.required {
+  color: #e74c3c;
+  font-weight: bold;
+  margin-left: 0.25rem;
+}
+

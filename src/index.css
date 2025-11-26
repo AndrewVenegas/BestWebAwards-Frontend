@@ -23,3 +23,17 @@ code {
   min-height: 100vh;
 }
 
+/* Estilos globales mejorados para selects */
+select {
+  font-family: inherit;
+}
+
+/* Mejoras adicionales para selects en todos los navegadores */
+select::-ms-expand {
+  display: none;
+}
+
+select:focus {
+  outline: none;
+}
+

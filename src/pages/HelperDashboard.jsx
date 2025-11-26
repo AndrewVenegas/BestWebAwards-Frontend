@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useNotification } from '../contexts/NotificationContext';
 import { capitalizeName } from '../utils/format';
+import CustomSelect from '../components/CustomSelect';
+import FileDropzone from '../components/FileDropzone';
+import Switch from '../components/Switch';
 import './HelperDashboard.css';
 
 const HelperDashboard = () => {
@@ -9,6 +12,7 @@ const HelperDashboard = () => {
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [clickStartedInModal, setClickStartedInModal] = useState(false);
   const { success, error, warning } = useNotification();
 
   const [formData, setFormData] = useState({
@@ -50,8 +54,7 @@ const HelperDashboard = () => {
     });
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
+  const handleImageUpload = async (file) => {
     if (!file) return;
 
     // Validar tipo de archivo
@@ -225,8 +228,28 @@ const HelperDashboard = () => {
         </div>
 
         {selectedTeam && (
-          <div className="edit-modal-overlay" onClick={() => setSelectedTeam(null)}>
-            <div className="edit-modal" onClick={(e) => e.stopPropagation()}>
+          <div 
+            className="edit-modal-overlay" 
+            onMouseDown={(e) => {
+              if (e.target === e.currentTarget) {
+                setClickStartedInModal(false);
+              }
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget && !clickStartedInModal) {
+                setSelectedTeam(null);
+              }
+              setClickStartedInModal(false);
+            }}
+          >
+            <div 
+              className="edit-modal" 
+              onMouseDown={(e) => {
+                setClickStartedInModal(true);
+                e.stopPropagation();
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
               <button 
                 className="edit-modal-close" 
                 onClick={() => setSelectedTeam(null)}
@@ -234,7 +257,15 @@ const HelperDashboard = () => {
               >
                 ×
               </button>
-              <h2 style={{ marginRight: '2.5rem' }}>Editar Equipo</h2>
+              <div className="edit-modal-header">
+                <h2>Editar Equipo</h2>
+                <Switch
+                  checked={formData.participates}
+                  onChange={(e) => setFormData(prev => ({ ...prev, participates: e.target.checked }))}
+                  label="Participa en el concurso"
+                  disabled={saving}
+                />
+              </div>
 
               <form onSubmit={handleSave}>
               <div className="form-group">
@@ -275,22 +306,22 @@ const HelperDashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>
-                  Tipo de aplicación
-                </label>
-                <select
+                <CustomSelect
+                  label="Tipo de aplicación"
                   value={formData.tipo_app}
                   onChange={(e) => setFormData(prev => ({ ...prev, tipo_app: e.target.value }))}
-                >
-                  <option value="">Seleccionar tipo...</option>
-                  <option value="Chat">Chat</option>
-                  <option value="E-commerce">E-commerce</option>
-                  <option value="Juego">Juego</option>
-                  <option value="Planificador">Planificador</option>
-                  <option value="Red Social">Red Social</option>
-                  <option value="Mix">Mix</option>
-                  <option value="Otro">Otro</option>
-                </select>
+                  options={[
+                    { value: '', label: 'Seleccionar tipo...' },
+                    { value: 'Chat', label: 'Chat' },
+                    { value: 'E-commerce', label: 'E-commerce' },
+                    { value: 'Juego', label: 'Juego' },
+                    { value: 'Planificador', label: 'Planificador' },
+                    { value: 'Red Social', label: 'Red Social' },
+                    { value: 'Mix', label: 'Mix' },
+                    { value: 'Otro', label: 'Otro' }
+                  ]}
+                  placeholder="Seleccionar tipo..."
+                />
               </div>
 
               <div className="form-group">
@@ -320,38 +351,17 @@ const HelperDashboard = () => {
               </div>
 
               <div className="form-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={formData.participates}
-                    onChange={(e) => setFormData(prev => ({ ...prev, participates: e.target.checked }))}
-                  />
-                  Participa en el concurso
-                </label>
-              </div>
-
-              <div className="form-group">
-                <label>
-                  Imagen de Portada <span className="required">*</span>
-                </label>
-                {formData.screenshotUrl ? (
-                  <div className="screenshot-container">
-                    <img src={formData.screenshotUrl} alt="Screenshot" className="screenshot-preview" />
-                    <p className="screenshot-url">Imagen actual cargada</p>
-                  </div>
-                ) : (
-                  <p className="no-screenshot">No hay imagen de portada cargada</p>
+                <FileDropzone
+                  onFileSelect={handleImageUpload}
+                  currentImageUrl={formData.screenshotUrl}
+                  disabled={saving}
+                  label="Imagen de Portada"
+                />
+                {saving && (
+                  <p style={{ textAlign: 'center', color: '#667eea', marginTop: '0.5rem', fontWeight: 500 }}>
+                    Subiendo imagen...
+                  </p>
                 )}
-                <label className="upload-button">
-                  {saving ? 'Subiendo...' : formData.screenshotUrl ? 'Cambiar Portada' : 'Subir Portada'}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    style={{ display: 'none' }}
-                    disabled={saving}
-                  />
-                </label>
               </div>
 
               <div className="modal-buttons">

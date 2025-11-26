@@ -144,6 +144,8 @@
   background-size: 14px;
   padding-right: 2.5rem;
   cursor: pointer;
+  min-height: 48px;
+  font-weight: 500;
 }
 
 .filter-dropdown-body .filter-select:focus,
