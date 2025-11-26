@@ -479,10 +479,23 @@ const StudentDashboard = ({ readOnly = false }) => {
         )}
 
         {votingOpen && (
-          <div className="filters-top-section">
+          <div className="filters-top-section" id="filters-section">
             <button
               className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              onClick={() => {
+                setShowFavoritesOnly(!showFavoritesOnly);
+                // Scroll suave hasta que el botón quede visible justo debajo de la navbar
+                setTimeout(() => {
+                  const filtersSection = document.getElementById('filters-section');
+                  const navbar = document.querySelector('.navbar');
+                  if (filtersSection && navbar) {
+                    const navbarHeight = navbar.offsetHeight;
+                    const sectionTop = filtersSection.getBoundingClientRect().top + window.scrollY;
+                    // Hacer scroll hasta que el botón quede justo debajo de la navbar
+                    window.scrollTo({ top: sectionTop - navbarHeight - 10, behavior: 'smooth' });
+                  }
+                }, 500);
+              }}
             >
               {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
             </button>
@@ -578,10 +591,23 @@ const StudentDashboard = ({ readOnly = false }) => {
 
         {/* Filtros para la vista de todos los grupos */}
         {!votingOpen && showAllTeams && (
-          <div className="filters-top-section">
+          <div className="filters-top-section" id="filters-section-closed">
             <button
               className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
-              onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+              onClick={() => {
+                setShowFavoritesOnly(!showFavoritesOnly);
+                // Scroll suave hasta que el botón quede visible justo debajo de la navbar
+                setTimeout(() => {
+                  const filtersSection = document.getElementById('filters-section-closed');
+                  const navbar = document.querySelector('.navbar');
+                  if (filtersSection && navbar) {
+                    const navbarHeight = navbar.offsetHeight;
+                    const sectionTop = filtersSection.getBoundingClientRect().top + window.scrollY;
+                    // Hacer scroll hasta que el botón quede justo debajo de la navbar
+                    window.scrollTo({ top: sectionTop - navbarHeight - 10, behavior: 'smooth' });
+                  }
+                }, 500);
+              }}
             >
               {showFavoritesOnly ? '❤️ Ver todos' : '🤍 Ver mis favoritos'}
             </button>
