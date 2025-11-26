@@ -75,6 +75,12 @@
   box-shadow: 0 8px 30px rgba(205, 127, 50, 0.3);
 }
 
+/* Cuando se hace hover sobre cualquier avatar, elevar solo la tarjeta para que el tooltip no se corte */
+.podium-item-top.second:has(.podium-avatar-wrapper:hover),
+.podium-item-top.third:has(.podium-avatar-wrapper:hover) {
+  z-index: 9998 !important;
+}
+
 /* Animaciones de aparición de abajo hacia arriba */
 .podium-item-top.first.podium-animate-1 {
   animation: podiumSlideUpFirst 0.8s ease 0.2s forwards;
@@ -141,6 +147,7 @@
   position: relative;
   overflow: visible;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  z-index: 1;
 }
 
 
@@ -210,9 +217,11 @@
   gap: 0;
   justify-content: flex-start;
   align-items: center;
-  z-index: 5;
+  z-index: 10;
   pointer-events: none;
+  overflow: visible;
 }
+
 
 .podium-avatar-wrapper {
   position: relative;
@@ -220,7 +229,7 @@
   cursor: pointer;
   margin-left: -12px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
+  z-index: 11;
 }
 
 .podium-avatar-wrapper:first-child {
@@ -228,7 +237,7 @@
 }
 
 .podium-avatar-wrapper:hover {
-  z-index: 10;
+  z-index: 10000 !important;
   margin-left: 6px;
   margin-right: 6px;
 }
@@ -290,7 +299,7 @@
   visibility: hidden;
   transition: all 0.3s ease;
   pointer-events: none;
-  z-index: 20;
+  z-index: 10001 !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -410,7 +419,7 @@
   border-radius: 12px;
   margin-bottom: 1rem;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
@@ -465,7 +474,7 @@
   align-items: center;
   justify-content: center;
   pointer-events: none;
-  z-index: 2;
+  z-index: 1;
   animation: fadeIn 0.2s ease;
   border-radius: 15px;
 }
