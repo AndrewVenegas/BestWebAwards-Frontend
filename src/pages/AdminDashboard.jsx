@@ -254,14 +254,29 @@ const AdminDashboard = () => {
   const handleCreateTeam = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+    
+    // Validar campos obligatorios
+    const groupName = formData.get('groupName');
+    const helperId = formData.get('helperId');
+    
+    if (!groupName || groupName.trim() === '') {
+      error('El nombre del grupo es obligatorio');
+      return;
+    }
+    
+    if (!helperId || helperId.trim() === '') {
+      error('El ayudante es obligatorio');
+      return;
+    }
+    
     const teamData = {
-      groupName: formData.get('groupName'),
-      displayName: formData.get('displayName') || null,
-      appName: formData.get('appName') || null,
-      helperId: formData.get('helperId') || null,
-      participates: formData.get('participates') === 'true',
-      tipo_app: formData.get('tipo_app') || null,
-      description: formData.get('description') || null
+      groupName: groupName.trim(),
+      helperId: helperId,
+      displayName: null,
+      appName: null,
+      participates: false,
+      tipo_app: null,
+      description: null
     };
 
     try {
@@ -342,6 +357,11 @@ const AdminDashboard = () => {
     // Validar screenshotUrl
     if (!teamFormData.screenshotUrl || typeof teamFormData.screenshotUrl !== 'string' || teamFormData.screenshotUrl.trim() === '') {
       errors.push('La imagen de portada es obligatoria');
+    }
+
+    // Validar tipo_app
+    if (!teamFormData.tipo_app || typeof teamFormData.tipo_app !== 'string' || teamFormData.tipo_app.trim() === '') {
+      errors.push('El tipo de aplicación es obligatorio');
     }
 
     // Mostrar todos los errores
@@ -1775,14 +1795,10 @@ const AdminDashboard = () => {
                         <td>{team.displayName ? capitalizeName(team.displayName) : '-'}</td>
                         <td>{team.appName ? capitalizeName(team.appName) : '-'}</td>
                         <td>
-                          <label className="participation-switch">
-                            <input
-                              type="checkbox"
-                              checked={team.participates}
-                              onChange={() => handleToggleParticipation(team)}
-                            />
-                            <span className="switch-slider"></span>
-                          </label>
+                          <Switch
+                            checked={team.participates}
+                            onChange={() => handleToggleParticipation(team)}
+                          />
                         </td>
                         <td>{team.helper?.name ? capitalizeName(team.helper.name) : '-'}</td>
                         <td>{voteCount}</td>
@@ -1828,69 +1844,18 @@ const AdminDashboard = () => {
             <form onSubmit={handleCreateTeam}>
               <div className="form-group">
                 <label>Nombre del Grupo <span className="required">*</span></label>
-                <input type="text" name="groupName" required />
+                <input type="text" name="groupName" required placeholder="Nombre oficial del grupo" />
               </div>
               <div className="form-group">
-                <label>Nombre para Mostrar</label>
-                <input type="text" name="displayName" />
-              </div>
-              <div className="form-group">
-                <label>Nombre de la Aplicación</label>
-                <input type="text" name="appName" />
-              </div>
-              <div className="form-group">
-                <label>Tipo de aplicación</label>
-                <select name="tipo_app">
-                  <option value="">Seleccionar tipo...</option>
-                  <option value="Chat">Chat</option>
-                  <option value="E-commerce">E-commerce</option>
-                  <option value="Juego">Juego</option>
-                  <option value="Planificador">Planificador</option>
-                  <option value="Red Social">Red Social</option>
-                  <option value="Mix">Mix</option>
-                  <option value="Otro">Otro</option>
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Descripción (máximo 300 caracteres)</label>
-                <textarea
-                  name="description"
-                  placeholder="Descripción de la aplicación..."
-                  rows={4}
-                  maxLength={300}
-                  onChange={(e) => {
-                    setCreateDescriptionLength(e.target.value.length);
-                  }}
-                  style={{
-                    padding: '0.75rem',
-                    border: '2px solid #e0e0e0',
-                    borderRadius: '8px',
-                    fontFamily: 'inherit',
-                    fontSize: '1rem',
-                    resize: 'vertical',
-                    width: '100%'
-                  }}
-                />
-                <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
-                  {createDescriptionLength}/300 caracteres
-                </p>
-              </div>
-              <div className="form-group">
-                <label>Ayudante</label>
-                <select name="helperId">
-                  <option value="">Sin ayudante</option>
+                <label>Ayudante a cargo <span className="required">*</span></label>
+                <select name="helperId" required>
+                  <option value="">Seleccionar ayudante...</option>
                   {helpers.map(helper => (
                     <option key={helper.id} value={helper.id}>
                       {capitalizeName(helper.name)}
                     </option>
                   ))}
                 </select>
-              </div>
-              <div className="form-group">
-                <label>
-                  <input type="checkbox" name="participates" value="true" />
-                  Participa en el concurso
-                </label>
               </div>
               <div className="modal-buttons">
                 <button type="button" onClick={() => setShowCreateTeam(false)} className="cancel-button">
@@ -1988,11 +1953,12 @@ const AdminDashboard = () => {
 
               <div className="form-group">
                 <label>
-                  Tipo de aplicación
+                  Tipo de aplicación <span style={{ color: 'red' }}>*</span>
                 </label>
                 <select
                   value={teamFormData.tipo_app}
                   onChange={(e) => setTeamFormData(prev => ({ ...prev, tipo_app: e.target.value }))}
+                  required
                 >
                   <option value="">Seleccionar tipo...</option>
                   <option value="Chat">Chat</option>

@@ -335,13 +335,13 @@ const StudentDashboard = ({ readOnly = false }) => {
 
     return matchesHelper && matchesTipoApp;
   }).sort((a, b) => {
-    // Ordenar: primero los equipos por los que ya votó, luego los demás
-    const aVoted = myVotes.includes(a.id);
-    const bVoted = myVotes.includes(b.id);
+    // Ordenar por cantidad de votos (de mayor a menor)
+    const aVotes = a.voteCount || 0;
+    const bVotes = b.voteCount || 0;
     
-    if (aVoted && !bVoted) return -1; // a primero
-    if (!aVoted && bVoted) return 1;  // b primero
-    return 0; // mantener orden original si ambos tienen el mismo estado
+    if (aVotes > bVotes) return -1; // a primero (más votos)
+    if (aVotes < bVotes) return 1;  // b primero (más votos)
+    return 0; // mantener orden original si tienen la misma cantidad de votos
   });
 
   const allStudents = teams.flatMap(t => t.students || []).filter((s, i, arr) => 

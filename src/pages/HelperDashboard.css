@@ -139,7 +139,30 @@
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: #667eea transparent;
+}
+
+/* Scrollbar personalizado para el modal */
+.edit-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.edit-modal::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 10px 5px;
+}
+
+.edit-modal::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 10px;
+  border: none;
+}
+
+.edit-modal::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
 }
 
 .edit-modal-close {

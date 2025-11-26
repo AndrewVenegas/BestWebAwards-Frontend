@@ -56,17 +56,19 @@
   min-height: 100%;
 }
 
-/* Animación de aparición al hacer scroll */
+/* Animación de aparición y desaparición al hacer scroll */
 .app-card.scroll-hidden {
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.6s ease, transform 0.6s ease;
+  pointer-events: none;
 }
 
 .app-card.scroll-visible {
   opacity: 1;
   transform: translateY(0);
   transition: opacity 0.6s ease, transform 0.6s ease;
+  pointer-events: auto;
 }
 
 .app-card.scroll-visible:not(.flipped):hover .card-inner {

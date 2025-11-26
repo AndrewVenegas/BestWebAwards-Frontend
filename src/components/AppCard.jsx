@@ -5,7 +5,7 @@ import useScrollAnimation from '../hooks/useScrollAnimation';
 import './AppCard.css';
 
 const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFavorite, onToggleFavorite, index = 0, onEdit, showParticipates }) => {
-  const [elementRef, isVisible] = useScrollAnimation({ threshold: 0.1 });
+  const [elementRef, isVisible] = useScrollAnimation({ threshold: 0.1, once: false });
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showPlayOverlay, setShowPlayOverlay] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
@@ -228,11 +228,17 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
                 <button className="app-button voted-button" disabled>
                   ✓ Ya votaste
                 </button>
-              ) : onVote ? (
+              ) : onVote && canVote ? (
                 <button 
                   className="app-button vote-button" 
                   onClick={() => onVote(team.id)}
-                  disabled={!canVote}
+                >
+                  Votar
+                </button>
+              ) : onVote ? (
+                <button 
+                  className="app-button vote-button" 
+                  disabled
                 >
                   Votar
                 </button>

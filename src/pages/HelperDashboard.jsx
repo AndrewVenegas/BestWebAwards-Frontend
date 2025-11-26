@@ -160,6 +160,11 @@ const HelperDashboard = () => {
       errors.push('La imagen de portada es obligatoria');
     }
 
+    // Validar tipo_app
+    if (!formData.tipo_app || typeof formData.tipo_app !== 'string' || formData.tipo_app.trim() === '') {
+      errors.push('El tipo de aplicación es obligatorio');
+    }
+
     // Mostrar todos los errores
     if (errors.length > 0) {
       // Mostrar el primer error inmediatamente, luego los demás con un pequeño delay
@@ -317,6 +322,7 @@ const HelperDashboard = () => {
                     { value: 'Otro', label: 'Otro' }
                   ]}
                   placeholder="Seleccionar tipo..."
+                  required={true}
                 />
               </div>
 
