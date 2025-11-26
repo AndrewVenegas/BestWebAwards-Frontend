@@ -9,6 +9,8 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import StudentDashboard from './pages/StudentDashboard';
 import StudentProfile from './pages/StudentProfile';
+import HelperProfile from './pages/HelperProfile';
+import AdminProfile from './pages/AdminProfile';
 import IntroGuide from './pages/IntroGuide';
 import HelperDashboard from './pages/HelperDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -72,8 +74,10 @@ const AppRoutes = () => {
       <Route
         path="/profile"
         element={
-          <PrivateRoute allowedRoles={['student']}>
-            <StudentProfile />
+          <PrivateRoute>
+            {user?.type === 'student' && <StudentProfile />}
+            {user?.type === 'helper' && <HelperProfile />}
+            {user?.type === 'admin' && <AdminProfile />}
           </PrivateRoute>
         }
       />

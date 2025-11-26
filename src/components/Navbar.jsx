@@ -82,6 +82,12 @@ const Navbar = () => {
                 >
                   Votaciones
                 </Link>
+                <Link 
+                  to="/profile" 
+                  className={`navbar-link ${location.pathname === '/profile' ? 'active' : ''}`}
+                >
+                  Mi Perfil
+                </Link>
               </>
             )}
             
@@ -98,6 +104,12 @@ const Navbar = () => {
                   className={`navbar-link ${location.pathname === '/votaciones' ? 'active' : ''}`}
                 >
                   Votaciones
+                </Link>
+                <Link 
+                  to="/profile" 
+                  className={`navbar-link ${location.pathname === '/profile' ? 'active' : ''}`}
+                >
+                  Mi Perfil
                 </Link>
               </>
             )}

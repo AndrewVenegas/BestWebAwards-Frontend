@@ -115,7 +115,8 @@ const AdminDashboard = () => {
     deployUrl: '',
     videoUrl: '',
     screenshotUrl: '',
-    tipo_app: ''
+    tipo_app: '',
+    description: ''
   });
 
   useEffect(() => {
@@ -259,7 +260,8 @@ const AdminDashboard = () => {
       appName: formData.get('appName') || null,
       helperId: formData.get('helperId') || null,
       participates: formData.get('participates') === 'true',
-      tipo_app: formData.get('tipo_app') || null
+      tipo_app: formData.get('tipo_app') || null,
+      description: formData.get('description') || null
     };
 
     try {
@@ -285,7 +287,8 @@ const AdminDashboard = () => {
       deployUrl: team.deployUrl ?? '',
       videoUrl: team.videoUrl ?? '',
       screenshotUrl: team.screenshotUrl ?? '',
-      tipo_app: team.tipo_app ?? ''
+      tipo_app: team.tipo_app ?? '',
+      description: team.description ?? ''
     });
   };
 
@@ -364,7 +367,8 @@ const AdminDashboard = () => {
         screenshotUrl: teamFormData.screenshotUrl.trim(),
         participates: teamFormData.participates,
         helperId: showEditTeam.helperId || null,
-        tipo_app: teamFormData.tipo_app || null
+        tipo_app: teamFormData.tipo_app || null,
+        description: teamFormData.description.trim() || null
       };
       
       await api.put(`/admin/teams/${showEditTeam.id}`, cleanedData);
@@ -1848,6 +1852,30 @@ const AdminDashboard = () => {
                 </select>
               </div>
               <div className="form-group">
+                <label>Descripción (máximo 300 caracteres)</label>
+                <textarea
+                  name="description"
+                  placeholder="Descripción de la aplicación..."
+                  rows={4}
+                  maxLength={300}
+                  onChange={(e) => {
+                    setCreateDescriptionLength(e.target.value.length);
+                  }}
+                  style={{
+                    padding: '0.75rem',
+                    border: '2px solid #e0e0e0',
+                    borderRadius: '8px',
+                    fontFamily: 'inherit',
+                    fontSize: '1rem',
+                    resize: 'vertical',
+                    width: '100%'
+                  }}
+                />
+                <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
+                  {createDescriptionLength}/300 caracteres
+                </p>
+              </div>
+              <div className="form-group">
                 <label>Ayudante</label>
                 <select name="helperId">
                   <option value="">Sin ayudante</option>
@@ -1973,6 +2001,34 @@ const AdminDashboard = () => {
                   <option value="Mix">Mix</option>
                   <option value="Otro">Otro</option>
                 </select>
+              </div>
+
+              <div className="form-group">
+                <label>Descripción (máximo 300 caracteres)</label>
+                <textarea
+                  value={teamFormData.description}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= 300) {
+                      setTeamFormData(prev => ({ ...prev, description: value }));
+                    }
+                  }}
+                  placeholder="Descripción de la aplicación..."
+                  rows={4}
+                  maxLength={300}
+                  style={{
+                    padding: '0.75rem',
+                    border: '2px solid #e0e0e0',
+                    borderRadius: '8px',
+                    fontFamily: 'inherit',
+                    fontSize: '1rem',
+                    resize: 'vertical',
+                    width: '100%'
+                  }}
+                />
+                <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
+                  {teamFormData.description.length}/300 caracteres
+                </p>
               </div>
 
               <div className="form-group">

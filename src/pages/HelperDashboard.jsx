@@ -22,7 +22,8 @@ const HelperDashboard = () => {
     deployUrl: '',
     videoUrl: '',
     screenshotUrl: '',
-    tipo_app: ''
+    tipo_app: '',
+    description: ''
   });
 
   useEffect(() => {
@@ -50,7 +51,8 @@ const HelperDashboard = () => {
       deployUrl: team.deployUrl ?? '',
       videoUrl: team.videoUrl ?? '',
       screenshotUrl: team.screenshotUrl ?? '',
-      tipo_app: team.tipo_app ?? ''
+      tipo_app: team.tipo_app ?? '',
+      description: team.description ?? ''
     });
   };
 
@@ -179,7 +181,9 @@ const HelperDashboard = () => {
         deployUrl: formData.deployUrl.trim(),
         videoUrl: formData.videoUrl.trim(),
         screenshotUrl: formData.screenshotUrl.trim(),
-        tipo_app: formData.tipo_app || null
+        tipo_app: formData.tipo_app || null,
+        description: formData.description.trim() || null,
+        description: formData.description.trim() || null
       };
       
       await api.put(`/helpers/teams/${selectedTeam.id}`, cleanedData);
@@ -322,6 +326,34 @@ const HelperDashboard = () => {
                   ]}
                   placeholder="Seleccionar tipo..."
                 />
+              </div>
+
+              <div className="form-group">
+                <label>Descripción (máximo 300 caracteres)</label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= 300) {
+                      setFormData(prev => ({ ...prev, description: value }));
+                    }
+                  }}
+                  placeholder="Descripción de la aplicación..."
+                  rows={4}
+                  maxLength={300}
+                  style={{
+                    padding: '0.75rem',
+                    border: '2px solid #e0e0e0',
+                    borderRadius: '8px',
+                    fontFamily: 'inherit',
+                    fontSize: '1rem',
+                    resize: 'vertical',
+                    width: '100%'
+                  }}
+                />
+                <p style={{ fontSize: '0.85rem', color: '#666', marginTop: '0.25rem' }}>
+                  {formData.description.length}/300 caracteres
+                </p>
               </div>
 
               <div className="form-group">

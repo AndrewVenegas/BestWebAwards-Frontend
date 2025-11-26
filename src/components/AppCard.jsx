@@ -8,6 +8,7 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
   const [elementRef, isVisible] = useScrollAnimation({ threshold: 0.1 });
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showPlayOverlay, setShowPlayOverlay] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
   const hoverTimeoutRef = useRef(null);
 
   // Convertir URL de YouTube a formato embed
@@ -117,7 +118,7 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
   return (
     <div 
       ref={elementRef}
-      className={`app-card ${hasVoted ? 'voted' : ''} ${isFavorite ? 'favorite' : ''} ${isVisible ? 'scroll-visible' : 'scroll-hidden'}`}
+      className={`app-card ${hasVoted ? 'voted' : ''} ${isFavorite ? 'favorite' : ''} ${isVisible ? 'scroll-visible' : 'scroll-hidden'} ${isFlipped ? 'flipped' : ''}`}
       style={isVisible ? { transitionDelay: `${Math.min(index * 0.1, 0.5)}s` } : {}}
     >
       {onToggleFavorite && (
@@ -130,84 +131,131 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
           {isFavorite ? '❤️' : '🤍'}
         </button>
       )}
-      {team.screenshotUrl && (
-        <div 
-          className="app-screenshot" 
-          onClick={handleScreenshotClick}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          style={{ backgroundImage: `url(${team.screenshotUrl})` }}
-        >
-          {team.videoUrl && showPlayOverlay && !showVideoModal && (
+      <div className="card-inner">
+        {/* Front side */}
+        <div className="card-front">
+          {team.screenshotUrl && (
             <div 
-              className="play-overlay"
+              className="app-screenshot" 
+              onClick={handleScreenshotClick}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
+              style={{ backgroundImage: `url(${team.screenshotUrl})` }}
             >
-              <span className="play-icon">▶</span>
-            </div>
-          )}
-        </div>
-      )}
-      
-      <div className="app-content">
-        <h3 className="app-name">{capitalizeName(team.appName || team.displayName || team.groupName)}</h3>
-        <p className="app-team">{capitalizeName(team.displayName || team.groupName)}</p>
-        
-        {team.students && team.students.length > 0 && (
-          <div className="app-members">
-            <h4>Integrantes:</h4>
-            <div className="members-list">
-              {team.students.map((student) => (
-                <div key={student.id} className="member-item">
-                  {student.avatarUrl ? (
-                    <img src={student.avatarUrl} alt={capitalizeName(student.name)} className="member-avatar" />
-                  ) : (
-                    <div className="member-avatar placeholder">{student.name.charAt(0).toUpperCase()}</div>
-                  )}
-                  <span className="member-name">{capitalizeName(student.name)}</span>
+              {team.videoUrl && showPlayOverlay && !showVideoModal && (
+                <div 
+                  className="play-overlay"
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                >
+                  <span className="play-icon">▶</span>
                 </div>
-              ))}
+              )}
             </div>
-          </div>
-        )}
-
-        {showCounts && voteCount !== undefined && (
-          <div className="app-vote-count">
-            <strong>{voteCount}</strong> {voteCount === 1 ? 'voto' : 'votos'}
-          </div>
-        )}
-
-        <div className="app-actions">
-          {team.deployUrl && (
-            <a 
-              href={team.deployUrl} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="app-link"
-            >
-              Probar Aplicación
-            </a>
           )}
           
-          {hasVoted ? (
-            <button className="app-button voted-button" disabled>
-              ✓ Ya votaste
-            </button>
-          ) : onVote ? (
-            <button 
-              className="app-button vote-button" 
-              onClick={() => onVote(team.id)}
-              disabled={!canVote}
-            >
-              Votar
-            </button>
-          ) : (
-            <button className="app-button vote-button" disabled>
-              {onToggleFavorite === null ? 'Solo lectura' : 'Votaciones cerradas'}
-            </button>
-          )}
+          <div className="app-content">
+            <div className="app-header-section">
+              <div>
+                <h3 className="app-name">{capitalizeName(team.appName || team.displayName || team.groupName)}</h3>
+                <p className="app-team">by: {capitalizeName(team.displayName || team.groupName)}</p>
+              </div>
+              {team.description && (
+                <button 
+                  className="view-description-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsFlipped(true);
+                  }}
+                >
+                  Ver descripción
+                </button>
+              )}
+            </div>
+            
+            {team.students && team.students.length > 0 && (
+              <div className="app-members">
+                <h4>Integrantes:</h4>
+                <div className="members-list">
+                  {team.students.map((student) => (
+                    <div key={student.id} className="member-item">
+                      {student.avatarUrl ? (
+                        <img src={student.avatarUrl} alt={capitalizeName(student.name)} className="member-avatar" />
+                      ) : (
+                        <div className="member-avatar placeholder">{student.name.charAt(0).toUpperCase()}</div>
+                      )}
+                      <span className="member-name">{capitalizeName(student.name)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {showCounts && voteCount !== undefined && (
+              <div className="app-vote-count">
+                <strong>{voteCount}</strong> {voteCount === 1 ? 'voto' : 'votos'}
+              </div>
+            )}
+
+            <div className="app-actions">
+              {team.deployUrl && (
+                <a 
+                  href={team.deployUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="app-link"
+                >
+                  Probar Aplicación
+                </a>
+              )}
+              
+              {hasVoted ? (
+                <button className="app-button voted-button" disabled>
+                  ✓ Ya votaste
+                </button>
+              ) : onVote ? (
+                <button 
+                  className="app-button vote-button" 
+                  onClick={() => onVote(team.id)}
+                  disabled={!canVote}
+                >
+                  Votar
+                </button>
+              ) : (
+                <button className="app-button vote-button" disabled>
+                  {onToggleFavorite === null ? 'Solo lectura' : 'Votaciones cerradas'}
+                </button>
+              )}
+            </div>
+          </div>
         </div>
+
+        {/* Back side */}
+        {team.description && (
+          <div className="card-back">
+            <div className="app-content app-content-back">
+              <div className="app-description-card">
+                <div className="quote-mark quote-mark-top">"</div>
+                <p className="app-description-text">
+                  {team.description.length > 300 
+                    ? `${team.description.substring(0, 300)}...` 
+                    : team.description}
+                </p>
+                <div className="quote-mark quote-mark-bottom">"</div>
+              </div>
+
+              <button 
+                className="view-description-button back-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFlipped(false);
+                }}
+              >
+                Ver datos generales
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {showVideoModal && createPortal(
