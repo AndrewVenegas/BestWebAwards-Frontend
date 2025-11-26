@@ -253,6 +253,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
+  overflow: visible;
 }
 
 .dashboard-loading,
@@ -260,7 +261,15 @@
   text-align: center;
   padding: 3rem;
   color: white;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  margin: 2rem auto;
+  max-width: 600px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 @media (max-width: 768px) {

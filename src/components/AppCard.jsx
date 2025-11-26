@@ -121,19 +121,19 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
       className={`app-card ${hasVoted ? 'voted' : ''} ${isFavorite ? 'favorite' : ''} ${isVisible ? 'scroll-visible' : 'scroll-hidden'} ${isFlipped ? 'flipped' : ''}`}
       style={isVisible ? { transitionDelay: `${Math.min(index * 0.1, 0.5)}s` } : {}}
     >
-      {onToggleFavorite && (
-        <button 
-          className={`favorite-button ${isFavorite ? 'active' : ''}`}
-          onClick={handleFavoriteClick}
-          aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-          title={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-        >
-          {isFavorite ? '❤️' : '🤍'}
-        </button>
-      )}
       <div className="card-inner">
         {/* Front side */}
         <div className="card-front">
+          {onToggleFavorite && (
+            <button 
+              className={`favorite-button ${isFavorite ? 'active' : ''}`}
+              onClick={handleFavoriteClick}
+              aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+              title={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+            >
+              {isFavorite ? '❤️' : '🤍'}
+            </button>
+          )}
           {team.screenshotUrl && (
             <div 
               className="app-screenshot" 
@@ -233,6 +233,16 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
         {/* Back side */}
         {team.description && (
           <div className="card-back">
+            {onToggleFavorite && (
+              <button 
+                className={`favorite-button ${isFavorite ? 'active' : ''}`}
+                onClick={handleFavoriteClick}
+                aria-label={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                title={isFavorite ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+              >
+                {isFavorite ? '❤️' : '🤍'}
+              </button>
+            )}
             <div className="app-content app-content-back">
               <div className="app-description-card">
                 <div className="quote-mark quote-mark-top">"</div>
