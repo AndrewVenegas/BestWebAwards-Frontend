@@ -41,6 +41,13 @@
   gap: 2rem;
 }
 
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 2rem;
+  padding: 0;
+}
+
 .team-card {
   background: white;
   border-radius: 15px;

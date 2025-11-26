@@ -5,6 +5,7 @@ import { capitalizeName } from '../utils/format';
 import CustomSelect from '../components/CustomSelect';
 import FileDropzone from '../components/FileDropzone';
 import Switch from '../components/Switch';
+import AppCard from '../components/AppCard';
 import './HelperDashboard.css';
 
 const HelperDashboard = () => {
@@ -208,26 +209,15 @@ const HelperDashboard = () => {
       <div className="helper-container">
         <h1 className="helper-title">Mis Equipos</h1>
 
-        <div className="teams-list">
-          {teams.map(team => (
-            <div key={team.id} className="team-card">
-              <div className="team-header">
-                <h3>{capitalizeName(team.groupName)}</h3>
-                <div className={`team-status ${team.participates ? 'participating' : 'not-participating'}`}>
-                  {team.participates ? '✓ Participa' : '✗ No participa'}
-                </div>
-              </div>
-              
-              {team.displayName && <p className="team-display-name">{capitalizeName(team.displayName)}</p>}
-              {team.appName && <p className="team-app-name">App: {capitalizeName(team.appName)}</p>}
-              <p className="team-students-count">
-                {team.students?.length || 0} {team.students?.length === 1 ? 'estudiante' : 'estudiantes'}
-              </p>
-
-              <button onClick={() => handleEdit(team)} className="edit-button">
-                Editar
-              </button>
-            </div>
+        <div className="teams-grid">
+          {teams.map((team, index) => (
+            <AppCard
+              key={team.id}
+              team={team}
+              onEdit={handleEdit}
+              showParticipates={true}
+              index={index}
+            />
           ))}
         </div>
 

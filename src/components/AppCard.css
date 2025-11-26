@@ -407,7 +407,7 @@
 }
 
 .app-link {
-  flex: 1;
+  flex: 1 1 0;
   text-align: center;
   padding: 0.75rem;
   background: #f5f5f5;
@@ -415,6 +415,7 @@
   text-decoration: none;
   border-radius: 8px;
   transition: background 0.3s ease;
+  min-width: 0;
 }
 
 .app-link:hover {
@@ -422,13 +423,14 @@
 }
 
 .app-button {
-  flex: 1;
+  flex: 1 1 0;
   padding: 0.75rem;
   border: none;
   border-radius: 8px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-width: 0;
 }
 
 .vote-button {
@@ -450,6 +452,49 @@
   background: #4caf50;
   color: white;
   cursor: default;
+}
+
+.app-button.edit-button {
+  background: #667eea;
+  color: white;
+  flex: 1 1 0;
+}
+
+.app-button.edit-button.full-width {
+  width: 100%;
+  flex: none;
+}
+
+.app-button.edit-button:hover {
+  background: #5568d3;
+  transform: translateY(-2px);
+}
+
+.app-participates-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 9;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Si hay botón de favoritos, ajustar posición del badge */
+.card-front:has(.favorite-button) .app-participates-badge {
+  top: 3.5rem;
+}
+
+.app-participates-badge.participating {
+  background: #d4edda;
+  color: #155724;
+}
+
+.app-participates-badge.not-participating {
+  background: #f8d7da;
+  color: #721c24;
 }
 
 /* Modal de video */

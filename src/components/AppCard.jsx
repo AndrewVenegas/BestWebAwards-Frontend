@@ -4,7 +4,7 @@ import { capitalizeName } from '../utils/format';
 import useScrollAnimation from '../hooks/useScrollAnimation';
 import './AppCard.css';
 
-const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFavorite, onToggleFavorite, index = 0 }) => {
+const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFavorite, onToggleFavorite, index = 0, onEdit, showParticipates }) => {
   const [elementRef, isVisible] = useScrollAnimation({ threshold: 0.1 });
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showPlayOverlay, setShowPlayOverlay] = useState(false);
@@ -134,6 +134,11 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
               {isFavorite ? '❤️' : '🤍'}
             </button>
           )}
+          {showParticipates !== undefined && (
+            <div className={`app-participates-badge ${team.participates ? 'participating' : 'not-participating'}`}>
+              {team.participates ? '✓ Participa' : '✗ No participa'}
+            </div>
+          )}
           {team.screenshotUrl && (
             <div 
               className="app-screenshot" 
@@ -209,7 +214,17 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
                 </a>
               )}
               
-              {hasVoted ? (
+              {onEdit ? (
+                <button 
+                  className={`app-button edit-button ${team.deployUrl ? '' : 'full-width'}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit(team);
+                  }}
+                >
+                  Editar
+                </button>
+              ) : hasVoted ? (
                 <button className="app-button voted-button" disabled>
                   ✓ Ya votaste
                 </button>
