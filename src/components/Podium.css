@@ -33,6 +33,7 @@
   padding: 2rem 0;
   z-index: 1;
   overflow: visible;
+  background: transparent;
 }
 
 .podium-carousel {
@@ -56,6 +57,14 @@
   position: relative;
   z-index: 1;
   animation: podiumCarouselFadeIn 0.5s ease-out forwards;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible;
+}
+
+.podium-carousel-card-wrapper .podium-item-top.flipped {
+  overflow: visible;
 }
 
 .podium-carousel-card-wrapper .podium-item-top {
@@ -159,6 +168,7 @@
   margin-bottom: 0;
   padding: 2rem 0;
   position: relative;
+  background: transparent;
 }
 
 .podium-top-three.podium-single-position {
@@ -167,12 +177,12 @@
 }
 
 .podium-item-top {
-  background: transparent;
+  background: transparent !important;
   border-radius: 20px;
   padding: 0;
   text-align: center;
   transition: all 0.3s ease;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: none !important;
   position: relative;
   width: 320px;
   flex-shrink: 0;
@@ -183,6 +193,10 @@
   transform: translateY(100px);
   perspective: 1000px;
   transform-style: preserve-3d;
+  overflow: visible;
+  border: none !important;
+  outline: none !important;
+  margin: 0;
 }
 
 .podium-card-inner {
@@ -192,10 +206,16 @@
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   transform-style: preserve-3d;
   will-change: transform;
+  background: transparent !important;
 }
 
 .podium-item-top.flipped .podium-card-inner {
   transform: rotateY(180deg);
+}
+
+.podium-carousel-card-wrapper .podium-item-top.flipped {
+  overflow: visible;
+  background: transparent !important;
 }
 
 .podium-card-front,
@@ -211,6 +231,8 @@
   padding: 2rem 1.5rem;
   position: relative;
   overflow: hidden;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 .podium-card-back {
@@ -244,6 +266,8 @@
   background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #fff9e6 100%);
   border: 4px solid #ffd700;
   box-shadow: 0 12px 40px rgba(255, 215, 0, 0.4);
+  box-sizing: border-box;
+  outline: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .podium-item-top.first {
@@ -255,6 +279,8 @@
   background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 50%, #f5f5f5 100%);
   border: 4px solid #c0c0c0;
   box-shadow: 0 10px 35px rgba(192, 192, 192, 0.35);
+  box-sizing: border-box;
+  outline: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .podium-item-top.second {
@@ -266,6 +292,8 @@
   background: linear-gradient(135deg, #cd7f32 0%, #e6a85c 50%, #fff4e6 100%);
   border: 4px solid #cd7f32;
   box-shadow: 0 8px 30px rgba(205, 127, 50, 0.3);
+  box-sizing: border-box;
+  outline: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .podium-item-top.third {
