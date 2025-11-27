@@ -15,7 +15,7 @@ const FilterDropdown = ({ children, onReset, resetLabel = '🗑️ Eliminar filt
     }
   };
 
-  // Cerrar el dropdown cuando se hace clic fuera
+  // Cerrar el dropdown cuando se hace clic fuera o cuando se hace scroll
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (containerRef.current && !containerRef.current.contains(event.target)) {
@@ -23,12 +23,20 @@ const FilterDropdown = ({ children, onReset, resetLabel = '🗑️ Eliminar filt
       }
     };
 
+    const handleScroll = () => {
+      if (isOpen) {
+        setIsOpen(false);
+      }
+    };
+
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('scroll', handleScroll, true);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
     };
   }, [isOpen]);
 

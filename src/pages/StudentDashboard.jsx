@@ -38,7 +38,8 @@ const StudentDashboard = ({ readOnly = false }) => {
   const [visibleAllTeamsCount, setVisibleAllTeamsCount] = useState(0);
   const [countdownReady, setCountdownReady] = useState(false);
   const [alphabeticalOrder, setAlphabeticalOrder] = useState(null); // null | 'asc' | 'desc'
-  const prevAlphabeticalOrder = useRef(alphabeticalOrder);
+  const hasInitialRevealRun = useRef(false);
+  const hasAllTeamsRevealRun = useRef(false);
 
   // Solo para verificación de intro - helpers y admins no necesitan ver intro
   const isReadOnly = readOnly || (user && user.type !== 'student');
@@ -65,9 +66,9 @@ const StudentDashboard = ({ readOnly = false }) => {
 
   const cycleAlphabeticalOrder = () => {
     setAlphabeticalOrder((prev) => {
+      if (prev === null) return 'asc';
       if (prev === 'asc') return 'desc';
-      if (prev === 'desc') return null;
-      return 'asc';
+      return null; // 'desc' -> null
     });
   };
 
@@ -355,6 +356,15 @@ const StudentDashboard = ({ readOnly = false }) => {
 
     return matchesHelper && matchesTipoApp;
   }).sort((a, b) => {
+    if (alphabeticalOrder) {
+      const nameA = (a.appName || a.groupName || '').toLowerCase();
+      const nameB = (b.appName || b.groupName || '').toLowerCase();
+
+      if (nameA < nameB) return alphabeticalOrder === 'asc' ? -1 : 1;
+      if (nameA > nameB) return alphabeticalOrder === 'asc' ? 1 : -1;
+      return 0;
+    }
+
     // Ordenar por cantidad de votos (de mayor a menor)
     const aVotes = a.voteCount || 0;
     const bVotes = b.voteCount || 0;
@@ -394,17 +404,19 @@ const StudentDashboard = ({ readOnly = false }) => {
   useEffect(() => {
     if (loading || filteredTeams.length === 0 || !countdownReady) {
       setVisibleTeamsCount(0);
+      hasInitialRevealRun.current = false;
       return;
     }
-    
-    // Resetear contador cuando cambian los filtros
+
+    // Resetear cuando cambia cualquier filtro, incluyendo el orden alfabético
+    hasInitialRevealRun.current = false;
     setVisibleTeamsCount(0);
     
-    // Mostrar proyectos gradualmente: 3 cada 100ms
     const interval = setInterval(() => {
       setVisibleTeamsCount(prev => {
         if (prev >= filteredTeams.length) {
           clearInterval(interval);
+          hasInitialRevealRun.current = true;
           return prev;
         }
         return Math.min(prev + 3, filteredTeams.length);
@@ -412,23 +424,25 @@ const StudentDashboard = ({ readOnly = false }) => {
     }, 100);
     
     return () => clearInterval(interval);
-  }, [loading, filteredTeams.length, countdownReady, searchTerm, filterStudent, filterHelper, filterTipoApp, showFavoritesOnly]);
+  }, [loading, filteredTeams.length, countdownReady, searchTerm, filterStudent, filterHelper, filterTipoApp, showFavoritesOnly, alphabeticalOrder]);
 
   // Efecto para mostrar todos los equipos gradualmente cuando las votaciones están cerradas (solo después de que el countdown esté listo)
   useEffect(() => {
     if (loading || !showAllTeams || filteredAllTeams.length === 0 || !countdownReady) {
       setVisibleAllTeamsCount(0);
+      hasAllTeamsRevealRun.current = false;
       return;
     }
-    
-    // Resetear contador cuando cambian los filtros o se cambia de vista
+
+    // Resetear cuando cambia cualquier filtro, incluyendo el orden alfabético
+    hasAllTeamsRevealRun.current = false;
     setVisibleAllTeamsCount(0);
     
-    // Mostrar proyectos gradualmente: 3 cada 100ms
     const interval = setInterval(() => {
       setVisibleAllTeamsCount(prev => {
         if (prev >= filteredAllTeams.length) {
           clearInterval(interval);
+          hasAllTeamsRevealRun.current = true;
           return prev;
         }
         return Math.min(prev + 3, filteredAllTeams.length);
@@ -436,23 +450,8 @@ const StudentDashboard = ({ readOnly = false }) => {
     }, 100);
     
     return () => clearInterval(interval);
-  }, [loading, showAllTeams, filteredAllTeams.length, countdownReady, searchTerm, filterStudent, filterHelper, filterTipoApp, showFavoritesOnly]);
+  }, [loading, showAllTeams, filteredAllTeams.length, countdownReady, searchTerm, filterStudent, filterHelper, filterTipoApp, showFavoritesOnly, alphabeticalOrder]);
 
-  // Evitar saltos cuando solo cambia el orden alfabético: mostrar todo el listado actual
-  useEffect(() => {
-    if (prevAlphabeticalOrder.current === alphabeticalOrder) {
-      return;
-    }
-    prevAlphabeticalOrder.current = alphabeticalOrder;
-
-    if (!loading && countdownReady && filteredTeams.length > 0) {
-      setVisibleTeamsCount(filteredTeams.length);
-    }
-
-    if (!loading && countdownReady && showAllTeams && filteredAllTeams.length > 0) {
-      setVisibleAllTeamsCount(filteredAllTeams.length);
-    }
-  }, [alphabeticalOrder, loading, countdownReady, filteredTeams.length, filteredAllTeams.length, showAllTeams]);
 
   if (loading) {
     return <div className="dashboard-loading">Cargando...</div>;
@@ -546,7 +545,7 @@ const StudentDashboard = ({ readOnly = false }) => {
             
             <FilterDropdown onReset={resetFilters}>
               <div className="filter-group alphabetical-sort-control">
-                <label>Orden alfabético:</label>
+                <label>Orden:</label>
                 <button
                   type="button"
                   className={`alphabetical-order-button ${alphabeticalOrder || 'none'}`}
@@ -670,6 +669,19 @@ const StudentDashboard = ({ readOnly = false }) => {
             />
             
             <FilterDropdown onReset={resetFilters}>
+              <div className="filter-group alphabetical-sort-control">
+                <label>Orden:</label>
+                <button
+                  type="button"
+                  className={`alphabetical-order-button ${alphabeticalOrder || 'none'}`}
+                  onClick={cycleAlphabeticalOrder}
+                >
+                  {alphabeticalOrder === 'asc' && '↑ A-Z'}
+                  {alphabeticalOrder === 'desc' && '↓ Z-A'}
+                  {!alphabeticalOrder && 'Sin orden'}
+                </button>
+              </div>
+
               <div className="filter-group">
                 <label>Estudiante:</label>
                 <select
