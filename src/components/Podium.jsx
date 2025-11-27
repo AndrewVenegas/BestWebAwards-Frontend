@@ -364,7 +364,10 @@ const Podium = () => {
               {currentSlide.entries.map((entry, index) => {
                 const card = renderPodiumCard(entry, currentSlide.type === 'full');
                 return (
-                  <div key={entry.teamId} className={`podium-carousel-card-wrapper podium-animate-${currentSlide.type === 'full' ? entry.position : currentSlide.position}`}>
+                  <div 
+                    key={`${carouselIndex}-${entry.teamId}`} 
+                    className={`podium-carousel-card-wrapper podium-animate-${currentSlide.type === 'full' ? entry.position : currentSlide.position}`}
+                  >
                     {card}
                   </div>
                 );
