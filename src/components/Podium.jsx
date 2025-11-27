@@ -10,11 +10,17 @@ const Podium = () => {
   const [showVideoModal, setShowVideoModal] = useState(null); // Almacena el teamId del video a mostrar
   const [showPlayOverlay, setShowPlayOverlay] = useState({});
   const [flippedItems, setFlippedItems] = useState({}); // Estado para manejar qué items están flipped
+  const [carouselIndex, setCarouselIndex] = useState(0); // Estado para el índice del carrusel
   const hoverTimeoutRef = useRef({});
 
   useEffect(() => {
     fetchPodium();
   }, []);
+
+  // Reiniciar el carrusel cuando cambien los datos del podio
+  useEffect(() => {
+    setCarouselIndex(0);
+  }, [podium.length]);
 
   // Convertir URL de YouTube a formato embed
   const getYouTubeEmbedUrl = (url) => {
@@ -87,6 +93,159 @@ const Podium = () => {
     }));
   }, []);
 
+  // Función para renderizar una tarjeta del podio
+  const renderPodiumCard = useCallback((entry, showPosition = true) => {
+    const isFirst = entry.position === 1;
+    const isSecond = entry.position === 2;
+    const isThird = entry.position === 3;
+    const isFlipped = flippedItems[entry.teamId] || false;
+    const hasDescription = entry.description && entry.description.trim() !== '';
+
+    return (
+      <div
+        key={entry.teamId}
+        className={`podium-item-top ${isFirst ? 'first' : ''} ${isSecond ? 'second' : ''} ${isThird ? 'third' : ''} ${isFlipped ? 'flipped' : ''}`}
+        onClick={() => hasDescription && handlePodiumItemClick(entry.teamId, hasDescription)}
+        style={{ cursor: hasDescription ? 'pointer' : 'default' }}
+      >
+        <div className="podium-card-inner">
+          {/* Front side */}
+          <div className="podium-card-front">
+            <div className="podium-rank-badge">
+              {entry.position === 1 && <span className="medal">🥇</span>}
+              {entry.position === 2 && <span className="medal">🥈</span>}
+              {entry.position === 3 && <span className="medal">🥉</span>}
+              {showPosition && <span className="rank-number">#{entry.position}</span>}
+            </div>
+            
+            {entry.screenshotUrl && (
+              <div 
+                className={`podium-screenshot ${entry.videoUrl && !isFlipped ? 'clickable' : ''}`}
+                style={{ backgroundImage: `url(${entry.screenshotUrl})` }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (entry.videoUrl && !isFlipped) {
+                    handleScreenshotClick(entry);
+                  }
+                }}
+                onMouseEnter={() => entry.videoUrl && !isFlipped && handleMouseEnter(entry.teamId)}
+                onMouseLeave={() => entry.videoUrl && !isFlipped && handleMouseLeave(entry.teamId)}
+              >
+                {/* Avatares de estudiantes y ayudante sobre la imagen */}
+                <div className="podium-avatars-overlay">
+                  {entry.students && entry.students.map((student) => (
+                    <div key={student.id} className="podium-avatar-wrapper">
+                      {student.avatarUrl ? (
+                        <img 
+                          src={student.avatarUrl} 
+                          alt={capitalizeName(student.name)}
+                          className="podium-avatar"
+                        />
+                      ) : (
+                        <div className="podium-avatar placeholder">
+                          {student.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="podium-avatar-tooltip">
+                        <span className="tooltip-name">{capitalizeName(student.name)}</span>
+                      </div>
+                    </div>
+                  ))}
+                  {entry.helper && (
+                    <div className="podium-avatar-wrapper helper-avatar">
+                      {entry.helper.avatarUrl ? (
+                        <img 
+                          src={entry.helper.avatarUrl} 
+                          alt={capitalizeName(entry.helper.name)}
+                          className="podium-avatar"
+                        />
+                      ) : (
+                        <div className="podium-avatar placeholder">
+                          {entry.helper.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="podium-avatar-tooltip">
+                        <span className="tooltip-label">Ayudante:</span>
+                        <span className="tooltip-name">{capitalizeName(entry.helper.name)}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {entry.videoUrl && showPlayOverlay[entry.teamId] && !showVideoModal && (
+                  <div 
+                    className="podium-play-overlay"
+                    onMouseEnter={() => handleMouseEnter(entry.teamId)}
+                    onMouseLeave={() => handleMouseLeave(entry.teamId)}
+                  >
+                    <span className="podium-play-icon">▶</span>
+                  </div>
+                )}
+              </div>
+            )}
+            
+            <div className="podium-info-top">
+              <h3 className="podium-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
+              {entry.appName && (
+                <p className="podium-app-name">{capitalizeName(entry.appName)}</p>
+              )}
+              
+              <div className="podium-votes-top">
+                <span className="votes-label">Votos:</span>
+                <span className="votes-count">{entry.voteCount}</span>
+              </div>
+
+              {entry.deployUrl && (
+                <a 
+                  href={entry.deployUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="podium-deploy-link"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  Probar Aplicación
+                </a>
+              )}
+            </div>
+          </div>
+
+          {/* Back side */}
+          {hasDescription && (
+            <div className="podium-card-back">
+              <div className="podium-rank-badge">
+                {entry.position === 1 && <span className="medal">🥇</span>}
+                {entry.position === 2 && <span className="medal">🥈</span>}
+                {entry.position === 3 && <span className="medal">🥉</span>}
+              </div>
+              
+              <div className="podium-back-header">
+                <h3 className="podium-back-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
+                {entry.appName && (
+                  <p className="podium-back-app-name">{capitalizeName(entry.appName)}</p>
+                )}
+                {entry.tipo_app && (
+                  <p className="podium-back-type">{entry.tipo_app}</p>
+                )}
+              </div>
+
+              <div className="podium-description-content">
+                <div className="podium-description-card">
+                  <div className="quote-mark quote-mark-top">"</div>
+                  <p className="podium-description-text">
+                    {entry.description.length > 300 
+                      ? `${entry.description.substring(0, 300)}...` 
+                      : entry.description}
+                  </p>
+                  <div className="quote-mark quote-mark-bottom">"</div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }, [flippedItems, handlePodiumItemClick, handleScreenshotClick, handleMouseEnter, handleMouseLeave, showPlayOverlay, showVideoModal]);
+
   const fetchPodium = async () => {
     try {
       const response = await api.get('/results/podium');
@@ -117,168 +276,96 @@ const Podium = () => {
   const topThree = podium.filter(entry => entry.position <= 3);
   const rest = podium.filter(entry => entry.position > 3);
 
+  // Agrupar top 3 por posición para el carrusel
+  const firstPlace = topThree.filter(entry => entry.position === 1);
+  const secondPlace = topThree.filter(entry => entry.position === 2);
+  const thirdPlace = topThree.filter(entry => entry.position === 3);
+
+  // Crear slides del carrusel: primero, segundo, tercero, y podio completo
+  const carouselSlides = [];
+  if (firstPlace.length > 0) {
+    const label = firstPlace.length === 1 ? 'Primer Lugar' : 'Primeros Lugares';
+    carouselSlides.push({ type: 'position', position: 1, entries: firstPlace, label });
+  }
+  if (secondPlace.length > 0) {
+    const label = secondPlace.length === 1 ? 'Segundo Lugar' : 'Segundos Lugares';
+    carouselSlides.push({ type: 'position', position: 2, entries: secondPlace, label });
+  }
+  if (thirdPlace.length > 0) {
+    const label = thirdPlace.length === 1 ? 'Tercer Lugar' : 'Terceros Lugares';
+    carouselSlides.push({ type: 'position', position: 3, entries: thirdPlace, label });
+  }
+  if (topThree.length > 0) carouselSlides.push({ type: 'full', entries: topThree, label: '🏆 Podio Completo 🏆' });
+
+  const currentSlide = carouselSlides[carouselIndex] || null;
+  const hasMultipleSlides = carouselSlides.length > 1;
+
+  const handleNextSlide = () => {
+    setCarouselIndex((prev) => (prev + 1) % carouselSlides.length);
+  };
+
+  const handlePrevSlide = () => {
+    setCarouselIndex((prev) => (prev - 1 + carouselSlides.length) % carouselSlides.length);
+  };
+
   return (
     <div className="podium-container">
-      <div className="podium-header">
+      {/* <div className="podium-header">
         <h2 className="podium-title">🏆 Podio de Ganadores 🏆</h2>
         <p className="podium-subtitle">Los 5 mejores proyectos del concurso</p>
-      </div>
+      </div> */}
       
-      {/* Top 3 en formato podio olímpico */}
-      {topThree.length > 0 && (
-        <div className="podium-top-three">
-          {topThree.map((entry) => {
-            const isFirst = entry.position === 1;
-            const isSecond = entry.position === 2;
-            const isThird = entry.position === 3;
-
-            const isFlipped = flippedItems[entry.teamId] || false;
-            const hasDescription = entry.description && entry.description.trim() !== '';
-
-            return (
-              <div
-                key={entry.teamId}
-                className={`podium-item-top ${isFirst ? 'first' : ''} ${isSecond ? 'second' : ''} ${isThird ? 'third' : ''} podium-animate-${entry.position} ${isFlipped ? 'flipped' : ''}`}
-                onClick={() => hasDescription && handlePodiumItemClick(entry.teamId, hasDescription)}
-                style={{ cursor: hasDescription ? 'pointer' : 'default' }}
-              >
-                <div className="podium-card-inner">
-                  {/* Front side */}
-                  <div className="podium-card-front">
-                    <div className="podium-rank-badge">
-                      {entry.position === 1 && <span className="medal">🥇</span>}
-                      {entry.position === 2 && <span className="medal">🥈</span>}
-                      {entry.position === 3 && <span className="medal">🥉</span>}
-                      <span className="rank-number">#{entry.position}</span>
-                    </div>
-                    
-                    {entry.screenshotUrl && (
-                      <div 
-                        className={`podium-screenshot ${entry.videoUrl && !isFlipped ? 'clickable' : ''}`}
-                        style={{ backgroundImage: `url(${entry.screenshotUrl})` }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (entry.videoUrl && !isFlipped) {
-                            handleScreenshotClick(entry);
-                          }
-                        }}
-                        onMouseEnter={() => entry.videoUrl && !isFlipped && handleMouseEnter(entry.teamId)}
-                        onMouseLeave={() => entry.videoUrl && !isFlipped && handleMouseLeave(entry.teamId)}
-                      >
-                        {/* Avatares de estudiantes y ayudante sobre la imagen */}
-                        <div className="podium-avatars-overlay">
-                          {entry.students && entry.students.map((student) => (
-                            <div key={student.id} className="podium-avatar-wrapper">
-                              {student.avatarUrl ? (
-                                <img 
-                                  src={student.avatarUrl} 
-                                  alt={capitalizeName(student.name)}
-                                  className="podium-avatar"
-                                />
-                              ) : (
-                                <div className="podium-avatar placeholder">
-                                  {student.name.charAt(0).toUpperCase()}
-                                </div>
-                              )}
-                              <div className="podium-avatar-tooltip">
-                                <span className="tooltip-name">{capitalizeName(student.name)}</span>
-                              </div>
-                            </div>
-                          ))}
-                          {entry.helper && (
-                            <div className="podium-avatar-wrapper helper-avatar">
-                              {entry.helper.avatarUrl ? (
-                                <img 
-                                  src={entry.helper.avatarUrl} 
-                                  alt={capitalizeName(entry.helper.name)}
-                                  className="podium-avatar"
-                                />
-                              ) : (
-                                <div className="podium-avatar placeholder">
-                                  {entry.helper.name.charAt(0).toUpperCase()}
-                                </div>
-                              )}
-                              <div className="podium-avatar-tooltip">
-                                <span className="tooltip-label">Ayudante:</span>
-                                <span className="tooltip-name">{capitalizeName(entry.helper.name)}</span>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        
-                        {entry.videoUrl && showPlayOverlay[entry.teamId] && !showVideoModal && (
-                          <div 
-                            className="podium-play-overlay"
-                            onMouseEnter={() => handleMouseEnter(entry.teamId)}
-                            onMouseLeave={() => handleMouseLeave(entry.teamId)}
-                          >
-                            <span className="podium-play-icon">▶</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    
-                    <div className="podium-info-top">
-                      <h3 className="podium-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
-                      {entry.appName && (
-                        <p className="podium-app-name">{capitalizeName(entry.appName)}</p>
-                      )}
-                      
-                      <div className="podium-votes-top">
-                        <span className="votes-label">Votos:</span>
-                        <span className="votes-count">{entry.voteCount}</span>
-                      </div>
-
-                      {entry.deployUrl && (
-                        <a 
-                          href={entry.deployUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="podium-deploy-link"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          Probar Aplicación
-                        </a>
-                      )}
-                    </div>
+      {/* Carrusel del Top 3 */}
+      {topThree.length > 0 && currentSlide && (
+        <div className="podium-carousel-wrapper">
+          {hasMultipleSlides && (
+            <button 
+              className="podium-carousel-arrow podium-carousel-arrow-left"
+              onClick={handlePrevSlide}
+              aria-label="Slide anterior"
+            >
+              ‹
+            </button>
+          )}
+          
+          <div className="podium-carousel">
+            <h1 className="podium-carousel-slide-label">
+              {currentSlide.label}
+            </h1>
+            <div className={`podium-top-three ${currentSlide.type === 'full' ? 'podium-full' : 'podium-single-position'}`}>
+              {currentSlide.entries.map((entry, index) => {
+                const card = renderPodiumCard(entry, currentSlide.type === 'full');
+                return (
+                  <div key={entry.teamId} className={`podium-carousel-card-wrapper podium-animate-${currentSlide.type === 'full' ? entry.position : currentSlide.position}`}>
+                    {card}
                   </div>
+                );
+              })}
+            </div>
+          </div>
 
-                  {/* Back side */}
-                  {hasDescription && (
-                    <div className="podium-card-back">
-                      <div className="podium-rank-badge">
-                        {entry.position === 1 && <span className="medal">🥇</span>}
-                        {entry.position === 2 && <span className="medal">🥈</span>}
-                        {entry.position === 3 && <span className="medal">🥉</span>}
-                      </div>
-                      
-                      <div className="podium-back-header">
-                        <h3 className="podium-back-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
-                        {entry.appName && (
-                          <p className="podium-back-app-name">{capitalizeName(entry.appName)}</p>
-                        )}
-                        {entry.tipo_app && (
-                          <p className="podium-back-type">{entry.tipo_app}</p>
-                        )}
-                      </div>
+          {hasMultipleSlides && (
+            <button 
+              className="podium-carousel-arrow podium-carousel-arrow-right"
+              onClick={handleNextSlide}
+              aria-label="Slide siguiente"
+            >
+              ›
+            </button>
+          )}
 
-                      <div className="podium-description-content">
-                        <div className="podium-description-card">
-                          <div className="quote-mark quote-mark-top">"</div>
-                          <p className="podium-description-text">
-                            {entry.description.length > 300 
-                              ? `${entry.description.substring(0, 300)}...` 
-                              : entry.description}
-                          </p>
-                          <div className="quote-mark quote-mark-bottom">"</div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {hasMultipleSlides && (
+            <div className="podium-carousel-dots">
+              {carouselSlides.map((_, index) => (
+                <button
+                  key={index}
+                  className={`podium-carousel-dot ${index === carouselIndex ? 'active' : ''}`}
+                  onClick={() => setCarouselIndex(index)}
+                  aria-label={`Ir al slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       )}
 
