@@ -755,7 +755,9 @@ table .switch {
   position: relative;
   scrollbar-width: thin;
   scrollbar-color: #667eea transparent;
+  animation: zoomIn 0.3s ease;
 }
+
 
 /* Scrollbar personalizado para el modal */
 .edit-modal::-webkit-scrollbar {
@@ -939,8 +941,9 @@ table .switch {
   max-height: 90vh;
   overflow-y: auto;
   position: relative;
-  animation: slideUp 0.3s ease;
+  animation: zoomIn 0.3s ease;
 }
+
 
 .modal-header {
   display: flex;
@@ -1120,6 +1123,18 @@ table .switch {
     transform: translateY(0);
   }
 }
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 
 @media (max-width: 768px) {
   .admin-table {

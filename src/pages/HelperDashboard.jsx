@@ -59,6 +59,10 @@ const HelperDashboard = () => {
     });
   };
 
+  const handleCloseEdit = () => {
+    setSelectedTeam(null);
+  };
+
   const handleImageUpload = async (file) => {
     if (!file) return;
 
@@ -196,7 +200,7 @@ const HelperDashboard = () => {
       
       await api.put(`/helpers/teams/${selectedTeam.id}`, cleanedData);
       await fetchTeams();
-      setSelectedTeam(null);
+      handleCloseEdit();
       success('Equipo actualizado exitosamente');
     } catch (err) {
       console.error('Error al actualizar equipo:', err);
@@ -238,13 +242,13 @@ const HelperDashboard = () => {
             }}
             onClick={(e) => {
               if (e.target === e.currentTarget && !clickStartedInModal) {
-                setSelectedTeam(null);
+                handleCloseEdit();
               }
               setClickStartedInModal(false);
             }}
           >
             <div 
-              className="edit-modal" 
+              className="edit-modal"
               onMouseDown={(e) => {
                 setClickStartedInModal(true);
                 e.stopPropagation();
@@ -253,7 +257,7 @@ const HelperDashboard = () => {
             >
               <button 
                 className="edit-modal-close" 
-                onClick={() => setSelectedTeam(null)}
+                onClick={handleCloseEdit}
                 aria-label="Cerrar"
               >
                 ×

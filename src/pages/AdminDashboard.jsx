@@ -294,6 +294,7 @@ const AdminDashboard = () => {
 
   const handleEditTeamClick = (team) => {
     setShowEditTeam(team);
+    setClosingModal(null);
     // Si no existe displayName, usar groupName reemplazando "-" por espacios
     const defaultDisplayName = team.displayName || (team.groupName ? team.groupName.replace(/-/g, ' ') : '');
     // Precargar todos los datos del equipo, incluyendo valores existentes
@@ -307,6 +308,14 @@ const AdminDashboard = () => {
       tipo_app: team.tipo_app ?? '',
       description: team.description ?? ''
     });
+  };
+
+  const handleCloseEditTeam = () => {
+    setShowEditTeam(null);
+  };
+
+  const handleCloseCreateTeam = () => {
+    setShowCreateTeam(false);
   };
 
   const validateUrl = (url) => {
@@ -395,7 +404,7 @@ const AdminDashboard = () => {
       
       await api.put(`/admin/teams/${showEditTeam.id}`, cleanedData);
       success('Equipo actualizado exitosamente');
-      setShowEditTeam(null);
+      handleCloseEditTeam();
       fetchDashboardData();
     } catch (err) {
       console.error('Error al actualizar equipo:', err);
@@ -1837,11 +1846,11 @@ const AdminDashboard = () => {
 
       {/* Modal Crear Equipo */}
       {showCreateTeam && (
-        <div className="modal-overlay" onClick={() => setShowCreateTeam(false)}>
+        <div className="modal-overlay" onClick={handleCloseCreateTeam}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Crear Equipo</h2>
-              <button className="modal-close" onClick={() => setShowCreateTeam(false)}>×</button>
+              <button className="modal-close" onClick={handleCloseCreateTeam}>×</button>
             </div>
             <form onSubmit={handleCreateTeam}>
               <div className="form-group">
@@ -1860,7 +1869,7 @@ const AdminDashboard = () => {
                 </select>
               </div>
               <div className="modal-buttons">
-                <button type="button" onClick={() => setShowCreateTeam(false)} className="cancel-button">
+                <button type="button" onClick={handleCloseCreateTeam} className="cancel-button">
                   Cancelar
                 </button>
                 <button type="submit" className="save-button" disabled={saving}>
@@ -1883,13 +1892,13 @@ const AdminDashboard = () => {
           }}
           onClick={(e) => {
             if (e.target === e.currentTarget && !clickStartedInModal) {
-              setShowEditTeam(null);
+              handleCloseEditTeam();
             }
             setClickStartedInModal(false);
           }}
         >
           <div 
-            className="edit-modal" 
+            className="edit-modal"
             onMouseDown={(e) => {
               setClickStartedInModal(true);
               e.stopPropagation();
@@ -1898,7 +1907,7 @@ const AdminDashboard = () => {
           >
             <button 
               className="edit-modal-close" 
-              onClick={() => setShowEditTeam(null)}
+              onClick={handleCloseEditTeam}
               aria-label="Cerrar"
             >
               ×
