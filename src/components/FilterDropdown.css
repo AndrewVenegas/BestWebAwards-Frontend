@@ -124,6 +124,44 @@
   font-size: 0.95rem;
 }
 
+.filter-dropdown-body .alphabetical-sort-control {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.alphabetical-order-button {
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  border: 2px solid #667eea;
+  background: white;
+  color: #667eea;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 140px;
+}
+
+.alphabetical-order-button.asc {
+  background: rgba(102, 126, 234, 0.1);
+}
+
+.alphabetical-order-button.desc {
+  background: rgba(255, 107, 107, 0.12);
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+.alphabetical-order-button.none {
+  border-color: #c5c5c5;
+  color: #777;
+}
+
+.alphabetical-order-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
 .filter-dropdown-body .filter-select,
 .filter-dropdown-body input[type="text"] {
   width: 100%;

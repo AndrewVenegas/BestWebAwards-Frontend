@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
@@ -37,6 +37,8 @@ const StudentDashboard = ({ readOnly = false }) => {
   const [visibleTeamsCount, setVisibleTeamsCount] = useState(0);
   const [visibleAllTeamsCount, setVisibleAllTeamsCount] = useState(0);
   const [countdownReady, setCountdownReady] = useState(false);
+  const [alphabeticalOrder, setAlphabeticalOrder] = useState(null); // null | 'asc' | 'desc'
+  const prevAlphabeticalOrder = useRef(alphabeticalOrder);
 
   // Solo para verificación de intro - helpers y admins no necesitan ver intro
   const isReadOnly = readOnly || (user && user.type !== 'student');
@@ -58,6 +60,15 @@ const StudentDashboard = ({ readOnly = false }) => {
     setFilterHelper('');
     setFilterTipoApp('');
     setShowFavoritesOnly(false);
+    setAlphabeticalOrder(null);
+  };
+
+  const cycleAlphabeticalOrder = () => {
+    setAlphabeticalOrder((prev) => {
+      if (prev === 'asc') return 'desc';
+      if (prev === 'desc') return null;
+      return 'asc';
+    });
   };
 
   const fetchData = async () => {
@@ -292,6 +303,15 @@ const StudentDashboard = ({ readOnly = false }) => {
 
     return matchesSearch && matchesStudent && matchesHelper && matchesTipoApp;
   }).sort((a, b) => {
+    if (alphabeticalOrder) {
+      const nameA = (a.appName || a.groupName || '').toLowerCase();
+      const nameB = (b.appName || b.groupName || '').toLowerCase();
+
+      if (nameA < nameB) return alphabeticalOrder === 'asc' ? -1 : 1;
+      if (nameA > nameB) return alphabeticalOrder === 'asc' ? 1 : -1;
+      return 0;
+    }
+
     // Ordenar: primero los equipos por los que ya votó, luego los demás
     const aVoted = myVotes.includes(a.id);
     const bVoted = myVotes.includes(b.id);
@@ -418,6 +438,22 @@ const StudentDashboard = ({ readOnly = false }) => {
     return () => clearInterval(interval);
   }, [loading, showAllTeams, filteredAllTeams.length, countdownReady, searchTerm, filterStudent, filterHelper, filterTipoApp, showFavoritesOnly]);
 
+  // Evitar saltos cuando solo cambia el orden alfabético: mostrar todo el listado actual
+  useEffect(() => {
+    if (prevAlphabeticalOrder.current === alphabeticalOrder) {
+      return;
+    }
+    prevAlphabeticalOrder.current = alphabeticalOrder;
+
+    if (!loading && countdownReady && filteredTeams.length > 0) {
+      setVisibleTeamsCount(filteredTeams.length);
+    }
+
+    if (!loading && countdownReady && showAllTeams && filteredAllTeams.length > 0) {
+      setVisibleAllTeamsCount(filteredAllTeams.length);
+    }
+  }, [alphabeticalOrder, loading, countdownReady, filteredTeams.length, filteredAllTeams.length, showAllTeams]);
+
   if (loading) {
     return <div className="dashboard-loading">Cargando...</div>;
   }
@@ -509,6 +545,19 @@ const StudentDashboard = ({ readOnly = false }) => {
             />
             
             <FilterDropdown onReset={resetFilters}>
+              <div className="filter-group alphabetical-sort-control">
+                <label>Orden alfabético:</label>
+                <button
+                  type="button"
+                  className={`alphabetical-order-button ${alphabeticalOrder || 'none'}`}
+                  onClick={cycleAlphabeticalOrder}
+                >
+                  {alphabeticalOrder === 'asc' && '↑ A-Z'}
+                  {alphabeticalOrder === 'desc' && '↓ Z-A'}
+                  {!alphabeticalOrder && 'Sin orden'}
+                </button>
+              </div>
+
               <div className="filter-group">
                 <label>Estudiante:</label>
                 <select

@@ -1298,7 +1298,7 @@ const AdminDashboard = () => {
 
               <div className="votes-by-student">
                 <div className="votes-by-student-header">
-                  <h2>Votos por Estudiante ({getFilteredVotesByStudent().length})</h2>
+                <h2>Votos por Estudiante ({getFilteredVotesByStudent().length})</h2>
                   <button
                     onClick={() => setShowDeleteVoteButtons(!showDeleteVoteButtons)}
                     className={`toggle-delete-buttons ${showDeleteVoteButtons ? 'active' : ''}`}
@@ -1328,12 +1328,12 @@ const AdminDashboard = () => {
                                 <li key={vote.voteId}>
                                   {capitalizeName(vote.displayName || vote.teamName)}
                                   {showDeleteVoteButtons && (
-                                    <button
-                                      onClick={() => handleDeleteVote(vote.voteId)}
-                                      className="delete-vote-button"
-                                    >
-                                      Eliminar
-                                    </button>
+                                  <button
+                                    onClick={() => handleDeleteVote(vote.voteId)}
+                                    className="delete-vote-button"
+                                  >
+                                    Eliminar
+                                  </button>
                                   )}
                                 </li>
                               ))}
@@ -1796,9 +1796,9 @@ const AdminDashboard = () => {
                         <td>{team.appName ? capitalizeName(team.appName) : '-'}</td>
                         <td>
                           <Switch
-                            checked={team.participates}
-                            onChange={() => handleToggleParticipation(team)}
-                          />
+                              checked={team.participates}
+                              onChange={() => handleToggleParticipation(team)}
+                            />
                         </td>
                         <td>{team.helper?.name ? capitalizeName(team.helper.name) : '-'}</td>
                         <td>{voteCount}</td>
@@ -2029,7 +2029,7 @@ const AdminDashboard = () => {
                 <FileDropzone
                   onFileSelect={handleTeamImageUpload}
                   currentImageUrl={teamFormData.screenshotUrl}
-                  disabled={imageLoading || saving}
+                    disabled={imageLoading || saving}
                   label="Imagen de Portada"
                 />
                 {imageLoading && (
