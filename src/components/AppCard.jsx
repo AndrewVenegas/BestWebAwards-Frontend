@@ -159,7 +159,21 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
             </div>
           )}
           
-          <div className="app-content">
+          <div 
+            className="app-content"
+            onClick={(e) => {
+              // Solo ejecutar si el clic no fue en un botón o enlace
+              const target = e.target;
+              const isButton = target.tagName === 'BUTTON' || target.closest('button');
+              const isLink = target.tagName === 'A' || target.closest('a');
+              
+              if (!isButton && !isLink && team.description) {
+                e.stopPropagation();
+                setIsFlipped(true);
+              }
+            }}
+            style={{ cursor: team.description ? 'pointer' : 'default' }}
+          >
             <div className="app-header-section">
               <div>
                 <h3 className="app-name">{capitalizeName(team.appName || team.displayName || team.groupName)}</h3>
@@ -273,7 +287,14 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
             <div className="app-content app-content-back">
               <div className="app-description-card">
                 <div className="quote-mark quote-mark-top">"</div>
-                <p className="app-description-text">
+                <p 
+                  className="app-description-text"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsFlipped(false);
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
                   {team.description.length > 300 
                     ? `${team.description.substring(0, 300)}...` 
                     : team.description}
