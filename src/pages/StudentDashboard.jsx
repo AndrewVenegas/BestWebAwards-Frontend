@@ -70,6 +70,19 @@ const StudentDashboard = ({ readOnly = false }) => {
       if (prev === 'asc') return 'desc';
       return null; // 'desc' -> null
     });
+    // Scroll suave hasta que la sección de filtros quede visible justo debajo de la navbar
+    setTimeout(() => {
+      const filtersSection = votingOpen 
+        ? document.getElementById('filters-section')
+        : document.getElementById('filters-section-closed');
+      const navbar = document.querySelector('.navbar');
+      if (filtersSection && navbar) {
+        const navbarHeight = navbar.offsetHeight;
+        const sectionTop = filtersSection.getBoundingClientRect().top + window.scrollY;
+        // Hacer scroll hasta que la sección quede justo debajo de la navbar
+        window.scrollTo({ top: sectionTop - navbarHeight - 10, behavior: 'smooth' });
+      }
+    }, 500);
   };
 
   const fetchData = async () => {
