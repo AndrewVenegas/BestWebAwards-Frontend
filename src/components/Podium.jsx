@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import api from '../services/api';
 import { capitalizeName } from '../utils/format';
+import Fireworks from './Fireworks';
 import './Podium.css';
 
 const Podium = () => {
@@ -11,7 +12,9 @@ const Podium = () => {
   const [showPlayOverlay, setShowPlayOverlay] = useState({});
   const [flippedItems, setFlippedItems] = useState({}); // Estado para manejar qué items están flipped
   const [carouselIndex, setCarouselIndex] = useState(0); // Estado para el índice del carrusel
+  const [fireworksInstances, setFireworksInstances] = useState([]); // Array de instancias activas de fuegos artificiales
   const hoverTimeoutRef = useRef({});
+  const hasShownInitialFireworks = useRef(false); // Ref para controlar que solo se muestre una vez al inicio
 
   useEffect(() => {
     fetchPodium();
@@ -21,6 +24,54 @@ const Podium = () => {
   useEffect(() => {
     setCarouselIndex(0);
   }, [podium.length]);
+
+  // Separar los primeros 3 lugares del resto (antes de los returns condicionales)
+  const topThree = podium.filter(entry => entry.position <= 3);
+  const rest = podium.filter(entry => entry.position > 3);
+
+  // Agrupar top 3 por posición para el carrusel
+  const firstPlace = topThree.filter(entry => entry.position === 1);
+  const secondPlace = topThree.filter(entry => entry.position === 2);
+  const thirdPlace = topThree.filter(entry => entry.position === 3);
+
+  // Crear slides del carrusel: primero, segundo, tercero, y podio completo
+  const carouselSlides = [];
+  if (firstPlace.length > 0) {
+    const label = firstPlace.length === 1 ? 'Primer Lugar' : 'Primeros Lugares';
+    carouselSlides.push({ type: 'position', position: 1, entries: firstPlace, label });
+  }
+  if (secondPlace.length > 0) {
+    const label = secondPlace.length === 1 ? 'Segundo Lugar' : 'Segundos Lugares';
+    carouselSlides.push({ type: 'position', position: 2, entries: secondPlace, label });
+  }
+  if (thirdPlace.length > 0) {
+    const label = thirdPlace.length === 1 ? 'Tercer Lugar' : 'Terceros Lugares';
+    carouselSlides.push({ type: 'position', position: 3, entries: thirdPlace, label });
+  }
+  if (topThree.length > 0) carouselSlides.push({ type: 'full', entries: topThree, label: '🏆 Podio Completo 🏆' });
+
+  // Función para activar fuegos artificiales (permite múltiples instancias)
+  const triggerFireworks = useCallback(() => {
+    const instanceId = Date.now() + Math.random();
+    setFireworksInstances(prev => [...prev, instanceId]);
+  }, []);
+
+  // Función para remover una instancia cuando completa
+  const handleFireworksComplete = useCallback((instanceId) => {
+    setFireworksInstances(prev => prev.filter(id => id !== instanceId));
+  }, []);
+
+  // Mostrar fuegos artificiales la primera vez que se monta el carrusel
+  useEffect(() => {
+    if (!loading && topThree.length > 0 && !hasShownInitialFireworks.current) {
+      hasShownInitialFireworks.current = true;
+      // Pequeño delay para que se vea mejor cuando aparece el carrusel
+      const timeoutId = setTimeout(() => {
+        triggerFireworks();
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [loading, topThree.length, triggerFireworks]);
 
   // Convertir URL de YouTube a formato embed
   const getYouTubeEmbedUrl = (url) => {
@@ -264,6 +315,9 @@ const Podium = () => {
     return <div className="podium-loading">Cargando resultados...</div>;
   }
 
+  const currentSlide = carouselSlides[carouselIndex] || null;
+  const hasMultipleSlides = carouselSlides.length > 1;
+
   if (podium.length === 0) {
     return (
       <div className="podium-empty">
@@ -272,40 +326,14 @@ const Podium = () => {
     );
   }
 
-  // Separar los primeros 3 lugares del resto
-  const topThree = podium.filter(entry => entry.position <= 3);
-  const rest = podium.filter(entry => entry.position > 3);
-
-  // Agrupar top 3 por posición para el carrusel
-  const firstPlace = topThree.filter(entry => entry.position === 1);
-  const secondPlace = topThree.filter(entry => entry.position === 2);
-  const thirdPlace = topThree.filter(entry => entry.position === 3);
-
-  // Crear slides del carrusel: primero, segundo, tercero, y podio completo
-  const carouselSlides = [];
-  if (firstPlace.length > 0) {
-    const label = firstPlace.length === 1 ? 'Primer Lugar' : 'Primeros Lugares';
-    carouselSlides.push({ type: 'position', position: 1, entries: firstPlace, label });
-  }
-  if (secondPlace.length > 0) {
-    const label = secondPlace.length === 1 ? 'Segundo Lugar' : 'Segundos Lugares';
-    carouselSlides.push({ type: 'position', position: 2, entries: secondPlace, label });
-  }
-  if (thirdPlace.length > 0) {
-    const label = thirdPlace.length === 1 ? 'Tercer Lugar' : 'Terceros Lugares';
-    carouselSlides.push({ type: 'position', position: 3, entries: thirdPlace, label });
-  }
-  if (topThree.length > 0) carouselSlides.push({ type: 'full', entries: topThree, label: '🏆 Podio Completo 🏆' });
-
-  const currentSlide = carouselSlides[carouselIndex] || null;
-  const hasMultipleSlides = carouselSlides.length > 1;
-
   const handleNextSlide = () => {
     setCarouselIndex((prev) => (prev + 1) % carouselSlides.length);
+    triggerFireworks();
   };
 
   const handlePrevSlide = () => {
     setCarouselIndex((prev) => (prev - 1 + carouselSlides.length) % carouselSlides.length);
+    triggerFireworks();
   };
 
   return (
@@ -360,7 +388,10 @@ const Podium = () => {
                 <button
                   key={index}
                   className={`podium-carousel-dot ${index === carouselIndex ? 'active' : ''}`}
-                  onClick={() => setCarouselIndex(index)}
+                  onClick={() => {
+                    setCarouselIndex(index);
+                    triggerFireworks();
+                  }}
                   aria-label={`Ir al slide ${index + 1}`}
                 />
               ))}
@@ -570,6 +601,12 @@ const Podium = () => {
           document.body
         );
       })()}
+      {fireworksInstances.map(instanceId => (
+        <Fireworks 
+          key={instanceId} 
+          onComplete={() => handleFireworksComplete(instanceId)} 
+        />
+      ))}
     </div>
   );
 };
