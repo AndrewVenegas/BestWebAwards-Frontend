@@ -294,10 +294,12 @@ const AdminDashboard = () => {
 
   const handleEditTeamClick = (team) => {
     setShowEditTeam(team);
+    // Si no existe displayName, usar groupName reemplazando "-" por espacios
+    const defaultDisplayName = team.displayName || (team.groupName ? team.groupName.replace(/-/g, ' ') : '');
     // Precargar todos los datos del equipo, incluyendo valores existentes
     setTeamFormData({
       participates: team.participates ?? false,
-      displayName: team.displayName ?? '',
+      displayName: defaultDisplayName,
       appName: team.appName ?? '',
       deployUrl: team.deployUrl ?? '',
       videoUrl: team.videoUrl ?? '',
