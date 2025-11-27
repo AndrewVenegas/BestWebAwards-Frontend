@@ -92,15 +92,22 @@ const AdminDashboard = () => {
 
   // Estados para modales y formularios
   const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const [isCreateTeamClosing, setIsCreateTeamClosing] = useState(false);
   const [showEditTeam, setShowEditTeam] = useState(null);
   const [clickStartedInModal, setClickStartedInModal] = useState(false);
   const [isEditTeamClosing, setIsEditTeamClosing] = useState(false);
   const [showCreateHelper, setShowCreateHelper] = useState(false);
+  const [isCreateHelperClosing, setIsCreateHelperClosing] = useState(false);
   const [showEditHelper, setShowEditHelper] = useState(null);
+  const [isEditHelperClosing, setIsEditHelperClosing] = useState(false);
   const [showCreateStudent, setShowCreateStudent] = useState(false);
+  const [isCreateStudentClosing, setIsCreateStudentClosing] = useState(false);
   const [showEditStudent, setShowEditStudent] = useState(null);
+  const [isEditStudentClosing, setIsEditStudentClosing] = useState(false);
   const [showCreateAdmin, setShowCreateAdmin] = useState(false);
+  const [isCreateAdminClosing, setIsCreateAdminClosing] = useState(false);
   const [showEditAdmin, setShowEditAdmin] = useState(null);
+  const [isEditAdminClosing, setIsEditAdminClosing] = useState(false);
   const [showDeleteAdminModal, setShowDeleteAdminModal] = useState(null);
   const [showDeleteVoteButtons, setShowDeleteVoteButtons] = useState(false);
   const [deletePasswordLoading, setDeletePasswordLoading] = useState(false);
@@ -285,6 +292,7 @@ const AdminDashboard = () => {
       await api.post('/admin/teams', teamData);
       success('Equipo creado exitosamente');
       setShowCreateTeam(false);
+      setIsCreateTeamClosing(false);
       fetchDashboardData();
     } catch (err) {
       error(err.response?.data?.error || 'Error al crear el equipo');
@@ -320,7 +328,59 @@ const AdminDashboard = () => {
   };
 
   const handleCloseCreateTeam = () => {
-    setShowCreateTeam(false);
+    setIsCreateTeamClosing(true);
+    setTimeout(() => {
+      setShowCreateTeam(false);
+      setIsCreateTeamClosing(false);
+    }, 300);
+  };
+
+  const handleCloseCreateHelper = () => {
+    setIsCreateHelperClosing(true);
+    setTimeout(() => {
+      setShowCreateHelper(false);
+      setIsCreateHelperClosing(false);
+    }, 300);
+  };
+
+  const handleCloseEditHelper = () => {
+    setIsEditHelperClosing(true);
+    setTimeout(() => {
+      setShowEditHelper(null);
+      setIsEditHelperClosing(false);
+    }, 300);
+  };
+
+  const handleCloseCreateStudent = () => {
+    setIsCreateStudentClosing(true);
+    setTimeout(() => {
+      setShowCreateStudent(false);
+      setIsCreateStudentClosing(false);
+    }, 300);
+  };
+
+  const handleCloseEditStudent = () => {
+    setIsEditStudentClosing(true);
+    setTimeout(() => {
+      setShowEditStudent(null);
+      setIsEditStudentClosing(false);
+    }, 300);
+  };
+
+  const handleCloseCreateAdmin = () => {
+    setIsCreateAdminClosing(true);
+    setTimeout(() => {
+      setShowCreateAdmin(false);
+      setIsCreateAdminClosing(false);
+    }, 300);
+  };
+
+  const handleCloseEditAdmin = () => {
+    setIsEditAdminClosing(true);
+    setTimeout(() => {
+      setShowEditAdmin(null);
+      setIsEditAdminClosing(false);
+    }, 300);
   };
 
   const validateUrl = (url) => {
@@ -506,6 +566,7 @@ const AdminDashboard = () => {
       await api.post('/admin/helpers', helperData);
       success('Ayudante creado exitosamente');
       setShowCreateHelper(false);
+      setIsCreateHelperClosing(false);
       fetchDashboardData();
     } catch (err) {
       error(err.response?.data?.error || 'Error al crear el ayudante');
@@ -529,6 +590,7 @@ const AdminDashboard = () => {
       await api.put(`/admin/helpers/${showEditHelper.id}`, helperData);
       success('Ayudante actualizado exitosamente');
       setShowEditHelper(null);
+      setIsEditHelperClosing(false);
       fetchDashboardData();
     } catch (err) {
       error(err.response?.data?.error || 'Error al actualizar el ayudante');
@@ -565,6 +627,7 @@ const AdminDashboard = () => {
       await api.post('/admin/students', studentData);
       success('Estudiante creado exitosamente');
       setShowCreateStudent(false);
+      setIsCreateStudentClosing(false);
       fetchDashboardData();
     } catch (err) {
       error(err.response?.data?.error || 'Error al crear el estudiante');
@@ -589,6 +652,7 @@ const AdminDashboard = () => {
       await api.put(`/admin/students/${showEditStudent.id}`, studentData);
       success('Estudiante actualizado exitosamente');
       setShowEditStudent(null);
+      setIsEditStudentClosing(false);
       fetchDashboardData();
     } catch (err) {
       error(err.response?.data?.error || 'Error al actualizar el estudiante');
@@ -624,6 +688,7 @@ const AdminDashboard = () => {
       await api.post('/admin/admins', adminData);
       success('Administrador creado exitosamente');
       setShowCreateAdmin(false);
+      setIsCreateAdminClosing(false);
       fetchDashboardData();
     } catch (err) {
       error(err.response?.data?.error || 'Error al crear el administrador');
@@ -647,6 +712,7 @@ const AdminDashboard = () => {
       await api.put(`/admin/admins/${showEditAdmin.id}`, adminData);
       success('Administrador actualizado exitosamente');
       setShowEditAdmin(null);
+      setIsEditAdminClosing(false);
       fetchDashboardData();
     } catch (err) {
       error(err.response?.data?.error || 'Error al actualizar el administrador');
@@ -1468,7 +1534,10 @@ const AdminDashboard = () => {
                 <h2>Estudiantes</h2>
                 <button 
                   className="create-button"
-                  onClick={() => setShowCreateStudent(true)}
+                  onClick={() => {
+                    setShowCreateStudent(true);
+                    setIsCreateStudentClosing(false);
+                  }}
                 >
                   + Crear Estudiante
                 </button>
@@ -1544,7 +1613,10 @@ const AdminDashboard = () => {
                           <div className="action-buttons">
                             <button 
                               className="edit-button-small"
-                              onClick={() => setShowEditStudent(student)}
+                              onClick={() => {
+                                setShowEditStudent(student);
+                                setIsEditStudentClosing(false);
+                              }}
                             >
                               Editar
                             </button>
@@ -1580,7 +1652,10 @@ const AdminDashboard = () => {
                 <h2>Ayudantes</h2>
                 <button 
                   className="create-button"
-                  onClick={() => setShowCreateHelper(true)}
+                  onClick={() => {
+                    setShowCreateHelper(true);
+                    setIsCreateHelperClosing(false);
+                  }}
                 >
                   + Crear Ayudante
                 </button>
@@ -1614,7 +1689,10 @@ const AdminDashboard = () => {
                         <div className="action-buttons">
                           <button 
                             className="edit-button-small"
-                            onClick={() => setShowEditHelper(helper)}
+                            onClick={() => {
+                              setShowEditHelper(helper);
+                              setIsEditHelperClosing(false);
+                            }}
                           >
                             Editar
                           </button>
@@ -1646,7 +1724,10 @@ const AdminDashboard = () => {
                 <h2>Administradores</h2>
                 <button 
                   className="create-button"
-                  onClick={() => setShowCreateAdmin(true)}
+                  onClick={() => {
+                    setShowCreateAdmin(true);
+                    setIsCreateAdminClosing(false);
+                  }}
                 >
                   + Crear Administrador
                 </button>
@@ -1680,7 +1761,10 @@ const AdminDashboard = () => {
                         <div className="action-buttons">
                           <button 
                             className="edit-button-small"
-                            onClick={() => setShowEditAdmin(admin)}
+                            onClick={() => {
+                              setShowEditAdmin(admin);
+                              setIsEditAdminClosing(false);
+                            }}
                           >
                             Editar
                           </button>
@@ -1712,7 +1796,10 @@ const AdminDashboard = () => {
                 <h2>Equipos</h2>
                 <button 
                   className="create-button"
-                  onClick={() => setShowCreateTeam(true)}
+                  onClick={() => {
+                    setShowCreateTeam(true);
+                    setIsCreateTeamClosing(false);
+                  }}
                 >
                   + Crear Equipo
                 </button>
@@ -1853,7 +1940,7 @@ const AdminDashboard = () => {
       {/* Modal Crear Equipo */}
       {showCreateTeam && (
         <div className="modal-overlay" onClick={handleCloseCreateTeam}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className={`modal-content ${isCreateTeamClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Crear Equipo</h2>
               <button className="modal-close" onClick={handleCloseCreateTeam}>×</button>
@@ -2080,11 +2167,11 @@ const AdminDashboard = () => {
 
       {/* Modal Crear Ayudante */}
       {showCreateHelper && (
-        <div className="modal-overlay" onClick={() => setShowCreateHelper(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={handleCloseCreateHelper}>
+          <div className={`modal-content ${isCreateHelperClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Crear Ayudante</h2>
-              <button className="modal-close" onClick={() => setShowCreateHelper(false)}>×</button>
+              <button className="modal-close" onClick={handleCloseCreateHelper}>×</button>
             </div>
             <form onSubmit={handleCreateHelper}>
               <div className="form-group">
@@ -2100,7 +2187,7 @@ const AdminDashboard = () => {
                 <input type="password" name="password" required minLength="6" />
               </div>
               <div className="modal-buttons">
-                <button type="button" onClick={() => setShowCreateHelper(false)} className="cancel-button">
+                <button type="button" onClick={handleCloseCreateHelper} className="cancel-button">
                   Cancelar
                 </button>
                 <button type="submit" className="save-button" disabled={saving}>
@@ -2114,11 +2201,11 @@ const AdminDashboard = () => {
 
       {/* Modal Editar Ayudante */}
       {showEditHelper && (
-        <div className="modal-overlay" onClick={() => setShowEditHelper(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={handleCloseEditHelper}>
+          <div className={`modal-content ${isEditHelperClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Editar Ayudante</h2>
-              <button className="modal-close" onClick={() => setShowEditHelper(null)}>×</button>
+              <button className="modal-close" onClick={handleCloseEditHelper}>×</button>
             </div>
             <form onSubmit={handleEditHelper}>
               <div className="form-group">
@@ -2130,7 +2217,7 @@ const AdminDashboard = () => {
                 <input type="email" name="email" defaultValue={showEditHelper.email} required />
               </div>
               <div className="modal-buttons">
-                <button type="button" onClick={() => setShowEditHelper(null)} className="cancel-button">
+                <button type="button" onClick={handleCloseEditHelper} className="cancel-button">
                   Cancelar
                 </button>
                 <button type="submit" className="save-button" disabled={saving}>
@@ -2144,11 +2231,11 @@ const AdminDashboard = () => {
 
       {/* Modal Crear Estudiante */}
       {showCreateStudent && (
-        <div className="modal-overlay" onClick={() => setShowCreateStudent(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={handleCloseCreateStudent}>
+          <div className={`modal-content ${isCreateStudentClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Crear Estudiante</h2>
-              <button className="modal-close" onClick={() => setShowCreateStudent(false)}>×</button>
+              <button className="modal-close" onClick={handleCloseCreateStudent}>×</button>
             </div>
             <form onSubmit={handleCreateStudent}>
               <div className="form-group">
@@ -2175,7 +2262,7 @@ const AdminDashboard = () => {
                 </select>
               </div>
               <div className="modal-buttons">
-                <button type="button" onClick={() => setShowCreateStudent(false)} className="cancel-button">
+                <button type="button" onClick={handleCloseCreateStudent} className="cancel-button">
                   Cancelar
                 </button>
                 <button type="submit" className="save-button" disabled={saving}>
@@ -2189,11 +2276,11 @@ const AdminDashboard = () => {
 
       {/* Modal Editar Estudiante */}
       {showEditStudent && (
-        <div className="modal-overlay" onClick={() => setShowEditStudent(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={handleCloseEditStudent}>
+          <div className={`modal-content ${isEditStudentClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Editar Estudiante</h2>
-              <button className="modal-close" onClick={() => setShowEditStudent(null)}>×</button>
+              <button className="modal-close" onClick={handleCloseEditStudent}>×</button>
             </div>
             <form onSubmit={handleEditStudent}>
               <div className="form-group">
@@ -2216,7 +2303,7 @@ const AdminDashboard = () => {
                 </select>
               </div>
               <div className="modal-buttons">
-                <button type="button" onClick={() => setShowEditStudent(null)} className="cancel-button">
+                <button type="button" onClick={handleCloseEditStudent} className="cancel-button">
                   Cancelar
                 </button>
                 <button type="submit" className="save-button" disabled={saving}>
@@ -2230,11 +2317,11 @@ const AdminDashboard = () => {
 
       {/* Modal Crear Administrador */}
       {showCreateAdmin && (
-        <div className="modal-overlay" onClick={() => setShowCreateAdmin(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={handleCloseCreateAdmin}>
+          <div className={`modal-content ${isCreateAdminClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Crear Administrador</h2>
-              <button className="modal-close" onClick={() => setShowCreateAdmin(false)}>×</button>
+              <button className="modal-close" onClick={handleCloseCreateAdmin}>×</button>
             </div>
             <form onSubmit={handleCreateAdmin}>
               <div className="form-group">
@@ -2250,7 +2337,7 @@ const AdminDashboard = () => {
                 <input type="password" name="password" required minLength="6" />
               </div>
               <div className="modal-buttons">
-                <button type="button" onClick={() => setShowCreateAdmin(false)} className="cancel-button">
+                <button type="button" onClick={handleCloseCreateAdmin} className="cancel-button">
                   Cancelar
                 </button>
                 <button type="submit" className="save-button" disabled={saving}>
@@ -2264,11 +2351,11 @@ const AdminDashboard = () => {
 
       {/* Modal Editar Administrador */}
       {showEditAdmin && (
-        <div className="modal-overlay" onClick={() => setShowEditAdmin(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-overlay" onClick={handleCloseEditAdmin}>
+          <div className={`modal-content ${isEditAdminClosing ? 'closing' : ''}`} onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
               <h2>Editar Administrador</h2>
-              <button className="modal-close" onClick={() => setShowEditAdmin(null)}>×</button>
+              <button className="modal-close" onClick={handleCloseEditAdmin}>×</button>
             </div>
             <form onSubmit={handleEditAdmin}>
               <div className="form-group">
@@ -2280,7 +2367,7 @@ const AdminDashboard = () => {
                 <input type="email" name="email" defaultValue={showEditAdmin.email} required />
               </div>
               <div className="modal-buttons">
-                <button type="button" onClick={() => setShowEditAdmin(null)} className="cancel-button">
+                <button type="button" onClick={handleCloseEditAdmin} className="cancel-button">
                   Cancelar
                 </button>
                 <button type="submit" className="save-button" disabled={saving}>
