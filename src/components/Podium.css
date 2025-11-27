@@ -227,6 +227,18 @@
   pointer-events: none;
 }
 
+.podium-item-top.flipped .podium-screenshot {
+  pointer-events: none;
+}
+
+.podium-item-rest.flipped .podium-card-front-rest {
+  pointer-events: none;
+}
+
+.podium-item-rest.flipped .podium-screenshot-rest {
+  pointer-events: none;
+}
+
 .podium-item-top.first .podium-card-front,
 .podium-item-top.first .podium-card-back {
   background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #fff9e6 100%);

@@ -99,8 +99,8 @@ const Podium = () => {
     return null;
   };
 
-  const handleScreenshotClick = useCallback((entry) => {
-    if (!entry.videoUrl || showVideoModal === entry.teamId) return;
+  const handleScreenshotClick = useCallback((entry, isFlipped) => {
+    if (!entry.videoUrl || showVideoModal === entry.teamId || isFlipped) return;
     setShowPlayOverlay(prev => ({ ...prev, [entry.teamId]: false }));
     setShowVideoModal(entry.teamId);
   }, [showVideoModal]);
@@ -176,7 +176,7 @@ const Podium = () => {
                 onClick={(e) => {
                   e.stopPropagation();
                   if (entry.videoUrl && !isFlipped) {
-                    handleScreenshotClick(entry);
+                    handleScreenshotClick(entry, isFlipped);
                   }
                 }}
                 onMouseEnter={() => entry.videoUrl && !isFlipped && handleMouseEnter(entry.teamId)}
@@ -236,10 +236,8 @@ const Podium = () => {
             )}
             
             <div className="podium-info-top">
-              <h3 className="podium-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
-              {entry.appName && (
-                <p className="podium-app-name">{capitalizeName(entry.appName)}</p>
-              )}
+              <h3 className="podium-team-name">{entry.appName ? capitalizeName(entry.appName) : capitalizeName(entry.displayName || entry.groupName)}</h3>
+              <p className="podium-app-name">{capitalizeName(entry.displayName || entry.groupName)}</p>
               
               <div className="podium-votes-top">
                 <span className="votes-label">Votos:</span>
@@ -270,10 +268,8 @@ const Podium = () => {
               </div>
               
               <div className="podium-back-header">
-                <h3 className="podium-back-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
-                {entry.appName && (
-                  <p className="podium-back-app-name">{capitalizeName(entry.appName)}</p>
-                )}
+                <h3 className="podium-back-team-name">{entry.appName ? capitalizeName(entry.appName) : capitalizeName(entry.displayName || entry.groupName)}</h3>
+                <p className="podium-back-app-name">{capitalizeName(entry.displayName || entry.groupName)}</p>
                 {entry.tipo_app && (
                   <p className="podium-back-type">{entry.tipo_app}</p>
                 )}
@@ -433,7 +429,7 @@ const Podium = () => {
                           onClick={(e) => {
                             e.stopPropagation();
                             if (entry.videoUrl && !isFlipped) {
-                              handleScreenshotClick(entry);
+                              handleScreenshotClick(entry, isFlipped);
                             }
                           }}
                           onMouseEnter={() => entry.videoUrl && !isFlipped && handleMouseEnter(entry.teamId)}
@@ -493,10 +489,8 @@ const Podium = () => {
                       )}
                       
                       <div className="podium-info-rest">
-                        <h3 className="podium-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
-                        {entry.appName && (
-                          <p className="podium-app-name">{capitalizeName(entry.appName)}</p>
-                        )}
+                        <h3 className="podium-team-name">{entry.appName ? capitalizeName(entry.appName) : capitalizeName(entry.displayName || entry.groupName)}</h3>
+                        <p className="podium-app-name">{capitalizeName(entry.displayName || entry.groupName)}</p>
                         
                         <div className="podium-votes-rest">
                           <span className="votes-count">{entry.voteCount}</span>
@@ -524,10 +518,8 @@ const Podium = () => {
                         </div>
                         
                         <div className="podium-back-header">
-                          <h3 className="podium-back-team-name">{capitalizeName(entry.displayName || entry.groupName)}</h3>
-                          {entry.appName && (
-                            <p className="podium-back-app-name">{capitalizeName(entry.appName)}</p>
-                          )}
+                          <h3 className="podium-back-team-name">{entry.appName ? capitalizeName(entry.appName) : capitalizeName(entry.displayName || entry.groupName)}</h3>
+                          <p className="podium-back-app-name">{capitalizeName(entry.displayName || entry.groupName)}</p>
                           {entry.tipo_app && (
                             <p className="podium-back-type">{entry.tipo_app}</p>
                           )}
