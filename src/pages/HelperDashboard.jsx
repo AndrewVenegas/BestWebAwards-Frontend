@@ -14,6 +14,7 @@ const HelperDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [clickStartedInModal, setClickStartedInModal] = useState(false);
+  const [isEditClosing, setIsEditClosing] = useState(false);
   const { success, error, warning } = useNotification();
 
   const [formData, setFormData] = useState({
@@ -44,6 +45,7 @@ const HelperDashboard = () => {
 
   const handleEdit = (team) => {
     setSelectedTeam(team);
+    setIsEditClosing(false);
     // Si no existe displayName, usar groupName reemplazando "-" por espacios
     const defaultDisplayName = team.displayName || (team.groupName ? team.groupName.replace(/-/g, ' ') : '');
     // Precargar todos los datos del equipo, incluyendo valores existentes
@@ -60,7 +62,11 @@ const HelperDashboard = () => {
   };
 
   const handleCloseEdit = () => {
-    setSelectedTeam(null);
+    setIsEditClosing(true);
+    setTimeout(() => {
+      setSelectedTeam(null);
+      setIsEditClosing(false);
+    }, 300);
   };
 
   const handleImageUpload = async (file) => {
@@ -200,7 +206,8 @@ const HelperDashboard = () => {
       
       await api.put(`/helpers/teams/${selectedTeam.id}`, cleanedData);
       await fetchTeams();
-      handleCloseEdit();
+      setSelectedTeam(null);
+      setIsEditClosing(false);
       success('Equipo actualizado exitosamente');
     } catch (err) {
       console.error('Error al actualizar equipo:', err);
@@ -248,7 +255,7 @@ const HelperDashboard = () => {
             }}
           >
             <div 
-              className="edit-modal"
+              className={`edit-modal ${isEditClosing ? 'closing' : ''}`}
               onMouseDown={(e) => {
                 setClickStartedInModal(true);
                 e.stopPropagation();
@@ -403,7 +410,7 @@ const HelperDashboard = () => {
               <div className="modal-buttons">
                 <button 
                   type="button"
-                  onClick={() => setSelectedTeam(null)} 
+                  onClick={handleCloseEdit} 
                   className="cancel-button"
                   disabled={saving}
                 >

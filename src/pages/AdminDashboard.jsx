@@ -94,6 +94,7 @@ const AdminDashboard = () => {
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [showEditTeam, setShowEditTeam] = useState(null);
   const [clickStartedInModal, setClickStartedInModal] = useState(false);
+  const [isEditTeamClosing, setIsEditTeamClosing] = useState(false);
   const [showCreateHelper, setShowCreateHelper] = useState(false);
   const [showEditHelper, setShowEditHelper] = useState(null);
   const [showCreateStudent, setShowCreateStudent] = useState(false);
@@ -294,7 +295,7 @@ const AdminDashboard = () => {
 
   const handleEditTeamClick = (team) => {
     setShowEditTeam(team);
-    setClosingModal(null);
+    setIsEditTeamClosing(false);
     // Si no existe displayName, usar groupName reemplazando "-" por espacios
     const defaultDisplayName = team.displayName || (team.groupName ? team.groupName.replace(/-/g, ' ') : '');
     // Precargar todos los datos del equipo, incluyendo valores existentes
@@ -311,7 +312,11 @@ const AdminDashboard = () => {
   };
 
   const handleCloseEditTeam = () => {
-    setShowEditTeam(null);
+    setIsEditTeamClosing(true);
+    setTimeout(() => {
+      setShowEditTeam(null);
+      setIsEditTeamClosing(false);
+    }, 300);
   };
 
   const handleCloseCreateTeam = () => {
@@ -404,7 +409,8 @@ const AdminDashboard = () => {
       
       await api.put(`/admin/teams/${showEditTeam.id}`, cleanedData);
       success('Equipo actualizado exitosamente');
-      handleCloseEditTeam();
+      setShowEditTeam(null);
+      setIsEditTeamClosing(false);
       fetchDashboardData();
     } catch (err) {
       console.error('Error al actualizar equipo:', err);
@@ -1898,7 +1904,7 @@ const AdminDashboard = () => {
           }}
         >
           <div 
-            className="edit-modal"
+            className={`edit-modal ${isEditTeamClosing ? 'closing' : ''}`}
             onMouseDown={(e) => {
               setClickStartedInModal(true);
               e.stopPropagation();
@@ -2053,7 +2059,7 @@ const AdminDashboard = () => {
               <div className="modal-buttons">
                 <button 
                   type="button"
-                  onClick={() => setShowEditTeam(null)} 
+                  onClick={handleCloseEditTeam} 
                   className="cancel-button"
                   disabled={saving}
                 >
