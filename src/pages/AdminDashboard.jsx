@@ -24,11 +24,20 @@ const formatDateForInput = (dateString) => {
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [stats, setStats] = useState(null);
+  const [dashboardRenderKey, setDashboardRenderKey] = useState(0);
+  
+  // Incrementar la clave cuando cambias a dashboard para reiniciar las animaciones
+  useEffect(() => {
+    if (activeTab === 'dashboard') {
+      setDashboardRenderKey(prev => prev + 1);
+    }
+  }, [activeTab]);
   
   // Valores animados para las estadísticas del dashboard (secuencial: 0s, 1s, 2s)
-  const animatedTotalStudents = useAnimatedNumber(stats?.totalStudents || 0, 1000, 0);
-  const animatedTotalVotes = useAnimatedNumber(stats?.totalVotes || 0, 1000, 1000);
-  const animatedParticipatingTeams = useAnimatedNumber(stats?.participatingTeams || 0, 1000, 2000);
+  // Usar dashboardRenderKey como resetKey para reiniciar la animación cuando cambias a dashboard
+  const animatedTotalStudents = useAnimatedNumber(stats?.totalStudents || 0, 1000, 0, activeTab === 'dashboard' ? dashboardRenderKey : null);
+  const animatedTotalVotes = useAnimatedNumber(stats?.totalVotes || 0, 1000, 1000, activeTab === 'dashboard' ? dashboardRenderKey : null);
+  const animatedParticipatingTeams = useAnimatedNumber(stats?.participatingTeams || 0, 1000, 2000, activeTab === 'dashboard' ? dashboardRenderKey : null);
   
   const [votesSummary, setVotesSummary] = useState([]);
   const [votesByStudent, setVotesByStudent] = useState([]);
