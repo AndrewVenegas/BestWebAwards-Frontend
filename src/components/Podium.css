@@ -230,7 +230,7 @@
   border-radius: 20px;
   padding: 2rem 1.5rem;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   margin: 0;
   box-sizing: border-box;
 }
@@ -462,7 +462,7 @@
 }
 
 .podium-avatar-wrapper:hover {
-  z-index: 10000 !important;
+  z-index: 1099 !important;
   margin-left: 6px;
   margin-right: 6px;
 }
@@ -524,7 +524,7 @@
   visibility: hidden;
   transition: all 0.3s ease;
   pointer-events: none;
-  z-index: 10001 !important;
+  z-index: 1099 !important;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
@@ -646,7 +646,7 @@
   background: linear-gradient(135deg, #f9f9f9 0%, #ffffff 100%);
   border: 2px solid #e0e0e0;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .podium-card-back-rest {
@@ -994,7 +994,7 @@
   align-items: flex-start;
   justify-content: flex-start;
   width: 100%;
-  flex: 1;
+  flex: 0 1 auto;
   min-height: 0;
   max-height: 100%;
   padding: 1.5rem 1rem 1.5rem 2rem;

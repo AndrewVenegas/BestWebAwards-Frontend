@@ -34,19 +34,19 @@ const Podium = () => {
   const secondPlace = topThree.filter(entry => entry.position === 2);
   const thirdPlace = topThree.filter(entry => entry.position === 3);
 
-  // Crear slides del carrusel: primero, segundo, tercero, y podio completo
+  // Crear slides del carrusel: tercero, segundo, primero, y podio completo (para mantener el suspenso)
   const carouselSlides = [];
-  if (firstPlace.length > 0) {
-    const label = firstPlace.length === 1 ? 'Primer Lugar' : 'Primeros Lugares';
-    carouselSlides.push({ type: 'position', position: 1, entries: firstPlace, label });
+  if (thirdPlace.length > 0) {
+    const label = thirdPlace.length === 1 ? 'Tercer Lugar' : 'Terceros Lugares';
+    carouselSlides.push({ type: 'position', position: 3, entries: thirdPlace, label });
   }
   if (secondPlace.length > 0) {
     const label = secondPlace.length === 1 ? 'Segundo Lugar' : 'Segundos Lugares';
     carouselSlides.push({ type: 'position', position: 2, entries: secondPlace, label });
   }
-  if (thirdPlace.length > 0) {
-    const label = thirdPlace.length === 1 ? 'Tercer Lugar' : 'Terceros Lugares';
-    carouselSlides.push({ type: 'position', position: 3, entries: thirdPlace, label });
+  if (firstPlace.length > 0) {
+    const label = firstPlace.length === 1 ? 'Primer Lugar' : 'Primeros Lugares';
+    carouselSlides.push({ type: 'position', position: 1, entries: firstPlace, label });
   }
   if (topThree.length > 0) carouselSlides.push({ type: 'full', entries: topThree, label: '🏆 Podio Completo 🏆' });
 
