@@ -47,6 +47,69 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
+.voting-status-badge-with-tooltip {
+  position: relative;
+}
+
+.voting-status-tooltip-icon {
+  cursor: help;
+  font-size: 0.9rem;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+  margin-left: 0.25rem;
+  position: relative;
+}
+
+.voting-status-badge-with-tooltip:hover .voting-status-tooltip-icon {
+  opacity: 1;
+}
+
+.voting-status-badge-with-tooltip:hover .voting-status-tooltip-icon::after {
+  content: "Las votaciones están temporalmente pausadas por el administrador. Puedes ver los equipos pero no puedes votar en este momento.";
+  position: absolute;
+  bottom: calc(100% + 0.75rem);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.95);
+  color: white;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: normal;
+  white-space: normal;
+  width: max-content;
+  max-width: 320px;
+  text-align: left;
+  line-height: 1.5;
+  z-index: 1000;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  animation: tooltipFadeIn 0.2s ease-out;
+}
+
+.voting-status-badge-with-tooltip:hover .voting-status-tooltip-icon::before {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(0, 0, 0, 0.95);
+  z-index: 1001;
+  pointer-events: none;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 .status-dot {
   width: 10px;
   height: 10px;
@@ -59,6 +122,11 @@
 .status-dot-closed {
   background: #ff6b6b;
   color: #ff6b6b;
+}
+
+.status-dot-open {
+  background: #00ff88;
+  color: #00ff88;
 }
 
 @keyframes pulse-dot {

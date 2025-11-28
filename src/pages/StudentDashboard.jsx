@@ -24,6 +24,8 @@ const StudentDashboard = ({ readOnly = false }) => {
   const [loading, setLoading] = useState(true);
   const [votingOpen, setVotingOpen] = useState(true);
   const [dataLoadingPeriod, setDataLoadingPeriod] = useState(false);
+  const [votingPaused, setVotingPaused] = useState(false);
+  const [countdownTimeLeft, setCountdownTimeLeft] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStudent, setFilterStudent] = useState('');
   const [filterHelper, setFilterHelper] = useState('');
@@ -109,10 +111,11 @@ const StudentDashboard = ({ readOnly = false }) => {
 
       setTeams(teamsRes.data);
       setMyVotes(canUserVote ? votesRes.data.map(v => v.teamId) : []);
-      // Guardar el estado del periodo de carga de datos
-      setDataLoadingPeriod(configRes.data.dataLoadingPeriod || false);
-      // Las votaciones están abiertas solo si no está en periodo de carga de datos y isOpen es true
-      setVotingOpen(configRes.data.isOpen && !configRes.data.dataLoadingPeriod);
+      // Guardar el estado del periodo de carga de datos y pausadas
+      setDataLoadingPeriod(configRes.data.isInDataLoadingPeriod || false);
+      setVotingPaused(configRes.data.votingPaused || false);
+      // Las votaciones están abiertas solo si isOpen es true (ya considera periodo de carga y pausadas)
+      setVotingOpen(configRes.data.isOpen);
       
       // Iniciar la aparición gradual de proyectos
       setVisibleTeamsCount(0);
@@ -299,7 +302,8 @@ const StudentDashboard = ({ readOnly = false }) => {
   };
 
   const remainingVotes = canUserVote ? (3 - myVotes.length) : 0;
-  const canVote = canUserVote && remainingVotes > 0 && votingOpen;
+  // Permitir votar solo si las votaciones están abiertas y no estamos en periodo de carga ni pausadas
+  const canVote = canUserVote && remainingVotes > 0 && votingOpen && !dataLoadingPeriod && !votingPaused;
 
   const filteredTeams = teams.filter(team => {
     // Filtro de favoritos
@@ -480,13 +484,26 @@ const StudentDashboard = ({ readOnly = false }) => {
       <div className="dashboard-container">
         <div className="dashboard-header">
           <h1 className="dashboard-title">Aplicaciones Participantes</h1>
+          {votingOpen && !dataLoadingPeriod && !votingPaused && countdownTimeLeft && (countdownTimeLeft.days > 0 || countdownTimeLeft.hours > 0 || countdownTimeLeft.minutes > 0 || countdownTimeLeft.seconds > 0) && (
+            <div className="voting-status-badge">
+              <span className="status-dot status-dot-open"></span>
+              <span>Estado votaciones: abiertas</span>
+            </div>
+          )}
           {dataLoadingPeriod && (
             <div className="voting-status-badge">
               <span className="status-dot status-dot-closed"></span>
               <span>Periodo de carga de datos - Las votaciones comenzarán pronto</span>
             </div>
           )}
-          {!votingOpen && !dataLoadingPeriod && (
+          {votingPaused && !dataLoadingPeriod && (
+            <div className="voting-status-badge voting-status-badge-with-tooltip">
+              <span className="status-dot status-dot-closed"></span>
+              <span>Votaciones pausadas</span>
+              <span className="voting-status-tooltip-icon" title="Las votaciones están temporalmente pausadas por el administrador. Puedes ver los equipos pero no puedes votar en este momento.">ℹ️</span>
+            </div>
+          )}
+          {(!votingOpen || (countdownTimeLeft && countdownTimeLeft.days === 0 && countdownTimeLeft.hours === 0 && countdownTimeLeft.minutes === 0 && countdownTimeLeft.seconds === 0)) && !dataLoadingPeriod && !votingPaused && (
             <div className="voting-status-badge">
               <span className="status-dot status-dot-closed"></span>
               <span>Estado votaciones: cerradas</span>
@@ -497,10 +514,11 @@ const StudentDashboard = ({ readOnly = false }) => {
         <Countdown 
           onVotingClosed={handleVotingClosed} 
           onInitialized={() => setCountdownReady(true)}
+          onTimeUpdate={setCountdownTimeLeft}
         />
 
-        {/* Switch para alternar entre podio y todos los grupos cuando las votaciones están cerradas (pero no en periodo de carga) */}
-        {!votingOpen && !dataLoadingPeriod && (
+        {/* Switch para alternar entre podio y todos los grupos cuando las votaciones están cerradas (pero no en periodo de carga ni pausadas) */}
+        {!votingOpen && !dataLoadingPeriod && !votingPaused && (
           <div className="view-toggle-container">
             <div className="view-toggle">
               <button
@@ -519,19 +537,22 @@ const StudentDashboard = ({ readOnly = false }) => {
           </div>
         )}
 
-        {/* Mostrar podio o todos los grupos según el toggle (solo si no está en periodo de carga) */}
-        {!votingOpen && !dataLoadingPeriod && !showAllTeams && <Podium />}
+        {/* Mostrar podio o todos los grupos según el toggle (solo si no está en periodo de carga ni pausadas) */}
+        {!votingOpen && !dataLoadingPeriod && !votingPaused && !showAllTeams && <Podium />}
 
-        {/* En periodo de carga de datos, mostrar mensaje informativo */}
+        {/* En periodo de carga de datos o pausadas, mostrar mensaje informativo */}
         {dataLoadingPeriod && (
-          <div className="data-loading-message">
-            <h2>📊 Periodo de Carga de Datos</h2>
-            <p>Los ayudantes y administradores están cargando información de los equipos participantes.</p>
-            <p>Las votaciones comenzarán cuando finalice este periodo.</p>
+          <div className="data-loading-message-container">
+            <h2 className="data-loading-message-title">📊 Periodo de Carga de Datos</h2>
+            <p className="data-loading-message-text">
+              Los ayudantes y administradores están cargando información de los equipos participantes.
+              Las votaciones comenzarán cuando finalice este periodo.
+            </p>
           </div>
         )}
 
-        {votingOpen && (
+
+        {(votingOpen || dataLoadingPeriod || votingPaused) && (
           <div className="votes-info">
             {canUserVote ? (
               <>
@@ -546,7 +567,7 @@ const StudentDashboard = ({ readOnly = false }) => {
           </div>
         )}
 
-        {votingOpen && (
+        {(votingOpen || dataLoadingPeriod || votingPaused) && (
           <div className="filters-top-section" id="filters-section">
             <button
               className={`favorites-filter-button ${showFavoritesOnly ? 'active' : ''}`}
@@ -643,15 +664,15 @@ const StudentDashboard = ({ readOnly = false }) => {
           </div>
         )}
 
-        {/* Vista de votación activa */}
-        {votingOpen && (
+        {/* Vista de votación activa o periodo de carga/pausadas (mostrar equipos pero sin votar) */}
+        {(votingOpen || dataLoadingPeriod || votingPaused) && (
           <>
             <div className="teams-grid">
               {filteredTeams.slice(0, visibleTeamsCount).map((team, index) => (
                 <AppCard
                   key={team.id}
                   team={team}
-                  onVote={canUserVote ? handleVoteClick : null}
+                  onVote={canUserVote && !dataLoadingPeriod && !votingPaused ? handleVoteClick : null}
                   hasVoted={myVotes.includes(team.id)}
                   canVote={canVote}
                   voteCount={showCounts ? getVoteCount(team.id) : undefined}
@@ -769,7 +790,7 @@ const StudentDashboard = ({ readOnly = false }) => {
         )}
 
         {/* Vista de todos los grupos cuando las votaciones están cerradas */}
-        {!votingOpen && showAllTeams && (
+        {!votingOpen && showAllTeams && !dataLoadingPeriod && !votingPaused && (
           <div className="all-teams-section">
             <div className="teams-grid">
               {filteredAllTeams.slice(0, visibleAllTeamsCount).map((team, index) => (

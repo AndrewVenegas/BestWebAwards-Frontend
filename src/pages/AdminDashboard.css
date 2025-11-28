@@ -242,9 +242,10 @@
 }
 
 .config-content {
-  max-width: 800px;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 2rem 0;
+  padding: 2rem;
+  width: 100%;
 }
 
 .config-header {
@@ -264,15 +265,103 @@
   margin: 0;
 }
 
-.config-card {
+/* Contenedor para las dos tarjetas lado a lado */
+.config-cards-container {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Sección 1: Estado Actual */
+.config-status-card {
   background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
   border-radius: 20px;
   padding: 2.5rem;
   box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
   border: 2px solid #e8ecff;
+  flex: 1;
+  min-width: 0;
+  max-width: 400px;
+}
+
+.config-status-card h3 {
+  color: #333;
+  font-size: 1.3rem;
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+/* Sección 2: Formulario de configuración dividido en 2 columnas */
+.config-form-card {
+  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+  border-radius: 20px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.1);
+  border: 2px solid #e8ecff;
+  flex: 2;
+  min-width: 0;
   display: flex;
-  gap: 2.5rem;
+  flex-direction: column;
+}
+
+.config-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.config-form-columns {
+  display: flex;
+  gap: 0;
   align-items: flex-start;
+  margin-bottom: 2rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.config-form-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0 1rem;
+}
+
+.config-form-column:first-child {
+  padding-left: 0;
+  border-right: 2px solid #e8ecff;
+  padding-right: 1.5rem;
+}
+
+.config-form-column:last-child {
+  padding-right: 0;
+  padding-left: 1.5rem;
+}
+
+.config-form-column h3 {
+  color: #333;
+  font-size: 1.2rem;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #e8ecff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.config-form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
 }
 
 .config-status-section {
@@ -284,13 +373,6 @@
 .config-form-section {
   flex: 1;
   margin-top: 0;
-}
-
-.config-status-section h3 {
-  color: #333;
-  font-size: 1.3rem;
-  margin: 0 0 1.5rem 0;
-  text-align: center;
 }
 
 .status-badges {
@@ -351,6 +433,29 @@
   text-align: center;
 }
 
+@media (max-width: 1024px) {
+  .config-cards-container {
+    flex-direction: column;
+  }
+  
+  .config-form-columns {
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .config-form-middle {
+    order: 3;
+    min-width: auto;
+    width: 100%;
+    padding: 0;
+  }
+  
+  .config-form-middle .config-pause-button,
+  .config-form-middle .config-resume-button {
+    max-width: 100%;
+  }
+}
+
 .config-form {
   display: flex;
   flex-direction: column;
@@ -360,7 +465,9 @@
 .config-form .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0 rem;
+  gap: 0.5rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .config-form label {
@@ -474,6 +581,52 @@
 }
 
 .config-submit-button:active {
+  transform: translateY(0);
+}
+
+.config-pause-button {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+  width: 100%;
+}
+
+.config-pause-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+}
+
+.config-pause-button:active {
+  transform: translateY(0);
+}
+
+.config-resume-button {
+  background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+  width: 100%;
+}
+
+.config-resume-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+}
+
+.config-resume-button:active {
   transform: translateY(0);
 }
 
