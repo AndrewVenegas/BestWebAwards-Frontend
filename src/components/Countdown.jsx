@@ -15,16 +15,21 @@ const Countdown = ({ onVotingClosed, onInitialized }) => {
     const fetchConfig = async () => {
       try {
         const response = await api.get('/config');
-        const { votingDeadline, isOpen: votingIsOpen } = response.data;
+        const { votingDeadline, votingStartDate, dataLoadingPeriod, isOpen: votingIsOpen } = response.data;
         setIsOpen(votingIsOpen);
         
-        const deadline = new Date(votingDeadline);
-        const now = new Date();
-        const difference = deadline - now;
+        // Si está en periodo de carga de datos, usar la fecha de inicio de votaciones
+        // Si no, usar la fecha de cierre
+        const targetDate = dataLoadingPeriod && votingStartDate 
+          ? new Date(votingStartDate) 
+          : new Date(votingDeadline);
         
-        // Si las votaciones ya están cerradas al cargar la página, no disparar fuegos artificiales
+        const now = new Date();
+        const difference = targetDate - now;
+        
+        // Si ya pasó la fecha objetivo, no disparar fuegos artificiales
         if (difference <= 0) {
-          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, deadline });
+          setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, deadline: targetDate });
           setIsOpen(false);
           hasTriggeredFireworks.current = true; // Marcar como ya disparado para evitar loops
           isInitialized.current = true;
@@ -32,10 +37,10 @@ const Countdown = ({ onVotingClosed, onInitialized }) => {
             hasNotifiedInitialized.current = true;
             onInitialized();
           }
-          return; // No continuar con el temporizador si ya están cerradas
+          return; // No continuar con el temporizador si ya pasó la fecha
         }
         
-        updateTimeLeft(deadline);
+        updateTimeLeft(targetDate);
         isInitialized.current = true;
         if (onInitialized && !hasNotifiedInitialized.current) {
           hasNotifiedInitialized.current = true;
@@ -150,9 +155,11 @@ const Countdown = ({ onVotingClosed, onInitialized }) => {
               <h3 className="countdown-title">Tiempo Restante para Votar</h3>
               <div className="countdown-loading-message">Cargando...</div>
             </div>
-          ) : !showFireworks && timeLeft && isOpen ? (
+          ) : !showFireworks && timeLeft ? (
             <div className="countdown">
-              <h3 className="countdown-title">Tiempo Restante para Votar</h3>
+              <h3 className="countdown-title">
+                {isOpen ? 'Tiempo Restante para Votar' : 'Las Votaciones Comenzarán en'}
+              </h3>
               <div className="countdown-grid">
                 <div className="countdown-item">
                   <div className="countdown-value">{timeLeft.days}</div>

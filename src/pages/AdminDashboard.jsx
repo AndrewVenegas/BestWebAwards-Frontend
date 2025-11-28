@@ -257,13 +257,30 @@ const AdminDashboard = () => {
     e.preventDefault();
     const formData = new FormData(e.target);
     const deadline = formData.get('deadline');
+    const startDate = formData.get('startDate') || null;
+    const dataLoadingPeriod = formData.get('dataLoadingPeriod') === 'on';
+    
+    // Validar que la fecha de inicio sea anterior a la fecha de cierre
+    if (startDate) {
+      const startDateObj = new Date(startDate);
+      const deadlineObj = new Date(deadline);
+      
+      if (startDateObj >= deadlineObj) {
+        error('La fecha de inicio debe ser anterior a la fecha de cierre');
+        return;
+      }
+    }
     
     try {
-      await api.put('/admin/config/voting-deadline', { votingDeadline: deadline });
-      success('Fecha de cierre actualizada exitosamente');
+      await api.put('/admin/config/voting-deadline', { 
+        votingDeadline: deadline,
+        votingStartDate: startDate,
+        dataLoadingPeriod: dataLoadingPeriod
+      });
+      success('Configuración actualizada exitosamente');
       fetchDashboardData();
     } catch (err) {
-      error('Error al actualizar la fecha');
+      error('Error al actualizar la configuración');
     }
   };
 
@@ -1496,7 +1513,21 @@ const AdminDashboard = () => {
                       </div>
                       <div className="config-info-box">
                         <div className="info-item">
-                          <span className="info-label">📅 Fecha de cierre actual:</span>
+                          <span className="info-label">📅 Fecha de inicio:</span>
+                          <span className="info-value">
+                            {config.votingStartDate 
+                              ? new Date(config.votingStartDate).toLocaleString('es-ES', {
+                                  year: 'numeric',
+                                  month: 'long',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit'
+                                })
+                              : 'No configurada'}
+                          </span>
+                        </div>
+                        <div className="info-item">
+                          <span className="info-label">📅 Fecha de cierre:</span>
                           <span className="info-value">{new Date(config.votingDeadline).toLocaleString('es-ES', {
                             year: 'numeric',
                             month: 'long',
@@ -1505,24 +1536,78 @@ const AdminDashboard = () => {
                             minute: '2-digit'
                           })}</span>
                         </div>
+                        <div className="info-item">
+                          <span className="info-label">📊 Periodo de carga de datos:</span>
+                          <span className={`info-value ${config.dataLoadingPeriod ? 'status-open' : 'status-closed'}`}>
+                            {config.dataLoadingPeriod ? '✓ Activo' : '✗ Inactivo'}
+                          </span>
+                        </div>
                       </div>
                     </div>
                     
                     <div className="config-form-section">
-                      <h3>Actualizar Fecha de Cierre</h3>
-                      <form onSubmit={handleUpdateDeadline} className="config-form">
+                      <h3>Configuración de Votaciones</h3>
+                      <form onSubmit={handleUpdateDeadline} className="config-form" id="config-form">
                         <div className="form-group">
-                          <label>Nueva fecha de cierre</label>
+                          <label className="config-label-with-tooltip">
+                            <input
+                              type="checkbox"
+                              name="dataLoadingPeriod"
+                              defaultChecked={config.dataLoadingPeriod}
+                              className="config-checkbox"
+                            />
+                            <span>
+                              Periodo de carga de datos
+                              <span className="tooltip-icon" title="Cuando está activo, las votaciones están deshabilitadas y solo se pueden cargar datos y participantes.">ℹ️</span>
+                            </span>
+                          </label>
+                        </div>
+                        
+                        <div className="form-group">
+                          <label>Inicio de votaciones</label>
+                          <input
+                            type="datetime-local"
+                            name="startDate"
+                            id="startDate"
+                            defaultValue={config.votingStartDate ? formatDateForInput(config.votingStartDate) : ''}
+                            className="config-input"
+                            max={config.votingDeadline ? formatDateForInput(config.votingDeadline) : ''}
+                            onChange={(e) => {
+                              const deadlineInput = document.getElementById('deadline');
+                              if (deadlineInput && e.target.value) {
+                                deadlineInput.min = e.target.value;
+                              }
+                            }}
+                          />
+                          <p className="form-help-text">
+                            Fecha y hora en que comenzarán las votaciones (requerida si el periodo de carga está activo).
+                          </p>
+                        </div>
+                        
+                        <div className="form-group">
+                          <label>Cierre de votaciones</label>
                           <input
                             type="datetime-local"
                             name="deadline"
+                            id="deadline"
                             required
                             defaultValue={formatDateForInput(config.votingDeadline)}
                             className="config-input"
+                            min={config.votingStartDate ? formatDateForInput(config.votingStartDate) : ''}
+                            onChange={(e) => {
+                              const startDateInput = document.getElementById('startDate');
+                              if (startDateInput && e.target.value) {
+                                startDateInput.max = e.target.value;
+                              }
+                            }}
                           />
+                          <p className="form-help-text">
+                            La fecha de cierre debe ser posterior a la fecha de inicio.
+                          </p>
                         </div>
+                        
                         <button type="submit" className="config-submit-button">
-                          💾 Actualizar Fecha
+                          💾 Guardar Configuración
                         </button>
                       </form>
                     </div>

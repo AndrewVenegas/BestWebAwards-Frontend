@@ -97,6 +97,29 @@
   text-align: center;
 }
 
+.data-loading-message {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 2rem;
+  margin: 2rem 0;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.data-loading-message h2 {
+  color: #667eea;
+  margin-bottom: 1rem;
+  font-size: 1.8rem;
+}
+
+.data-loading-message p {
+  color: #555;
+  font-size: 1.1rem;
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}
+
 .view-toggle-container {
   display: flex;
   justify-content: center;
