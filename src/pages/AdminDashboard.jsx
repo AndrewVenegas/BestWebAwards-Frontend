@@ -264,6 +264,52 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDeleteAllHelperVotes = async (helperId) => {
+    const helper = votesByHelper.find(h => h.helperId === helperId);
+    const voteCount = helper?.votes.length || 0;
+    
+    if (voteCount === 0) {
+      return;
+    }
+
+    if (!window.confirm(`¿Estás seguro de eliminar todos los votos (${voteCount}) de este ayudante?`)) return;
+    
+    try {
+      // Eliminar todos los votos del ayudante uno por uno
+      const deletePromises = helper.votes.map(vote => 
+        api.delete(`/admin/votes/${vote.voteId}`)
+      );
+      await Promise.all(deletePromises);
+      success(`Se eliminaron ${voteCount} ${voteCount === 1 ? 'voto' : 'votos'} exitosamente`);
+      fetchDashboardData();
+    } catch (err) {
+      error('Error al eliminar los votos');
+    }
+  };
+
+  const handleDeleteAllAdminVotes = async (adminId) => {
+    const admin = votesByAdmin.find(a => a.adminId === adminId);
+    const voteCount = admin?.votes.length || 0;
+    
+    if (voteCount === 0) {
+      return;
+    }
+
+    if (!window.confirm(`¿Estás seguro de eliminar todos los votos (${voteCount}) de este administrador?`)) return;
+    
+    try {
+      // Eliminar todos los votos del administrador uno por uno
+      const deletePromises = admin.votes.map(vote => 
+        api.delete(`/admin/votes/${vote.voteId}`)
+      );
+      await Promise.all(deletePromises);
+      success(`Se eliminaron ${voteCount} ${voteCount === 1 ? 'voto' : 'votos'} exitosamente`);
+      fetchDashboardData();
+    } catch (err) {
+      error('Error al eliminar los votos');
+    }
+  };
+
   const handleUpdateDeadline = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
