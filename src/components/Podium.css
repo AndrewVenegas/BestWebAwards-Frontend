@@ -197,6 +197,146 @@
   min-height: 700px;
 }
 
+/* Stack de tarjetas para empates - efecto baraja horizontal */
+.podium-card-stack {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: visible;
+  min-height: 600px;
+}
+
+.podium-card-stack .podium-carousel-card-wrapper {
+  position: relative;
+  margin: 0;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.4s ease;
+  flex-shrink: 0;
+}
+
+.podium-stack-card {
+  position: relative;
+  /* Z-index inverso: la primera tarjeta (índice 0) tiene el z-index más alto */
+  /* Fórmula: 100 - índice, para que la primera tenga 100, la segunda 99, etc. */
+  z-index: calc(100 - var(--stack-index, 0));
+}
+
+.podium-stack-card:first-child {
+  /* La primera tarjeta está completamente visible y al frente */
+  margin-left: 0;
+}
+
+/* Desplazamiento hacia la izquierda para las tarjetas de atrás - se ve un cachito por la izquierda */
+/* Cada tarjeta de atrás se superpone a la anterior, dejando solo un hilito de ~15px visible */
+.podium-stack-card:not(:first-child) {
+  margin-left: -305px; /* 320px (ancho tarjeta) - 15px (hilito visible) = 305px */
+}
+
+.podium-stack-card .podium-item-top {
+  position: relative;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), z-index 0.4s ease, box-shadow 0.4s ease, filter 0.4s ease;
+}
+
+/* Efecto hover: la tarjeta pasa al frente y se resalta */
+.podium-stack-card:hover {
+  z-index: 100 !important;
+}
+
+.podium-stack-card:hover .podium-carousel-card-wrapper {
+  transform: translateY(-25px) scale(1.08);
+}
+
+.podium-stack-card:hover .podium-item-top {
+  transform: translateY(0);
+  filter: brightness(1.1);
+}
+
+/* Asegurar que las tarjetas del stack sean clickeables incluso cuando están parcialmente ocultas */
+.podium-stack-card {
+  pointer-events: auto;
+}
+
+/* Permitir que el flip funcione correctamente en las tarjetas del stack */
+.podium-stack-card .podium-item-top.flipped .podium-card-inner {
+  transform: rotateY(180deg) !important;
+}
+
+.podium-stack-card:hover .podium-item-top.first .podium-card-front,
+.podium-stack-card:hover .podium-item-top.first .podium-card-back {
+  box-shadow: 0 20px 60px rgba(255, 215, 0, 0.6) !important;
+}
+
+.podium-stack-card:hover .podium-item-top.second .podium-card-front,
+.podium-stack-card:hover .podium-item-top.second .podium-card-back {
+  box-shadow: 0 20px 60px rgba(192, 192, 192, 0.5) !important;
+}
+
+.podium-stack-card:hover .podium-item-top.third .podium-card-front,
+.podium-stack-card:hover .podium-item-top.third .podium-card-back {
+  box-shadow: 0 20px 60px rgba(205, 127, 50, 0.5) !important;
+}
+
+/* Ajustar el ancho del stack: necesita espacio para una tarjeta completa más el hilito de las demás */
+.podium-card-stack-first {
+  width: calc(320px + (var(--stack-count, 1) - 1) * 15px);
+  max-width: calc(320px + (var(--stack-count, 1) - 1) * 15px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.podium-card-stack-second,
+.podium-card-stack-third {
+  width: calc(320px + (var(--stack-count, 1) - 1) * 15px);
+  max-width: calc(320px + (var(--stack-count, 1) - 1) * 15px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.podium-card-stack-single {
+  width: calc(320px + (var(--stack-count, 1) - 1) * 15px);
+  max-width: calc(320px + (var(--stack-count, 1) - 1) * 15px);
+  margin: 0 auto;
+}
+
+/* Asegurar que las columnas del podio se ajusten al ancho del stack */
+.podium-column {
+  overflow: visible;
+}
+
+.podium-top-three.podium-full {
+  overflow: visible;
+}
+
+/* Ajustar el grid del podio completo para acomodar stacks más anchos */
+.podium-top-three.podium-full {
+  max-width: 1400px;
+}
+
+/* Responsive: ajustar desplazamiento en pantallas más pequeñas */
+@media (max-width: 1024px) {
+  .podium-card-stack-first,
+  .podium-card-stack-second,
+  .podium-card-stack-third,
+  .podium-card-stack-single {
+    width: calc(280px + (var(--stack-count, 1) - 1) * 12px);
+    max-width: calc(280px + (var(--stack-count, 1) - 1) * 12px);
+  }
+  
+  /* En pantallas pequeñas, ajustar el desplazamiento proporcionalmente */
+  .podium-stack-card:not(:first-child) {
+    margin-left: -268px; /* 280px - 12px = 268px */
+  }
+  
+  .podium-stack-card:hover .podium-carousel-card-wrapper {
+    transform: translateY(-20px) scale(1.05);
+  }
+}
+
 .podium-column-second {
   order: 1;
 }
@@ -430,6 +570,7 @@
   animation: podiumSlideUp 0.8s ease 1.4s forwards;
 }
 
+/* Hover normal para tarjetas individuales (no en stack) */
 .podium-item-top.first:not(.flipped):hover .podium-card-inner {
   transform: translateY(-25px) scale(1.08);
 }
@@ -440,6 +581,13 @@
 
 .podium-item-top.third:not(.flipped):hover .podium-card-inner {
   transform: translateY(-10px) scale(1.03);
+}
+
+/* Desactivar hover normal cuando está en stack */
+.podium-stack-card .podium-item-top.first:not(.flipped):hover .podium-card-inner,
+.podium-stack-card .podium-item-top.second:not(.flipped):hover .podium-card-inner,
+.podium-stack-card .podium-item-top.third:not(.flipped):hover .podium-card-inner {
+  transform: none;
 }
 
 .podium-rank-badge {
