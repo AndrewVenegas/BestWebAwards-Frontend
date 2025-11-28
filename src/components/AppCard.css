@@ -454,7 +454,8 @@
 }
 
 /* Ocultar app-actions solo cuando la tarjeta está volteada (mostrando el reverso) */
-.app-card.flipped .app-actions {
+/* Solo afecta a la tarjeta específica que tiene la clase flipped */
+.app-card.flipped .card-front .app-content .app-actions {
   display: none;
 }
 
