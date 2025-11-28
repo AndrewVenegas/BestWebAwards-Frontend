@@ -4,6 +4,79 @@ import consoleDebug from '../utils/debug';
 import Fireworks from './Fireworks';
 import './Countdown.css';
 
+// Componente para el círculo con progreso circular
+const CountdownCircle = ({ value, label, max, current }) => {
+  // Calcular el porcentaje basado en el valor actual vs máximo
+  const percentage = Math.min((current / max) * 100, 100);
+  
+  // Parámetros del círculo
+  const centerX = 80;
+  const centerY = 80;
+  const outerRadius = 65; // Radio del círculo externo
+  const innerRadius = 55; // Radio del círculo interno
+  const strokeWidth = 3; // Grosor del borde (igual para ambos)
+  
+  // Calcular el stroke-dasharray y stroke-dashoffset para el relleno entre bordes
+  // El relleno se vacía (queda blanco) a medida que pasa el tiempo
+  // Usamos el radio medio para calcular la circunferencia del donut
+  const midRadius = (outerRadius + innerRadius) / 2;
+  const circumference = 2 * Math.PI * midRadius;
+  const progress = (percentage / 100) * circumference;
+  const dashOffset = circumference - progress;
+  
+  return (
+    <div className="countdown-circle-item">
+      <div className="countdown-circle-wrapper">
+        <svg className="countdown-circle-svg" viewBox="0 0 160 160">
+          {/* Borde externo fijo */}
+          <circle
+            cx={centerX}
+            cy={centerY}
+            r={outerRadius}
+            fill="none"
+            stroke="#667eea"
+            strokeWidth={strokeWidth}
+            className="countdown-circle-outer-border"
+          />
+          
+          {/* Relleno entre bordes (donut) - se va vaciando */}
+          <circle
+            cx={centerX}
+            cy={centerY}
+            r={midRadius}
+            fill="none"
+            stroke="#667eea"
+            strokeWidth={outerRadius - innerRadius}
+            strokeLinecap="round"
+            className="countdown-circle-fill"
+            style={{
+              strokeDasharray: circumference,
+              strokeDashoffset: dashOffset,
+              transform: 'rotate(-90deg)',
+              transformOrigin: `${centerX}px ${centerY}px`,
+            }}
+          />
+          
+          {/* Borde interno fijo */}
+          <circle
+            cx={centerX}
+            cy={centerY}
+            r={innerRadius}
+            fill="none"
+            stroke="#667eea"
+            strokeWidth={strokeWidth}
+            className="countdown-circle-inner-border"
+          />
+        </svg>
+        <div className="countdown-circle-content">
+          <div className="countdown-value">{String(value).padStart(2, '0')}</div>
+        </div>
+      </div>
+      <div className="countdown-label">{label.toUpperCase()}</div>
+    </div>
+  );
+};
+
 const Countdown = ({ onVotingClosed, onInitialized, onTimeUpdate }) => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isOpen, setIsOpen] = useState(true);
@@ -182,22 +255,30 @@ const Countdown = ({ onVotingClosed, onInitialized, onTimeUpdate }) => {
                 {isOpen ? 'Tiempo Restante para Votar' : 'Las Votaciones Comenzarán en'}
               </h3>
               <div className="countdown-grid">
-                <div className="countdown-item">
-                  <div className="countdown-value">{timeLeft.days}</div>
-                  <div className="countdown-label">Días</div>
-                </div>
-                <div className="countdown-item">
-                  <div className="countdown-value">{timeLeft.hours}</div>
-                  <div className="countdown-label">Horas</div>
-                </div>
-                <div className="countdown-item">
-                  <div className="countdown-value">{timeLeft.minutes}</div>
-                  <div className="countdown-label">Minutos</div>
-                </div>
-                <div className="countdown-item">
-                  <div className="countdown-value">{timeLeft.seconds}</div>
-                  <div className="countdown-label">Segundos</div>
-                </div>
+                <CountdownCircle
+                  value={timeLeft.days}
+                  label="Días"
+                  max={Math.max(30, timeLeft.days + 1)}
+                  current={timeLeft.days}
+                />
+                <CountdownCircle
+                  value={timeLeft.hours}
+                  label="Horas"
+                  max={24}
+                  current={timeLeft.hours}
+                />
+                <CountdownCircle
+                  value={timeLeft.minutes}
+                  label="Minutos"
+                  max={60}
+                  current={timeLeft.minutes}
+                />
+                <CountdownCircle
+                  value={timeLeft.seconds}
+                  label="Segundos"
+                  max={60}
+                  current={timeLeft.seconds}
+                />
               </div>
             </div>
           ) : null}
