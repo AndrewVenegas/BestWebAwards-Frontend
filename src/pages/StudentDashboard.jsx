@@ -491,9 +491,10 @@ const StudentDashboard = ({ readOnly = false }) => {
             </div>
           )}
           {dataLoadingPeriod && (
-            <div className="voting-status-badge">
+            <div className="voting-status-badge voting-status-badge-with-tooltip">
               <span className="status-dot status-dot-closed"></span>
               <span>Periodo de carga de datos - Las votaciones comenzarán pronto</span>
+              <span className="voting-status-tooltip-icon" title="Los ayudantes y administradores están cargando información de los equipos participantes. Las votaciones comenzarán cuando finalice este periodo.">ℹ️</span>
             </div>
           )}
           {votingPaused && !dataLoadingPeriod && (
@@ -540,16 +541,7 @@ const StudentDashboard = ({ readOnly = false }) => {
         {/* Mostrar podio o todos los grupos según el toggle (solo si no está en periodo de carga ni pausadas) */}
         {!votingOpen && !dataLoadingPeriod && !votingPaused && !showAllTeams && <Podium />}
 
-        {/* En periodo de carga de datos o pausadas, mostrar mensaje informativo */}
-        {dataLoadingPeriod && (
-          <div className="data-loading-message-container">
-            <h2 className="data-loading-message-title">📊 Periodo de Carga de Datos</h2>
-            <p className="data-loading-message-text">
-              Los ayudantes y administradores están cargando información de los equipos participantes.
-              Las votaciones comenzarán cuando finalice este periodo.
-            </p>
-          </div>
-        )}
+
 
 
         {(votingOpen || dataLoadingPeriod || votingPaused) && (
