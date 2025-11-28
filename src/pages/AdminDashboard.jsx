@@ -313,12 +313,21 @@ const AdminDashboard = () => {
   const handleUpdateDeadline = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const deadline = formData.get('deadline');
-    const startDate = formData.get('startDate') || null;
-    const dataLoadingStartDate = formData.get('dataLoadingStartDate') || null;
-    const dataLoadingEndDate = formData.get('dataLoadingEndDate') || null;
     
-    // Validar periodo de carga de datos
+    // Convertir fechas de datetime-local (hora local) a ISO string (UTC)
+    // datetime-local devuelve "YYYY-MM-DDTHH:mm" en hora local del usuario
+    const deadlineLocal = formData.get('deadline');
+    const startDateLocal = formData.get('startDate');
+    const dataLoadingStartDateLocal = formData.get('dataLoadingStartDate');
+    const dataLoadingEndDateLocal = formData.get('dataLoadingEndDate');
+    
+    // Convertir a Date objects (interpreta como hora local) y luego a ISO string (UTC)
+    const deadline = deadlineLocal ? new Date(deadlineLocal).toISOString() : null;
+    const startDate = startDateLocal ? new Date(startDateLocal).toISOString() : null;
+    const dataLoadingStartDate = dataLoadingStartDateLocal ? new Date(dataLoadingStartDateLocal).toISOString() : null;
+    const dataLoadingEndDate = dataLoadingEndDateLocal ? new Date(dataLoadingEndDateLocal).toISOString() : null;
+    
+    // Validar periodo de carga de datos (usar las fechas ya convertidas a UTC)
     if (dataLoadingStartDate && dataLoadingEndDate) {
       const loadingStart = new Date(dataLoadingStartDate);
       const loadingEnd = new Date(dataLoadingEndDate);
@@ -342,7 +351,7 @@ const AdminDashboard = () => {
     }
     
     // Validar que la fecha de inicio sea anterior a la fecha de cierre
-    if (startDate) {
+    if (startDate && deadline) {
       const startDateObj = new Date(startDate);
       const deadlineObj = new Date(deadline);
       
