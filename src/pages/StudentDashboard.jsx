@@ -512,10 +512,12 @@ const StudentDashboard = ({ readOnly = false }) => {
           )}
         </div>
         
-        <Countdown 
-          onVotingClosed={handleVotingClosed} 
+        <Countdown
+          onVotingClosed={handleVotingClosed}
           onInitialized={() => setCountdownReady(true)}
           onTimeUpdate={setCountdownTimeLeft}
+          remainingVotes={remainingVotes}
+          canUserVote={canUserVote}
         />
 
         {/* Switch para alternar entre podio y todos los grupos cuando las votaciones están cerradas (pero no en periodo de carga ni pausadas) */}
@@ -544,20 +546,7 @@ const StudentDashboard = ({ readOnly = false }) => {
 
 
 
-        {(votingOpen || dataLoadingPeriod || votingPaused) && (
-          <div className="votes-info">
-            {canUserVote ? (
-              <>
-                <p>Votos restantes: <strong>{remainingVotes}</strong> de 3</p>
-                {remainingVotes === 0 && (
-                  <p className="no-votes-left">Ya has usado todos tus votos</p>
-                )}
-              </>
-            ) : (
-              <p className="read-only-notice">👁️ Modo de solo lectura - No puedes votar</p>
-            )}
-          </div>
-        )}
+        {/* votes-info ahora está integrado en el countdown */}
 
         {(votingOpen || dataLoadingPeriod || votingPaused) && (
           <div className="filters-top-section" id="filters-section">

@@ -77,7 +77,7 @@ const CountdownCircle = ({ value, label, max, current }) => {
   );
 };
 
-const Countdown = ({ onVotingClosed, onInitialized, onTimeUpdate }) => {
+const Countdown = ({ onVotingClosed, onInitialized, onTimeUpdate, remainingVotes, canUserVote }) => {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   const [isOpen, setIsOpen] = useState(true);
   const [showFireworks, setShowFireworks] = useState(false);
@@ -280,6 +280,34 @@ const Countdown = ({ onVotingClosed, onInitialized, onTimeUpdate }) => {
                   current={timeLeft.seconds}
                 />
               </div>
+              {/* Mostrar votos restantes si está disponible */}
+              {canUserVote !== undefined && remainingVotes !== undefined && canUserVote && (
+                <div className="votes-display">
+                  <div className="votes-label">Votos Restantes</div>
+                  <div className="votes-boxes">
+                    {[1, 2, 3].map((voteNum) => (
+                      <div
+                        key={voteNum}
+                        className={`vote-box ${voteNum <= remainingVotes ? 'available' : 'used'}`}
+                      >
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path
+                            d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="votes-count-text">
+                    <span className="votes-number">{remainingVotes}</span>
+                    <span className="votes-total">/ 3</span>
+                  </div>
+                  {remainingVotes === 0 && (
+                    <div className="no-votes-message">Ya has usado todos tus votos</div>
+                  )}
+                </div>
+              )}
             </div>
           ) : null}
         </div>
