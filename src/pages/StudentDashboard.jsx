@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import api from '../services/api';
 import { capitalizeName } from '../utils/format';
+import consoleDebug from '../utils/debug';
 import Countdown from '../components/Countdown';
 import AppCard from '../components/AppCard';
 import Podium from '../components/Podium';
@@ -153,7 +154,7 @@ const StudentDashboard = ({ readOnly = false }) => {
         setVoteCounts([]);
       }
     } catch (error) {
-      console.error('Error al cargar datos:', error);
+      consoleDebug('Error al cargar datos:', error);
     } finally {
       setLoading(false);
     }
@@ -252,7 +253,7 @@ const StudentDashboard = ({ readOnly = false }) => {
   };
 
   const handleVotingClosed = async () => {
-    console.log('handleVotingClosed llamado - cargando podio');
+    consoleDebug('handleVotingClosed llamado - cargando podio');
     
     // Asegurar que se muestre el podio, no todos los grupos
     setShowAllTeams(false);
@@ -284,9 +285,9 @@ const StudentDashboard = ({ readOnly = false }) => {
       
       // Forzar nuevamente que las votaciones estén cerradas después de fetchData
       setVotingOpen(false);
-      console.log('Podio cargado correctamente');
+      consoleDebug('Podio cargado correctamente');
     } catch (error) {
-      console.error('Error al cargar podio:', error);
+      consoleDebug('Error al cargar podio:', error);
       // Aún así, forzar que las votaciones estén cerradas
       setVotingOpen(false);
     }

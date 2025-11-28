@@ -108,3 +108,112 @@
   transform: translateY(-2px);
 }
 
+.navbar-user-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.navbar-avatar-button {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.navbar-avatar-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.navbar-avatar-button:focus {
+  outline: 2px solid #667eea;
+  outline-offset: 2px;
+}
+
+.navbar-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #667eea;
+  transition: border-color 0.2s ease;
+}
+
+.navbar-avatar-button:hover .navbar-avatar {
+  border-color: #5568d3;
+}
+
+.navbar-avatar.placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #667eea;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+  border: 2px solid #667eea;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.navbar-avatar-button:hover .navbar-avatar.placeholder {
+  background: #5568d3;
+  border-color: #5568d3;
+}
+
+.navbar-dropdown {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 180px;
+  padding: 0.5rem;
+  z-index: 1200;
+  animation: dropdownFadeIn 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.navbar-dropdown-item {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.75rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #333;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-weight: 500;
+}
+
+.navbar-dropdown-item:hover {
+  background: #f5f5f5;
+  color: #667eea;
+}
+
+.navbar-dropdown-item:active {
+  background: #e8ecff;
+}
+

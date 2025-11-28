@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { capitalizeName } from '../utils/format';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -10,6 +11,8 @@ const Navbar = () => {
   const isLandingPage = location.pathname === '/';
   const isLoginPage = location.pathname === '/login';
   const navRef = useRef(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     if (isLoginPage && navRef.current) {
@@ -23,9 +26,46 @@ const Navbar = () => {
     }
   }, [isLoginPage]);
 
+  // Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    if (showDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showDropdown]);
+
   const handleLogout = () => {
+    setShowDropdown(false);
     logout();
     navigate('/');
+  };
+
+  const handleProfileClick = () => {
+    setShowDropdown(false);
+    navigate('/profile');
+  };
+
+  const toggleDropdown = () => {
+    setShowDropdown(!showDropdown);
+  };
+
+  const getUserInitial = () => {
+    if (user?.name) {
+      return user.name.charAt(0).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return 'U';
   };
 
   // Ocultar navbar solo si está en landing page y no está logueado
@@ -52,20 +92,12 @@ const Navbar = () => {
         {user && (
           <div className="navbar-menu">
             {user.type === 'student' && (
-              <>
-                <Link 
-                  to="/dashboard" 
-                  className={`navbar-link ${location.pathname === '/dashboard' || location.pathname === '/votaciones' ? 'active' : ''}`}
-                >
-                  Votaciones
-                </Link>
-                <Link 
-                  to="/profile" 
-                  className={`navbar-link ${location.pathname === '/profile' ? 'active' : ''}`}
-                >
-                  Mi Perfil
-                </Link>
-              </>
+              <Link 
+                to="/dashboard" 
+                className={`navbar-link ${location.pathname === '/dashboard' || location.pathname === '/votaciones' ? 'active' : ''}`}
+              >
+                Votaciones
+              </Link>
             )}
             
             {user.type === 'helper' && (
@@ -81,12 +113,6 @@ const Navbar = () => {
                   className={`navbar-link ${location.pathname === '/votaciones' ? 'active' : ''}`}
                 >
                   Votaciones
-                </Link>
-                <Link 
-                  to="/profile" 
-                  className={`navbar-link ${location.pathname === '/profile' ? 'active' : ''}`}
-                >
-                  Mi Perfil
                 </Link>
               </>
             )}
@@ -105,18 +131,45 @@ const Navbar = () => {
                 >
                   Votaciones
                 </Link>
-                <Link 
-                  to="/profile" 
-                  className={`navbar-link ${location.pathname === '/profile' ? 'active' : ''}`}
-                >
-                  Mi Perfil
-                </Link>
               </>
             )}
             
-            <button onClick={handleLogout} className="navbar-button">
-              Cerrar Sesión
-            </button>
+            <div className="navbar-user-menu" ref={dropdownRef}>
+              <button 
+                className="navbar-avatar-button"
+                onClick={toggleDropdown}
+                aria-label="Menú de usuario"
+              >
+                {user.avatarUrl ? (
+                  <img 
+                    src={user.avatarUrl} 
+                    alt={capitalizeName(user.name || user.email)} 
+                    className="navbar-avatar"
+                  />
+                ) : (
+                  <div className="navbar-avatar placeholder">
+                    {getUserInitial()}
+                  </div>
+                )}
+              </button>
+              
+              {showDropdown && (
+                <div className="navbar-dropdown">
+                  <button 
+                    className="navbar-dropdown-item"
+                    onClick={handleProfileClick}
+                  >
+                    Mi Perfil
+                  </button>
+                  <button 
+                    className="navbar-dropdown-item"
+                    onClick={handleLogout}
+                  >
+                    Cerrar Sesión
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>

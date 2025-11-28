@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useNotification } from '../contexts/NotificationContext';
 import { capitalizeName } from '../utils/format';
+import consoleDebug from '../utils/debug';
 import CustomSelect from '../components/CustomSelect';
 import FileDropzone from '../components/FileDropzone';
 import Switch from '../components/Switch';
@@ -37,7 +38,7 @@ const HelperDashboard = () => {
       const response = await api.get('/helpers/me/teams');
       setTeams(response.data);
     } catch (error) {
-      console.error('Error al cargar equipos:', error);
+      consoleDebug('Error al cargar equipos:', error);
     } finally {
       setLoading(false);
     }
@@ -90,7 +91,7 @@ const HelperDashboard = () => {
     try {
       setSaving(true);
       
-      console.log('Subiendo imagen:', {
+      consoleDebug('Subiendo imagen:', {
         nombre: file.name,
         tamaño: file.size,
         tipo: file.type
@@ -99,7 +100,7 @@ const HelperDashboard = () => {
       // No establecer Content-Type manualmente, axios lo maneja automáticamente para FormData
       const response = await api.post('/upload/screenshot', formData);
 
-      console.log('Respuesta del servidor:', response.data);
+      consoleDebug('Respuesta del servidor:', response.data);
 
       if (response.data.url) {
         setFormData(prev => ({ ...prev, screenshotUrl: response.data.url }));
@@ -108,8 +109,8 @@ const HelperDashboard = () => {
         throw new Error('No se recibió URL de la imagen');
       }
     } catch (err) {
-      console.error('Error completo al subir imagen:', err);
-      console.error('Respuesta del error:', err.response?.data);
+      consoleDebug('Error completo al subir imagen:', err);
+      consoleDebug('Respuesta del error:', err.response?.data);
       
       const errorMessage = err.response?.data?.error || err.response?.data?.details || err.message || 'Error al subir la imagen';
       error(errorMessage);
@@ -210,7 +211,7 @@ const HelperDashboard = () => {
       setIsEditClosing(false);
       success('Equipo actualizado exitosamente');
     } catch (err) {
-      console.error('Error al actualizar equipo:', err);
+      consoleDebug('Error al actualizar equipo:', err);
       const errorMessage = err.response?.data?.error || 'Error al actualizar el equipo';
       error(errorMessage);
     } finally {

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { useNotification } from '../contexts/NotificationContext';
 import { capitalizeName } from '../utils/format';
+import consoleDebug from '../utils/debug';
 import PasswordConfirmModal from '../components/PasswordConfirmModal';
 import FilterDropdown from '../components/FilterDropdown';
 import useAnimatedNumber from '../hooks/useAnimatedNumber';
@@ -152,7 +153,7 @@ const AdminDashboard = () => {
         setTeams(teamsRes.data);
         setHelpers(helpersRes.data);
       }).catch(err => {
-        console.error('Error al cargar datos para filtros:', err);
+        consoleDebug('Error al cargar datos para filtros:', err);
       });
     }
   }, [activeTab, showCreateTeam, showEditTeam, showCreateHelper, showCreateStudent, showEditStudent]);
@@ -163,7 +164,7 @@ const AdminDashboard = () => {
       api.get('/admin/teams').then(res => {
         setTeams(res.data);
       }).catch(err => {
-        console.error('Error al cargar equipos para filtros:', err);
+        consoleDebug('Error al cargar equipos para filtros:', err);
       });
     }
   }, [activeTab, teams.length]);
@@ -211,7 +212,7 @@ const AdminDashboard = () => {
         setConfig(response.data);
       }
     } catch (err) {
-      console.error('Error al cargar datos:', err);
+      consoleDebug('Error al cargar datos:', err);
       error('Error al cargar los datos');
     } finally {
       setLoading(prev => ({ ...prev, [activeTab]: false }));

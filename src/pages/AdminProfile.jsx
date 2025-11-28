@@ -56,6 +56,27 @@ const AdminProfile = () => {
     }
   };
 
+  const handleDeleteAvatar = async () => {
+    if (!admin.avatarUrl) return;
+
+    try {
+      setSaving(true);
+      await api.put('/admin/admins/me', { avatarUrl: null });
+      await fetchProfile();
+      
+      // Actualizar usuario en contexto
+      const updatedUser = { ...user, avatarUrl: null };
+      updateUser(updatedUser);
+      
+      success('Foto eliminada exitosamente');
+    } catch (err) {
+      console.error('Error al eliminar foto:', err);
+      error('Error al eliminar la foto');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
@@ -97,16 +118,27 @@ const AdminProfile = () => {
                 {admin.name.charAt(0).toUpperCase()}
               </div>
             )}
-            <label className="avatar-upload-button">
-              {saving ? 'Subiendo...' : 'Cambiar Foto'}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                style={{ display: 'none' }}
-                disabled={saving}
-              />
-            </label>
+            <div className="avatar-buttons">
+              <label className="avatar-upload-button">
+                {saving ? 'Subiendo...' : 'Cambiar Foto'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  style={{ display: 'none' }}
+                  disabled={saving}
+                />
+              </label>
+              {admin.avatarUrl && (
+                <button
+                  className="avatar-delete-button"
+                  onClick={handleDeleteAvatar}
+                  disabled={saving}
+                >
+                  {saving ? 'Eliminando...' : 'Eliminar Foto'}
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="profile-info">

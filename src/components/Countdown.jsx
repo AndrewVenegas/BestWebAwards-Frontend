@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
+import consoleDebug from '../utils/debug';
 import Fireworks from './Fireworks';
 import './Countdown.css';
 
@@ -47,7 +48,7 @@ const Countdown = ({ onVotingClosed, onInitialized }) => {
           onInitialized();
         }
       } catch (error) {
-        console.error('Error al obtener configuración:', error);
+        consoleDebug('Error al obtener configuración:', error);
         isInitialized.current = true;
         if (onInitialized && !hasNotifiedInitialized.current) {
           hasNotifiedInitialized.current = true;
@@ -121,7 +122,7 @@ const Countdown = ({ onVotingClosed, onInitialized }) => {
 
   // Manejar cuando terminan los fuegos artificiales - simplemente refrescar la página
   const handleFireworksComplete = () => {
-    console.log('Fuegos artificiales completados, refrescando página...');
+    consoleDebug('Fuegos artificiales completados, refrescando página...');
     // Esperar un momento antes de refrescar para que se vea el final de la animación
     setTimeout(() => {
       window.location.reload();

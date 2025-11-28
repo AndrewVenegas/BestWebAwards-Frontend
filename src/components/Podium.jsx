@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import api from '../services/api';
 import { capitalizeName } from '../utils/format';
+import consoleDebug from '../utils/debug';
 import Fireworks from './Fireworks';
 import './Podium.css';
 
@@ -296,11 +297,11 @@ const Podium = () => {
   const fetchPodium = async () => {
     try {
       const response = await api.get('/results/podium');
-      console.log('Podium data received:', response.data);
+      consoleDebug('Podium data received:', response.data);
       setPodium(response.data || []);
     } catch (error) {
-      console.error('Error al cargar podio:', error);
-      console.error('Error details:', error.response?.data);
+      consoleDebug('Error al cargar podio:', error);
+      consoleDebug('Error details:', error.response?.data);
       setPodium([]);
     } finally {
       setLoading(false);
