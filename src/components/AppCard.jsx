@@ -244,8 +244,9 @@ const AppCard = ({ team, onVote, hasVoted, canVote, voteCount, showCounts, isFav
                 </button>
               ) : onVote && canVote ? (
                 <button 
-                  className="app-button vote-button" 
+                  className="app-button vote-button vote-button-with-tooltip" 
                   onClick={() => onVote(team.id)}
+                  title="Se pedirá confirmación"
                 >
                   Votar
                 </button>

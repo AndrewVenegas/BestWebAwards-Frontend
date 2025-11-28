@@ -73,6 +73,9 @@ const AdminDashboard = () => {
     studentVotingStatus: 'all', // 'all', 'complete', 'in-progress', 'not-voted'
     searchTerm: ''
   });
+  
+  // Filtro de tipo de tabla en dashboard
+  const [dashboardTableFilter, setDashboardTableFilter] = useState('all'); // 'all', 'teams', 'admins', 'helpers', 'students'
 
   // Filtros para Equipos
   const [teamFilters, setTeamFilters] = useState({
@@ -122,6 +125,9 @@ const AdminDashboard = () => {
   const [showDeleteVoteButtons, setShowDeleteVoteButtons] = useState(false);
   const [deletePasswordLoading, setDeletePasswordLoading] = useState(false);
   const [deletePasswordError, setDeletePasswordError] = useState('');
+  const [showResetVotesModal, setShowResetVotesModal] = useState(false);
+  const [resetVotesPasswordLoading, setResetVotesPasswordLoading] = useState(false);
+  const [resetVotesPasswordError, setResetVotesPasswordError] = useState('');
   const [saving, setSaving] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
   
@@ -187,7 +193,11 @@ const AdminDashboard = () => {
         
         // Calcular estadísticas
         const totalStudents = byStudentRes.data.length;
-        const totalVotes = byStudentRes.data.reduce((sum, s) => sum + s.votes.length, 0);
+        // Sumar votos de estudiantes, helpers y admins
+        const studentVotes = byStudentRes.data.reduce((sum, s) => sum + s.votes.length, 0);
+        const helperVotes = byHelperRes.data.reduce((sum, h) => sum + h.votes.length, 0);
+        const adminVotes = byAdminRes.data.reduce((sum, a) => sum + a.votes.length, 0);
+        const totalVotes = studentVotes + helperVotes + adminVotes;
         const participatingTeams = summaryRes.data.length;
         
         setStats({
@@ -817,6 +827,32 @@ const AdminDashboard = () => {
     setDeletePasswordLoading(false);
   };
 
+  const handleResetVotesConfirm = async (password) => {
+    setResetVotesPasswordLoading(true);
+    setResetVotesPasswordError('');
+    
+    try {
+      await api.delete('/admin/votes/reset-all', {
+        data: { password }
+      });
+      success('Todos los votos han sido eliminados exitosamente');
+      setShowResetVotesModal(false);
+      fetchDashboardData();
+    } catch (err) {
+      const errorMsg = err.response?.data?.error || 'Error al reiniciar los votos';
+      setResetVotesPasswordError(errorMsg);
+      error(errorMsg);
+    } finally {
+      setResetVotesPasswordLoading(false);
+    }
+  };
+
+  const handleCloseResetVotesModal = () => {
+    setShowResetVotesModal(false);
+    setResetVotesPasswordError('');
+    setResetVotesPasswordLoading(false);
+  };
+
   // Funciones de filtrado
   const getFilteredVotesSummary = () => {
     let filtered = [...votesSummary];
@@ -1241,6 +1277,41 @@ const AdminDashboard = () => {
                 </FilterDropdown>
               </div>
 
+              {/* Filtro de tipo de tabla */}
+              <div className="dashboard-table-filter">
+                <button
+                  className={`filter-table-btn ${dashboardTableFilter === 'all' ? 'active' : ''}`}
+                  onClick={() => setDashboardTableFilter('all')}
+                >
+                  Todo
+                </button>
+                <button
+                  className={`filter-table-btn ${dashboardTableFilter === 'teams' ? 'active' : ''}`}
+                  onClick={() => setDashboardTableFilter('teams')}
+                >
+                  Equipos
+                </button>
+                <button
+                  className={`filter-table-btn ${dashboardTableFilter === 'admins' ? 'active' : ''}`}
+                  onClick={() => setDashboardTableFilter('admins')}
+                >
+                  Administradores
+                </button>
+                <button
+                  className={`filter-table-btn ${dashboardTableFilter === 'helpers' ? 'active' : ''}`}
+                  onClick={() => setDashboardTableFilter('helpers')}
+                >
+                  Ayudantes
+                </button>
+                <button
+                  className={`filter-table-btn ${dashboardTableFilter === 'students' ? 'active' : ''}`}
+                  onClick={() => setDashboardTableFilter('students')}
+                >
+                  Alumnos
+                </button>
+              </div>
+
+              {(dashboardTableFilter === 'all' || dashboardTableFilter === 'teams') && (
               <div className="votes-summary">
                 <h2>Votos por Equipo ({getFilteredVotesSummary().length})</h2>
                 <table className="admin-table">
@@ -1276,7 +1347,9 @@ const AdminDashboard = () => {
                   <p className="no-results">No se encontraron equipos con los filtros seleccionados</p>
                 )}
               </div>
+              )}
 
+              {(dashboardTableFilter === 'all' || dashboardTableFilter === 'admins') && (
               <div className="votes-by-admin">
                 <div className="votes-by-student-header">
                   <h2>Votos por Administrador ({getFilteredVotesByAdmin().length})</h2>
@@ -1358,7 +1431,9 @@ const AdminDashboard = () => {
                   <p className="no-results">No se encontraron administradores con los filtros seleccionados</p>
                 )}
               </div>
+              )}
 
+              {(dashboardTableFilter === 'all' || dashboardTableFilter === 'helpers') && (
               <div className="votes-by-helper">
                 <div className="votes-by-student-header">
                   <h2>Votos por Ayudante ({getFilteredVotesByHelper().length})</h2>
@@ -1440,7 +1515,9 @@ const AdminDashboard = () => {
                   <p className="no-results">No se encontraron ayudantes con los filtros seleccionados</p>
                 )}
               </div>
+              )}
 
+              {(dashboardTableFilter === 'all' || dashboardTableFilter === 'students') && (
               <div className="votes-by-student">
                 <div className="votes-by-student-header">
                 <h2>Votos por Estudiante ({getFilteredVotesByStudent().length})</h2>
@@ -1522,6 +1599,7 @@ const AdminDashboard = () => {
                   <p className="no-results">No se encontraron estudiantes con los filtros seleccionados</p>
                 )}
               </div>
+              )}
               </>
               )}
             </div>
@@ -1613,6 +1691,16 @@ const AdminDashboard = () => {
                           {config.votingPaused ? '✓ Sí' : '✗ No'}
                         </span>
                       </div>
+                    </div>
+                    <div className="config-actions">
+                      <button
+                        type="button"
+                        className="btn-reset-votes btn-reset-votes-with-tooltip"
+                        onClick={() => setShowResetVotesModal(true)}
+                        title="Se pedirá una validación de contraseña"
+                      >
+                        🔄 Reiniciar Votos
+                      </button>
                     </div>
                   </div>
                   
@@ -2623,6 +2711,18 @@ const AdminDashboard = () => {
           loading={deletePasswordLoading}
           errorMessage={deletePasswordError}
           isDeleteAction={true}
+        />
+      )}
+
+      {showResetVotesModal && (
+        <PasswordConfirmModal
+          isOpen={showResetVotesModal}
+          onClose={handleCloseResetVotesModal}
+          onConfirm={handleResetVotesConfirm}
+          teamName=""
+          loading={resetVotesPasswordLoading}
+          errorMessage={resetVotesPasswordError}
+          isResetVotesAction={true}
         />
       )}
     </div>

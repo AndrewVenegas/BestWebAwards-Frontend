@@ -46,8 +46,9 @@ api.interceptors.response.use(
       const isLoginEndpoint = url.includes('/auth/login');
       const isPasswordVerification = url.includes('/verify-password');
       const isAdminDelete = url.includes('/admin/admins/') && method === 'delete';
+      const isResetVotes = url.includes('/admin/votes/reset-all') && method === 'delete';
       
-      if (!skipAuthRedirect && !isLoginEndpoint && !isPasswordVerification && !isAdminDelete) {
+      if (!skipAuthRedirect && !isLoginEndpoint && !isPasswordVerification && !isAdminDelete && !isResetVotes) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         window.location.href = '/login';

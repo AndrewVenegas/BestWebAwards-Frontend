@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import './PasswordConfirmModal.css';
 
-const PasswordConfirmModal = ({ isOpen, onClose, onConfirm, teamName, loading, errorMessage, isDeleteAction = false }) => {
+const PasswordConfirmModal = ({ isOpen, onClose, onConfirm, teamName, loading, errorMessage, isDeleteAction = false, isResetVotesAction = false }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
@@ -52,9 +52,15 @@ const PasswordConfirmModal = ({ isOpen, onClose, onConfirm, teamName, loading, e
           ×
         </button>
         
-        <h2>{isDeleteAction ? 'Confirmar Eliminación' : 'Confirmar Voto'}</h2>
+        <h2>
+          {isResetVotesAction ? 'Reiniciar Votos' : isDeleteAction ? 'Confirmar Eliminación' : 'Confirmar Voto'}
+        </h2>
         <p className="password-modal-message">
-          {isDeleteAction ? (
+          {isResetVotesAction ? (
+            <>
+              Estás a punto de <strong>eliminar todos los votos</strong> del sistema.
+            </>
+          ) : isDeleteAction ? (
             <>
               Estás a punto de eliminar al administrador <strong>{teamName}</strong>
             </>
@@ -65,7 +71,12 @@ const PasswordConfirmModal = ({ isOpen, onClose, onConfirm, teamName, loading, e
           )}
         </p>
         <p className="password-modal-subtitle">
-          {isDeleteAction ? (
+          {isResetVotesAction ? (
+            <>
+              <strong>⚠️ Esta acción no se puede deshacer.</strong><br />
+              Por favor ingresa tu contraseña de administrador para confirmar.
+            </>
+          ) : isDeleteAction ? (
             'Por favor ingresa tu contraseña para confirmar la eliminación'
           ) : (
             'Por favor ingresa tu contraseña para confirmar tu voto'
@@ -108,7 +119,7 @@ const PasswordConfirmModal = ({ isOpen, onClose, onConfirm, teamName, loading, e
               className="btn-confirm"
               disabled={loading || !password}
             >
-              {loading ? 'Verificando...' : (isDeleteAction ? 'Confirmar Eliminación' : 'Confirmar Voto')}
+              {loading ? 'Verificando...' : (isResetVotesAction ? 'Reiniciar Votos' : isDeleteAction ? 'Confirmar Eliminación' : 'Confirmar Voto')}
             </button>
           </div>
         </form>
