@@ -453,6 +453,11 @@
   z-index: 10;
 }
 
+/* Ocultar app-actions solo cuando la tarjeta está volteada (mostrando el reverso) */
+.app-card.flipped .app-actions {
+  display: none;
+}
+
 .app-link {
   flex: 1 1 0;
   display: flex;
