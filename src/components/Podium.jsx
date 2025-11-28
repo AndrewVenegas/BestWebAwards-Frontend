@@ -358,17 +358,69 @@ const Podium = () => {
               {currentSlide.label}
             </h1>
             <div className={`podium-top-three ${currentSlide.type === 'full' ? 'podium-full' : 'podium-single-position'}`}>
-              {currentSlide.entries.map((entry, index) => {
-                const card = renderPodiumCard(entry, currentSlide.type === 'full');
-                return (
-                  <div 
-                    key={`${carouselIndex}-${entry.teamId}`} 
-                    className={`podium-carousel-card-wrapper podium-animate-${currentSlide.type === 'full' ? entry.position : currentSlide.position}`}
-                  >
-                    {card}
+              {currentSlide.type === 'full' ? (
+                <>
+                  {/* Columna del segundo lugar */}
+                  <div className="podium-column podium-column-second">
+                    {secondPlace.map((entry) => {
+                      const card = renderPodiumCard(entry, true);
+                      return (
+                        <div 
+                          key={`${carouselIndex}-${entry.teamId}`} 
+                          className="podium-carousel-card-wrapper podium-animate-2"
+                        >
+                          {card}
+                        </div>
+                      );
+                    })}
+                    <div className="podium-step podium-step-second"></div>
                   </div>
-                );
-              })}
+                  
+                  {/* Columna del primer lugar */}
+                  <div className="podium-column podium-column-first">
+                    {firstPlace.map((entry) => {
+                      const card = renderPodiumCard(entry, true);
+                      return (
+                        <div 
+                          key={`${carouselIndex}-${entry.teamId}`} 
+                          className="podium-carousel-card-wrapper podium-animate-1"
+                        >
+                          {card}
+                        </div>
+                      );
+                    })}
+                    <div className="podium-step podium-step-first"></div>
+                  </div>
+                  
+                  {/* Columna del tercer lugar */}
+                  <div className="podium-column podium-column-third">
+                    {thirdPlace.map((entry) => {
+                      const card = renderPodiumCard(entry, true);
+                      return (
+                        <div 
+                          key={`${carouselIndex}-${entry.teamId}`} 
+                          className="podium-carousel-card-wrapper podium-animate-3"
+                        >
+                          {card}
+                        </div>
+                      );
+                    })}
+                    <div className="podium-step podium-step-third"></div>
+                  </div>
+                </>
+              ) : (
+                currentSlide.entries.map((entry, index) => {
+                  const card = renderPodiumCard(entry, false);
+                  return (
+                    <div 
+                      key={`${carouselIndex}-${entry.teamId}`} 
+                      className={`podium-carousel-card-wrapper podium-animate-${currentSlide.position}`}
+                    >
+                      {card}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
 

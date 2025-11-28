@@ -55,7 +55,7 @@
   opacity: 0;
   transform: translateY(20px);
   position: relative;
-  z-index: 1;
+  z-index: 10;
   animation: podiumCarouselFadeIn 0.5s ease-out forwards;
   background: transparent !important;
   border: none !important;
@@ -166,14 +166,117 @@
   align-items: flex-end;
   gap: 1.5rem;
   margin-bottom: 0;
-  padding: 2rem 0;
+  padding: 2rem 0 0 0;
   position: relative;
   background: transparent;
+  flex-wrap: wrap;
+}
+
+.podium-top-three.podium-full {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.5rem;
+  align-items: flex-end;
+  padding-bottom: 0;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .podium-top-three.podium-single-position {
   /* Estilo para mostrar solo una posición (con posibles empates) */
   justify-content: center;
+}
+
+/* Columnas del podio */
+.podium-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  position: relative;
+  min-height: 700px;
+}
+
+.podium-column-second {
+  order: 1;
+}
+
+.podium-column-first {
+  order: 2;
+}
+
+.podium-column-third {
+  order: 3;
+}
+
+/* Podio visual - ahora dentro de cada columna */
+.podium-step {
+  width: 100%;
+  max-width: 320px;
+  background: linear-gradient(180deg, #8B4513 0%, #A0522D 50%, #8B4513 100%);
+  border-radius: 8px 8px 0 0;
+  box-shadow: 
+    0 -4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 2px 5px rgba(255, 255, 255, 0.1),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.2);
+  position: relative;
+  border: 2px solid #654321;
+  border-bottom: none;
+  margin-top: 0.5rem;
+  flex-shrink: 0;
+}
+
+.podium-step::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.2) 100%);
+  border-radius: 8px 8px 0 0;
+}
+
+.podium-step::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.1) 2px,
+      rgba(0, 0, 0, 0.1) 4px
+    );
+  border-radius: 8px 8px 0 0;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.podium-step-second {
+  height: 60px;
+}
+
+.podium-step-first {
+  height: 100px;
+  box-shadow: 
+    0 -6px 20px rgba(0, 0, 0, 0.4),
+    inset 0 2px 5px rgba(255, 255, 255, 0.15),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.25);
+  border-width: 3px;
+}
+
+.podium-step-third {
+  height: 40px;
+}
+
+/* Las tarjetas dentro de cada columna están directamente sobre su podio */
+.podium-column .podium-carousel-card-wrapper {
+  margin-bottom: 0.5rem; /* Mínima distancia entre tarjeta y podio */
 }
 
 .podium-item-top {
