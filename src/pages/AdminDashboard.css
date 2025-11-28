@@ -168,11 +168,50 @@
   display: flex;
   gap: 0.5rem;
   margin: 1.5rem 0;
-  background: white;
+  background: #f0f0f0;
   padding: 0.5rem;
   border-radius: 10px;
   width: 100%;
   flex-wrap: wrap;
+  position: relative;
+}
+
+.dashboard-table-filter::before {
+  content: '';
+  position: absolute;
+  top: 0.5rem;
+  height: calc(100% - 1rem);
+  /* Ancho = (100% - padding total - gaps totales) / número de botones */
+  /* padding: 0.5rem * 2 = 1rem, gaps: 0.5rem * 4 = 2rem, total: 3rem, 5 botones */
+  width: calc((100% - 3rem) / 5);
+  background: #667eea;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Posicionar el slider según el botón activo */
+/* Cada botón ocupa: (100% - 3rem) / 5 */
+/* Posición = padding izquierdo + (ancho botón + gap) * (índice - 1) */
+.dashboard-table-filter:has(.filter-table-btn:nth-child(1).active)::before {
+  left: 0.5rem;
+}
+
+.dashboard-table-filter:has(.filter-table-btn:nth-child(2).active)::before {
+  left: calc(0.5rem + (100% - 3rem) / 5 + 0.5rem);
+}
+
+.dashboard-table-filter:has(.filter-table-btn:nth-child(3).active)::before {
+  left: calc(0.5rem + ((100% - 3rem) / 5 + 0.5rem) * 2);
+}
+
+.dashboard-table-filter:has(.filter-table-btn:nth-child(4).active)::before {
+  left: calc(0.5rem + ((100% - 3rem) / 5 + 0.5rem) * 3);
+}
+
+.dashboard-table-filter:has(.filter-table-btn:nth-child(5).active)::before {
+  left: calc(0.5rem + ((100% - 3rem) / 5 + 0.5rem) * 4);
 }
 
 .filter-table-btn {
@@ -185,23 +224,24 @@
   border-radius: 8px;
   font-weight: 500;
   font-size: 0.95rem;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease;
   min-width: 0;
   white-space: nowrap;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .filter-table-btn:hover {
-  background: #f5f5f5;
+  color: #333;
 }
 
 .filter-table-btn.active {
-  background: #667eea;
   color: white;
 }
 
 .filter-table-btn.active:hover {
-  background: #5568d3;
+  color: white;
 }
 
 .votes-by-student-header {

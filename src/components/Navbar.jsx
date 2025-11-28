@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { capitalizeName } from '../utils/format';
+import { FiLogOut, FiUser } from 'react-icons/fi';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -159,12 +160,14 @@ const Navbar = () => {
                     className="navbar-dropdown-item"
                     onClick={handleProfileClick}
                   >
+                    <FiUser className="profile-icon" />
                     Mi Perfil
                   </button>
                   <button 
                     className="navbar-dropdown-item"
                     onClick={handleLogout}
                   >
+                    <FiLogOut className="logout-icon" />
                     Cerrar Sesión
                   </button>
                 </div>
