@@ -455,7 +455,9 @@
 
 .app-link {
   flex: 1 1 0;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.75rem;
   background: #f5f5f5;
   color: #667eea;
@@ -463,6 +465,10 @@
   border-radius: 8px;
   transition: background 0.3s ease;
   min-width: 0;
+  font-weight: 500;
+  font-size: 1rem;
+  font-family: inherit;
+  white-space: nowrap;
 }
 
 .app-link:hover {
@@ -474,7 +480,9 @@
   padding: 0.75rem;
   border: none;
   border-radius: 8px;
-  font-weight: bold;
+  font-weight: 500;
+  font-size: 1rem;
+  font-family: inherit;
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: 0;
@@ -541,11 +549,12 @@
   background: #667eea;
   color: white;
   flex: 1 1 0;
+  margin-top: 0;
 }
 
 .app-button.edit-button.full-width {
   width: 100%;
-  flex: none;
+  flex: 1 1 0;
 }
 
 .app-button.edit-button:hover {
